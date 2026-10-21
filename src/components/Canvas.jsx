@@ -180,70 +180,66 @@ function WireMotorRingLug({ pt, nextPt, wireColor }) {
   const angleDeg = Math.atan2(uy, ux) * (180 / Math.PI) - 90;
 
   return (
-    <g
-      className="wire-motor-ring-lug"
-      transform={`translate(${pt.x}, ${pt.y}) rotate(${angleDeg})`}
-      pointerEvents="none"
-    >
-      {/* Sombra de projeção do terminal olhal sob o prisioneiro */}
-      <circle cx="0" cy="0" r="10.5" fill="rgba(0,0,0,0.4)" transform="translate(1, 1.5)" />
-      <rect x="-4.5" y="4" width="9" height="15" rx="2" fill="rgba(0,0,0,0.3)" transform="translate(1, 1.5)" />
+    <g className="wire-motor-ring-lug-composite" pointerEvents="none">
+      {/* 1. Terminal Olhal Crimpado (rotacionado na direção do condutor) */}
+      <g transform={`translate(${pt.x}, ${pt.y}) rotate(${angleDeg})`}>
+        {/* Sombra de projeção da luva e cabo */}
+        <circle cx="0" cy="0" r="14" fill="rgba(0,0,0,0.35)" transform="translate(1, 1.5)" />
+        <rect x="-4.5" y="4" width="9" height="15" rx="2" fill="rgba(0,0,0,0.3)" transform="translate(1, 1.5)" />
 
-      {/* Olhal Metálico Estanhado (Tinned copper eyelet disc) preso sob a porca de latão */}
-      <circle
-        cx="0"
-        cy="0"
-        r="10"
-        fill="#e2e8f0"
-        stroke="#94a3b8"
-        strokeWidth="1"
-      />
-      <circle
-        cx="0"
-        cy="0"
-        r="8.5"
-        fill="none"
-        stroke="#f8fafc"
-        strokeWidth="0.8"
-      />
-      {/* Centro do olhal vazado */}
-      <circle cx="0" cy="0" r="5" fill="#475569" opacity="0.3" />
+        {/* Disco metálico estanhado do olhal */}
+        <circle cx="0" cy="0" r="13.5" fill="#cbd5e1" stroke="#000000" strokeWidth="1.6" />
+        <circle cx="0" cy="0" r="12" fill="none" stroke="#ffffff" strokeWidth="0.8" opacity="0.6" />
 
-      {/* Haste de transição estampada */}
-      <polygon
-        points="-4,4 4,4 5.2,11 -5.2,11"
-        fill="#cbd5e1"
-        stroke="#94a3b8"
-        strokeWidth="0.8"
-      />
+        {/* Haste estampada de transição para o cano de prensagem */}
+        <polygon points="-4,4 4,4 5.2,11 -5.2,11" fill="#cbd5e1" stroke="#000000" strokeWidth="1.2" />
 
-      {/* Luva metálica tubular de compressão (crimp barrel sleeve) */}
-      <rect
-        x="-4.5"
-        y="9"
-        width="9"
-        height="10"
-        rx="2"
-        fill="#cbd5e1"
-        stroke="#64748b"
-        strokeWidth="0.8"
-      />
-      {/* Ranhura e reflexo metálico na luva */}
-      <line x1="-3.5" y1="12" x2="3.5" y2="12" stroke="#475569" strokeWidth="1" />
-      <line x1="-3.5" y1="15" x2="3.5" y2="15" stroke="#475569" strokeWidth="1" />
-      <line x1="-2" y1="9.5" x2="-2" y2="18.5" stroke="#ffffff" strokeWidth="0.8" opacity="0.6" />
+        {/* Luva metálica tubular de compressão (crimp barrel sleeve) */}
+        <rect x="-4.5" y="9" width="9" height="10" rx="2" fill="#e2e8f0" stroke="#000000" strokeWidth="1.2" />
+        <line x1="-3.5" y1="12" x2="3.5" y2="12" stroke="#475569" strokeWidth="1.2" />
+        <line x1="-3.5" y1="15" x2="3.5" y2="15" stroke="#475569" strokeWidth="1.2" />
+        <line x1="-2" y1="9.5" x2="-2" y2="18.5" stroke="#ffffff" strokeWidth="0.9" opacity="0.8" />
 
-      {/* Cabo entrando na luva com isolamento visível */}
-      <rect
-        x="-3.6"
-        y="17"
-        width="7.2"
-        height="6"
-        rx="1.5"
-        fill={wireColor || '#38bdf8'}
-        stroke="rgba(0,0,0,0.4)"
-        strokeWidth="0.6"
-      />
+        {/* Cabo entrando na luva com isolamento visível */}
+        <rect
+          x="-3.6"
+          y="17"
+          width="7.2"
+          height="6"
+          rx="1.5"
+          fill={wireColor || '#38bdf8'}
+          stroke="rgba(0,0,0,0.5)"
+          strokeWidth="0.8"
+        />
+      </g>
+
+      {/* 2. Porca Sextavada de Latão Usinado prensando o olhal por cima (100% Vector SVG, idêntica ao diagrama técnico) */}
+      <g transform={`translate(${pt.x}, ${pt.y})`}>
+        {/* 6 Facetas da Porca Sextavada com chanfro 3D e contorno preto nítido */}
+        <polygon points="-5.25,-9.09 5.25,-9.09 2.75,-4.76 -2.75,-4.76" fill="#fff59d" stroke="#000000" strokeWidth="1.2" />
+        <polygon points="5.25,-9.09 10.5,0 5.5,0 2.75,-4.76" fill="#fdd835" stroke="#000000" strokeWidth="1.2" />
+        <polygon points="10.5,0 5.25,9.09 2.75,4.76 5.5,0" fill="#f57f17" stroke="#000000" strokeWidth="1.2" />
+        <polygon points="5.25,9.09 -5.25,9.09 -2.75,4.76 2.75,4.76" fill="#d97706" stroke="#000000" strokeWidth="1.2" />
+        <polygon points="-5.25,9.09 -10.5,0 -5.5,0 -2.75,4.76" fill="#f59e0b" stroke="#000000" strokeWidth="1.2" />
+        <polygon points="-10.5,0 -5.25,-9.09 -2.75,-4.76 -5.5,0" fill="#ffee58" stroke="#000000" strokeWidth="1.2" />
+
+        {/* Contorno externo preto nítido da porca */}
+        <polygon
+          points="5.25,-9.09 -5.25,-9.09 -10.5,0 -5.25,9.09 5.25,9.09 10.5,0"
+          fill="none"
+          stroke="#000000"
+          strokeWidth="2.2"
+          strokeLinejoin="round"
+        />
+
+        {/* Rebaixo central circular da porca */}
+        <circle cx="0" cy="0" r="5.6" fill="#facc15" stroke="#000000" strokeWidth="1.5" />
+
+        {/* Pino Central de Aço Usinado com reflexo especular */}
+        <circle cx="0" cy="0" r="4.6" fill="#cbd5e1" stroke="#000000" strokeWidth="1.2" />
+        <ellipse cx="1" cy="-1.2" rx="2" ry="1.2" fill="#ffffff" opacity="0.9" />
+        <path d="M -3.2 -3.2 A 4.6 4.6 0 0 0 -3.2 3.2" fill="none" stroke="#64748b" strokeWidth="1" opacity="0.7" />
+      </g>
     </g>
   );
 }
@@ -1145,6 +1141,7 @@ export default function Canvas({
       e.target.closest('.terminal-screw-container') ||
       e.target.closest('.banana-socket-container') ||
       e.target.closest('.contactor-screw-container') ||
+      e.target.closest('.motor-svg-terminal-group') ||
       e.target.closest('.motor-brass-terminal-container') ||
       e.target.closest('.motor-overlay-badge-fechamento') ||
       e.target.closest('.btn-toggle-switch') ||
