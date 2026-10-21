@@ -1253,7 +1253,13 @@ export default function Canvas({
         toComponent: compId,
         toTerminal: termId,
         ...(customPoint?.x != null ? { toTerminalX: customPoint.x } : {}),
-        color: activeWireColor,
+        color:
+          String(connectingTerminal.terminalId).toUpperCase() === 'PE' ||
+          String(termId).toUpperCase() === 'PE' ||
+          (comp1?.type === 'power_source' && String(connectingTerminal.terminalId).toUpperCase() === 'PE') ||
+          (comp2?.type === 'power_source' && String(termId).toUpperCase() === 'PE')
+            ? '#16a34a'
+            : activeWireColor,
         isCustomRouted: isCustom,
         waypoints: finalWaypoints,
       });
@@ -1322,7 +1328,11 @@ export default function Canvas({
           : { fromComponent: connectingTerminal.componentId, fromTerminal: connectingTerminal.terminalId }),
         toWireId: wireId,
         toPoint: p2,
-        color: activeWireColor,
+        color:
+          String(connectingTerminal?.terminalId).toUpperCase() === 'PE' ||
+          wires.find((w) => w.id === wireId)?.color === '#16a34a'
+            ? '#16a34a'
+            : activeWireColor,
         waypoints: finalWaypoints,
       });
 
@@ -2132,8 +2142,27 @@ export default function Canvas({
               isSimulationMode && isEnergized && potential && PHASE_COLORS_MAP[potential]
                 ? PHASE_COLORS_MAP[potential]
                 : null;
-            const activeWireColor = phaseColor || wire.color;
-            const isPEConductor = (isSimulationMode && potential === 'PE') || activeWireColor === '#16a34a';
+            const isFromPowerPE = Boolean(
+              compFrom?.type === 'power_source' && String(wire.fromTerminal).toUpperCase() === 'PE'
+            );
+            const isToPowerPE = Boolean(
+              compTo?.type === 'power_source' && String(wire.toTerminal).toUpperCase() === 'PE'
+            );
+            const isPowerGroundWire = isFromPowerPE || isToPowerPE;
+            const isPEConductor =
+              (isSimulationMode && potential === 'PE') ||
+              wire.color === '#16a34a' ||
+              isPowerGroundWire ||
+              String(wire.fromTerminal).toUpperCase() === 'PE' ||
+              String(wire.toTerminal).toUpperCase() === 'PE';
+
+            const activeWireColor = (isPowerGroundWire || isPEConductor)
+              ? '#16a34a'
+              : (phaseColor || wire.color);
+
+            const isSchematicMode =
+              viewMode === 'schematic' || isCompFromSchematic || isCompToSchematic;
+            const isSchematicDashedPE = isSchematicMode && (isPowerGroundWire || isPEConductor);
 
             // Find longest segment to anchor the solid control buttons
             let longestSeg = { len: 0, mid: { x: p1.x, y: p1.y } };
@@ -2256,55 +2285,86 @@ export default function Canvas({
                   style={{ cursor: connectingTerminal ? 'crosshair' : 'pointer' }}
                 />
 
-                {/* Wire high-contrast casing so dark or white wires stand out razor-sharp */}
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke={
-                    activeWireColor === '#ffffff' || activeWireColor?.toLowerCase() === '#fff'
-                      ? 'rgba(0, 0, 0, 0.65)'
-                      : activeWireColor === '#18181b'
-                      ? (workbenchLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.45)')
-                      : (workbenchLight ? 'rgba(0, 0, 0, 0.35)' : 'rgba(255, 255, 255, 0.28)')
-                  }
-                  strokeWidth={isHovered || isSelected ? '7.5' : '6.5'}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                {isSchematicDashedPE ? (
+                  <>
+                    {/* Hover/Selection glow highlight */}
+                    {(isHovered || isSelected) && (
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke="#22c55e"
+                        strokeWidth="6"
+                        strokeDasharray="8 5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        opacity="0.45"
+                      />
+                    )}
 
-                {/* Wire realistic shadow */}
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke="rgba(0,0,0,0.5)"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  transform="translate(1.5, 3)"
-                />
+                    {/* Fio de terra da rede esquemático: Linha tracejada verde IEC */}
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="#16a34a"
+                      strokeWidth={isHovered || isSelected ? '3.5' : '2.4'}
+                      strokeDasharray="8 5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </>
+                ) : (
+                  <>
+                    {/* Wire high-contrast casing so dark or white wires stand out razor-sharp */}
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke={
+                        activeWireColor === '#ffffff' || activeWireColor?.toLowerCase() === '#fff'
+                          ? 'rgba(0, 0, 0, 0.65)'
+                          : activeWireColor === '#18181b'
+                          ? (workbenchLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.45)')
+                          : (workbenchLight ? 'rgba(0, 0, 0, 0.35)' : 'rgba(255, 255, 255, 0.28)')
+                      }
+                      strokeWidth={isHovered || isSelected ? '7.5' : '6.5'}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
 
-                {/* Primary insulated rounded wire body (adota a cor da fase quando energizado em simulação) */}
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke={activeWireColor}
-                  strokeWidth={isHovered || isSelected ? '5' : '4'}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                    {/* Wire realistic shadow */}
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="rgba(0,0,0,0.5)"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      transform="translate(1.5, 3)"
+                    />
 
-                {/* Listra amarela contínua no condutor de proteção (PE) verde-amarelo */}
-                {isPEConductor && (
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke="#eab308"
-                    strokeWidth={isHovered || isSelected ? '1.8' : '1.4'}
-                    strokeDasharray="10 8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    pointerEvents="none"
-                  />
+                    {/* Primary insulated rounded wire body (adota a cor da fase quando energizado em simulação) */}
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke={activeWireColor}
+                      strokeWidth={isHovered || isSelected ? '5' : '4'}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Listra amarela contínua no condutor de proteção (PE) verde-amarelo no modo realista */}
+                    {isPEConductor && !isSchematicMode && (
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke="#eab308"
+                        strokeWidth={isHovered || isSelected ? '1.8' : '1.4'}
+                        strokeDasharray="10 8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        pointerEvents="none"
+                      />
+                    )}
+                  </>
                 )}
 
                 {/* Falstad-style Moving Electron Flow Beads (Phase-colored) */}
@@ -2586,22 +2646,27 @@ export default function Canvas({
                 const pts = [p1, ...connectingWaypoints, mousePos];
                 const pathD = buildWirePathWithJumps(pts, wiresPointLists, allJunctionPoints);
 
+                const isConnPE =
+                  String(connectingTerminal.terminalId).toUpperCase() === 'PE' ||
+                  connectingTerminal.componentId && components.find((c) => c.id === connectingTerminal.componentId)?.type === 'power_source' && String(connectingTerminal.terminalId).toUpperCase() === 'PE';
+                const previewColor = isConnPE ? '#16a34a' : activeWireColor;
+
                 return (
                   <>
                     <path
                       d={pathD}
                       fill="none"
-                      stroke={activeWireColor}
-                      strokeWidth="3.6"
-                      strokeDasharray="6,4"
+                      stroke={previewColor}
+                      strokeWidth={isConnPE && viewMode === 'schematic' ? '2.8' : '3.6'}
+                      strokeDasharray={isConnPE ? '8 5' : '6,4'}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <circle cx={p1.x} cy={p1.y} r="5.5" fill="#ffd166" stroke="#b08968" strokeWidth="1.5" />
+                    <circle cx={p1.x} cy={p1.y} r="5.5" fill={isConnPE ? '#16a34a' : '#ffd166'} stroke="#0f172a" strokeWidth="1.2" />
                     {connectingWaypoints.map((wp, i) => (
                       <circle key={i} cx={wp.x} cy={wp.y} r="5" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
                     ))}
-                    <circle cx={mousePos.x} cy={mousePos.y} r="4.5" fill="#ffd166" />
+                    <circle cx={mousePos.x} cy={mousePos.y} r="4.5" fill={isConnPE ? '#16a34a' : '#ffd166'} />
                   </>
                 );
               })()}

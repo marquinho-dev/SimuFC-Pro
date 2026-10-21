@@ -25,6 +25,7 @@ export function getConnectedWireColor(componentId, terminalId, wires, fallbackCo
       (wire.toComponent === componentId && String(wire.toTerminal) === String(terminalId))
   );
   if (!w) return fallbackColor;
+  if (String(terminalId).toUpperCase() === 'PE') return '#16a34a';
   return w.color || '#38bdf8';
 }
 
