@@ -708,10 +708,10 @@ export function Motor6PThumbnail() {
     <svg viewBox="0 0 88 100" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="m6pTBoxBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="40%" stopColor="#2563eb" />
-          <stop offset="80%" stopColor="#1d4ed8" />
-          <stop offset="100%" stopColor="#172554" />
+          <stop offset="0%" stopColor="#4a88e8" />
+          <stop offset="35%" stopColor="#3572d4" />
+          <stop offset="70%" stopColor="#225bb5" />
+          <stop offset="100%" stopColor="#143c7e" />
         </linearGradient>
         <linearGradient id="m6pPlateBlack" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#1e2328" />
@@ -724,10 +724,10 @@ export function Motor6PThumbnail() {
           <stop offset="100%" stopColor="#475569" />
         </linearGradient>
         <linearGradient id="m6pStatorBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#2563eb" />
-          <stop offset="30%" stopColor="#1d4ed8" />
-          <stop offset="70%" stopColor="#1e40af" />
-          <stop offset="100%" stopColor="#172554" />
+          <stop offset="0%" stopColor="#4a88e8" />
+          <stop offset="35%" stopColor="#3572d4" />
+          <stop offset="70%" stopColor="#225bb5" />
+          <stop offset="100%" stopColor="#143c7e" />
         </linearGradient>
         <radialGradient id="m6pShaftSteel" cx="40%" cy="35%" r="65%">
           <stop offset="0%" stopColor="#f8fafc" />

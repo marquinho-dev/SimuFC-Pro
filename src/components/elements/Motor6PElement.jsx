@@ -246,14 +246,6 @@ export default function Motor6PElement({
   const tW1 = findTerminal('W1');
   const tPE = findTerminal('PE');
 
-  // Screws on the 45-degree angles of the front bearing flange (center cy = 810)
-  const flangeScrews = [
-    { x: 250 + 60, y: 810 + 60 },
-    { x: 250 - 60, y: 810 + 60 },
-    { x: 250 + 60, y: 810 - 60 },
-    { x: 250 - 60, y: 810 - 60 },
-  ];
-
   return (
     <div
       className={`motor-frontal-device ${
@@ -269,18 +261,48 @@ export default function Motor6PElement({
           height="1020"
         >
           <defs>
-            {/* Box Gradients adjusted to match the industrial blue WEG style of the motor */}
+            {/* Vibrant Glossy Royal Blue for Stator and Terminal Box (exact from user reference image) */}
+            <linearGradient id="motor-front-blue-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#4a88e8" />
+              <stop offset="25%" stopColor="#3572d4" />
+              <stop offset="65%" stopColor="#225bb5" />
+              <stop offset="100%" stopColor="#143c7e" />
+            </linearGradient>
+
+            {/* Specular curved reflection on enamel/glass body */}
+            <linearGradient id="motorGlossShine" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="40%" stopColor="#ffffff" stopOpacity="0.30" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+            </linearGradient>
+
+            {/* Flange Outer Ring Vibrant Blue */}
+            <linearGradient id="flange-outer-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#4a88e8" />
+              <stop offset="40%" stopColor="#3572d4" />
+              <stop offset="85%" stopColor="#225bb5" />
+              <stop offset="100%" stopColor="#143c7e" />
+            </linearGradient>
+
+            {/* Flange Inner Ring Deeper Blue */}
+            <radialGradient id="flange-inner-blue" cx="45%" cy="40%" r="60%">
+              <stop offset="0%" stopColor="#2c67c7" />
+              <stop offset="65%" stopColor="#1e4e9e" />
+              <stop offset="100%" stopColor="#123570" />
+            </radialGradient>
+
+            {/* Terminal Box Gradients matching the same Vibrant Glossy Royal Blue */}
             <linearGradient id="blueBoxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#3b82f6" />
-              <stop offset="30%" stopColor="#2563eb" />
-              <stop offset="70%" stopColor="#1d4ed8" />
-              <stop offset="100%" stopColor="#172554" />
+              <stop offset="0%" stopColor="#4a88e8" />
+              <stop offset="30%" stopColor="#3572d4" />
+              <stop offset="70%" stopColor="#225bb5" />
+              <stop offset="100%" stopColor="#143c7e" />
             </linearGradient>
             
             <linearGradient id="innerBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#1e40af" />
-              <stop offset="60%" stopColor="#1e3a8a" />
-              <stop offset="100%" stopColor="#0f172a" />
+              <stop offset="0%" stopColor="#225bb5" />
+              <stop offset="60%" stopColor="#1a4691" />
+              <stop offset="100%" stopColor="#0f2652" />
             </linearGradient>
 
             <linearGradient id="blackPanelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -310,39 +332,16 @@ export default function Motor6PElement({
             
             {/* Outer Box Screw from gemini-svg.svg */}
             <g id="gemini-box-screw">
-              <circle r="12" fill="#1e3a8a" stroke="#0f172a" strokeWidth="1.2" />
-              <circle r="6" fill="#0f172a" />
+              <circle r="12" fill="#225bb5" stroke="#0f2652" strokeWidth="1.2" />
+              <circle r="6" fill="#0f2652" />
             </g>
 
-            {/* Front Motor Stator Blue Gradient (Restaurado ao azul industrial original WEG) */}
-            <linearGradient id="motor-front-blue-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#2563eb" />
-              <stop offset="25%" stopColor="#1d4ed8" />
-              <stop offset="65%" stopColor="#1e40af" />
-              <stop offset="100%" stopColor="#172554" />
-            </linearGradient>
-
-            {/* Outer Bearing Shield Blue Gradient */}
-            <linearGradient id="flange-outer-blue" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#3b82f6" />
-              <stop offset="40%" stopColor="#2563eb" />
-              <stop offset="80%" stopColor="#1d4ed8" />
-              <stop offset="100%" stopColor="#172554" />
-            </linearGradient>
-
-            {/* Inner Bearing Shield Blue Gradient */}
-            <radialGradient id="flange-inner-blue" cx="45%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="#2563eb" />
-              <stop offset="70%" stopColor="#1d4ed8" />
-              <stop offset="100%" stopColor="#172554" />
-            </radialGradient>
-
             {/* Turned Steel Rotor Shaft Gradient */}
-            <radialGradient id="shaft-turn-grad" cx="40%" cy="35%" r="65%">
+            <radialGradient id="shaft-turn-grad" cx="42%" cy="38%" r="65%">
               <stop offset="0%" stopColor="#f8fafc" />
-              <stop offset="30%" stopColor="#e2e8f0" />
-              <stop offset="70%" stopColor="#94a3b8" />
-              <stop offset="100%" stopColor="#475569" />
+              <stop offset="25%" stopColor="#e2e8f0" />
+              <stop offset="65%" stopColor="#94a3b8" />
+              <stop offset="100%" stopColor="#64748b" />
             </radialGradient>
 
             <filter id="box-shadow" x="-10%" y="-10%" width="120%" height="130%">
@@ -356,7 +355,7 @@ export default function Motor6PElement({
               ======================================================== */}
           <g className="motor-terminal-box-group" filter="url(#box-shadow)">
             {/* Outer Blue Enclosure */}
-            <rect x="10" y="30" width="480" height="560" rx="25" fill="url(#blueBoxGrad)" stroke="#1e3a8a" strokeWidth="3" />
+            <rect x="10" y="30" width="480" height="560" rx="25" fill="url(#blueBoxGrad)" stroke="#0f2652" strokeWidth="3" />
             <rect x="30" y="50" width="440" height="520" rx="20" fill="url(#blueBoxGrad)" />
             
             {/* Outer Box Corner Screws */}
@@ -366,7 +365,7 @@ export default function Motor6PElement({
             <use href="#gemini-box-screw" x="465" y="565" />
 
             {/* Inner Blue Rim Cutout */}
-            <rect x="45" y="65" width="410" height="490" rx="15" fill="url(#innerBlueGrad)" stroke="#172554" strokeWidth="2" />
+            <rect x="45" y="65" width="410" height="490" rx="15" fill="url(#innerBlueGrad)" stroke="#0f2652" strokeWidth="2" />
 
             {/* Main Black Terminal Panel */}
             <rect x="60" y="120" width="380" height="410" rx="12" fill="url(#blackPanelGrad)" stroke="#111" strokeWidth="3" />
@@ -406,130 +405,177 @@ export default function Motor6PElement({
           </g>
 
           {/* Cast Metal Neck / Riser connecting box base to motor stator */}
-          <rect x="215" y="585" width="70" height="70" rx="4" fill="#1d4ed8" stroke="#172554" strokeWidth="2.5" />
-          <line x1="228" y1="595" x2="228" y2="645" stroke="#172554" strokeWidth="2" />
-          <line x1="272" y1="595" x2="272" y2="645" stroke="#172554" strokeWidth="2" />
+          <rect x="215" y="585" width="70" height="70" rx="4" fill="#225bb5" stroke="#0f2652" strokeWidth="2.5" />
+          <line x1="228" y1="595" x2="228" y2="645" stroke="#0f2652" strokeWidth="2" />
+          <line x1="272" y1="595" x2="272" y2="645" stroke="#0f2652" strokeWidth="2" />
 
           {/* ========================================================
               BOTTOM SECTION: MOTOR FRONTAL VIEW (CORPO DO MOTOR)
-              Afastado da caixa com respiro estético harmonioso
+              Azul brilhante idêntico à imagem de referência
               ======================================================== */}
           <g className="motor-frontal-unit-group" filter="url(#box-shadow)">
             {/* Mounting Feet at bottom */}
-            <rect x="50" y="980" width="90" height="28" rx="6" fill="#172554" stroke="#0f172a" strokeWidth="2.5" />
-            <circle cx="70" cy="994" r="6.5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
+            <rect x="50" y="980" width="90" height="28" rx="6" fill="#143c7e" stroke="#0f2652" strokeWidth="2.5" />
+            <circle cx="70" cy="994" r="6.5" fill="#0f2652" stroke="#64748b" strokeWidth="1.5" />
 
-            <rect x="360" y="980" width="90" height="28" rx="6" fill="#172554" stroke="#0f172a" strokeWidth="2.5" />
-            <circle cx="430" cy="994" r="6.5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
+            <rect x="360" y="980" width="90" height="28" rx="6" fill="#143c7e" stroke="#0f2652" strokeWidth="2.5" />
+            <circle cx="430" cy="994" r="6.5" fill="#0f2652" stroke="#64748b" strokeWidth="1.5" />
 
-            {/* Main Rounded Stator Body in Industrial Blue */}
+            {/* Main Rounded Stator Body in Vibrant Glossy Royal Blue */}
             <rect
               x="50"
               y="650"
               width="400"
               height="335"
-              rx="40"
+              rx="42"
               fill="url(#motor-front-blue-grad)"
-              stroke="#1e3a8a"
+              stroke="#0f2652"
               strokeWidth="4"
             />
-            {/* Specular Inner Body Highlight */}
+
+            {/* Glossy Top-Left Specular Curved Reflection (Glass/Enamel Shine from reference image) */}
+            <path
+              d="M 68 660 Q 210 658 375 675 Q 230 735 65 725 Z"
+              fill="url(#motorGlossShine)"
+              pointerEvents="none"
+            />
+            {/* Soft secondary rim reflection along top edge */}
             <rect
-              x="53"
-              y="653"
-              width="394"
-              height="329"
-              rx="37"
-              fill="none"
-              stroke="rgba(255,255,255,0.25)"
-              strokeWidth="2"
+              x="65"
+              y="654"
+              width="370"
+              height="6"
+              rx="3"
+              fill="rgba(255, 255, 255, 0.45)"
+              pointerEvents="none"
             />
 
-            {/* Lateral Cooling Ribs / Tabs on Left */}
-            <rect x="36" y="705" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
-            <rect x="36" y="765" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
-            <rect x="36" y="825" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
-            <rect x="36" y="885" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            {/* Embossed Horizontal Cooling Slots on Front Face (exact from reference image) */}
+            {/* Left slots */}
+            <rect x="70" y="700" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="70" y="760" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="70" y="820" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="70" y="880" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            {/* Top-left corner slot */}
+            <rect x="70" y="666" width="24" height="8" rx="4" fill="#102959" stroke="#487fda" strokeWidth="1" />
 
-            {/* Lateral Cooling Ribs / Tabs on Right */}
-            <rect x="448" y="705" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
-            <rect x="448" y="765" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
-            <rect x="448" y="825" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
-            <rect x="448" y="885" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            {/* Right slots */}
+            <rect x="400" y="700" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="400" y="760" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="400" y="820" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="400" y="880" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            {/* Top-right corner slot */}
+            <rect x="406" y="666" width="24" height="8" rx="4" fill="#102959" stroke="#487fda" strokeWidth="1" />
 
             {/* Large Circular Bearing Flange Shield */}
+            {/* Outer dark groove ring */}
+            <circle cx="250" cy="810" r="132" fill="#102652" />
+            {/* Main outer flange ring in vibrant bright royal blue */}
             <circle
               cx="250"
               cy="810"
-              r="125"
+              r="128"
               fill="url(#flange-outer-blue)"
-              stroke="#172554"
-              strokeWidth="4"
+              stroke="#0f2652"
+              strokeWidth="3.5"
             />
+            {/* Inner beveled ring in deep blue */}
             <circle
               cx="250"
               cy="810"
-              r="102"
+              r="100"
               fill="url(#flange-inner-blue)"
-              stroke="#1e40af"
-              strokeWidth="2.5"
+              stroke="#14346e"
+              strokeWidth="3"
+            />
+            {/* Inner highlight rim */}
+            <circle
+              cx="250"
+              cy="810"
+              r="98"
+              fill="none"
+              stroke="rgba(255,255,255,0.15)"
+              strokeWidth="1.5"
             />
 
-            {/* Radial Embossed Tick Marks around Flange */}
-            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => {
+            {/* 8 Radial Embossed Tick Marks around Flange (0, 45, 90, 135, 180, 225, 270, 315 deg) */}
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
               const radVal = (deg * Math.PI) / 180;
               const x1 = 250 + 104 * Math.cos(radVal);
               const y1 = 810 + 104 * Math.sin(radVal);
-              const x2 = 250 + 120 * Math.cos(radVal);
-              const y2 = 810 + 120 * Math.sin(radVal);
+              const x2 = 250 + 124 * Math.cos(radVal);
+              const y2 = 810 + 124 * Math.sin(radVal);
               return (
-                <line
-                  key={`tick-${deg}`}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="#172554"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
+                <g key={`radial-slot-${deg}`}>
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="#102652"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="#487fda"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </g>
               );
             })}
 
-            {/* Hex Assembly Screws on Bearing Flange (4x) */}
-            {flangeScrews.map((pos, idx) => (
-              <g key={`screw-flange-${idx}`}>
-                <circle cx={pos.x} cy={pos.y} r="9" fill="#334155" stroke="#0f172a" strokeWidth="1.5" />
-                <circle cx={pos.x} cy={pos.y} r="6" fill="#94a3b8" />
-                <line x1={pos.x - 4} y1={pos.y} x2={pos.x + 4} y2={pos.y} stroke="#334155" strokeWidth="1.5" />
+            {/* 4 Round Slotted Screws with Horizontal Slot (-) */}
+            {[
+              { x: 250 - 64, y: 810 - 64 },
+              { x: 250 + 64, y: 810 - 64 },
+              { x: 250 - 64, y: 810 + 64 },
+              { x: 250 + 64, y: 810 + 64 },
+            ].map((pos, idx) => (
+              <g key={`flange-screw-${idx}`}>
+                <circle cx={pos.x} cy={pos.y} r="16" fill="#102652" />
+                <circle cx={pos.x} cy={pos.y} r="14.5" fill="url(#silverNut)" stroke="#475569" strokeWidth="1" />
+                <circle cx={pos.x} cy={pos.y} r="11" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="0.8" />
+                {/* Horizontal screw slot */}
+                <rect x={pos.x - 9} y={pos.y - 2} width="18" height="4" rx="1.5" fill="#1e293b" />
               </g>
             ))}
+
+            {/* Inner Collar Ring */}
+            <circle cx="250" cy="810" r="66" fill="#102652" />
 
             {/* Rotating Rotor / Turned Steel Shaft Assembly */}
             <circle
               cx="250"
               cy="810"
-              r="58"
+              r="62"
               fill="url(#shaft-turn-grad)"
               stroke="#334155"
               strokeWidth="3"
             />
-            <circle cx="272" cy="800" r="5" fill="#ffffff" />
-            <circle cx="250" cy="810" r="23" fill="#334155" />
+            {/* Crisp white specular shine dot */}
+            <circle cx="278" cy="798" r="7" fill="#ffffff" />
 
-            {/* Rotating Yellow Keyway Arrow / Indicator */}
+            {/* Central Dark Shaft Hub */}
+            <circle cx="250" cy="810" r="20" fill="#475569" stroke="#1e293b" strokeWidth="2" />
+
+            {/* Rotating Yellow Keyway Arrow / Indicator with Inner Dark Keyway Slot */}
             <g transform={`rotate(${rotationAngle}, 250, 810)`}>
               <polygon
-                points="242,810 244,771 250,755 256,771 258,810"
+                points="240,810 243,755 250,740 257,755 260,810"
                 fill="#f59e0b"
                 stroke="#1e293b"
                 strokeWidth="2.5"
               />
-              <line x1="250" y1="770" x2="250" y2="798" stroke="#b45309" strokeWidth="3.5" strokeLinecap="round" />
+              <rect x="246" y="756" width="8" height="16" rx="3" fill="#334155" stroke="#1e293b" strokeWidth="1.2" />
             </g>
 
-            {/* Center Cap Nut */}
-            <circle cx="250" cy="810" r="11" fill="#475569" stroke="#1e293b" strokeWidth="1.5" />
+            {/* Center Cap Pin */}
+            <circle cx="250" cy="810" r="8" fill="#374151" stroke="#1e293b" strokeWidth="1.5" />
 
             {/* OVERLAID BADGES */}
             {/* 1. Badge Fechamento Estrela / Triângulo */}
