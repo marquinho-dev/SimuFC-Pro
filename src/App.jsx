@@ -267,6 +267,7 @@ export default function App() {
   const prevIsSimModeRef = useRef(isSimulationMode);
   useEffect(() => {
     if (prevIsSimModeRef.current && !isSimulationMode) {
+      sounds.stopShortCircuitArc();
       setComponents((prev) =>
         prev.map((c) => {
           const resetState = { ...c.state };
@@ -335,21 +336,42 @@ export default function App() {
   // Short-circuit audio feedback & automatic circuit breaker tripping
   const prevShortCircuitRef = useRef(false);
   useEffect(() => {
-    if (shortCircuit && !prevShortCircuitRef.current) {
-      sounds.playShortCircuit();
+    if (!isSimulationMode) {
+      sounds.stopShortCircuitArc();
+      prevShortCircuitRef.current = false;
+      return;
     }
-    prevShortCircuitRef.current = shortCircuit;
-  }, [shortCircuit]);
 
-  useEffect(() => {
-    if (shortCircuit && trippedBreakerIds.length > 0) {
-      sounds.playTrip();
-      trippedBreakerIds.forEach((bId) => {
-        handleUpdateComponentState(bId, { closed: false });
-      });
-      setToastMessage('⚡ Disjuntor desarmou por curto-circuito!');
+    if (shortCircuit) {
+      if (trippedBreakerIds.length > 0) {
+        // Curto-circuito com proteção: o disjuntor desarma e interrompe o circuito a jusante
+        sounds.stopShortCircuitArc();
+        sounds.playTrip();
+        if (!prevShortCircuitRef.current) {
+          sounds.playShortCircuit();
+        }
+        trippedBreakerIds.forEach((bId) => {
+          handleUpdateComponentState(bId, { closed: false });
+        });
+        setToastMessage('⚡ Disjuntor desarmou por curto-circuito!');
+      } else {
+        // Curto-circuito SEM PROTEÇÃO (por exemplo feito antes do disjuntor ou sem disjuntor)
+        // Dispara o barulho de arco elétrico contínuo de curto-circuito
+        sounds.startShortCircuitArc();
+        if (!prevShortCircuitRef.current) {
+          setToastMessage('⚡ CURTO-CIRCUITO ATIVO SEM PROTEÇÃO! (Arco elétrico contínuo)');
+        }
+      }
+    } else {
+      sounds.stopShortCircuitArc();
     }
-  }, [shortCircuit, trippedBreakerIds, handleUpdateComponentState]);
+
+    prevShortCircuitRef.current = shortCircuit;
+
+    return () => {
+      sounds.stopShortCircuitArc();
+    };
+  }, [isSimulationMode, shortCircuit, trippedBreakerIds, handleUpdateComponentState]);
 
   // ⏱ Real-time loop for Relés Temporizadores (KT): watches coil edges reported by the solver
   // and schedules the delayed contact changeover (RE = on-delay, RD = off-delay).
@@ -434,6 +456,7 @@ export default function App() {
 
   // Handler to quickly disconnect offending short-circuit wires
   const handleClearShortWires = useCallback(() => {
+    sounds.stopShortCircuitArc();
     if (shortedWireIds.length > 0) {
       const shortSet = new Set(shortedWireIds);
       setWires((prev) => prev.filter((w) => !shortSet.has(w.id)));

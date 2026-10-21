@@ -329,7 +329,10 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
             }
           }
 
-          // Check if any closed circuit breakers are in this shorted circuit
+          // Check if any closed circuit breakers are in the path of this short-circuit current.
+          // If the fault is upstream/before the breaker (e.g. between power source terminals or on
+          // breaker line terminals 1/3/5), current does not pass through the breaker poles, so the
+          // breaker cannot trip (unprotected short circuit).
           for (const comp of compMap.values()) {
             if (
               (comp.type === 'breaker_3p' ||
@@ -339,9 +342,69 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
             ) {
               const hasBreakerTerminal = Array.from(net).some((t) => t.startsWith(`${comp.id}:`));
               if (hasBreakerTerminal) {
-                trippedBreakerIds.add(comp.id);
+                // Determine internal pole edges of this breaker
+                const poles = comp.type === 'breaker_1p' ? 1 : Number(comp.state?.poles) || 3;
+                const internalEdges = new Set();
+                const addPole = (t1, t2) => {
+                  internalEdges.add(`${t1}---${t2}`);
+                  internalEdges.add(`${t2}---${t1}`);
+                };
+                addPole(`${comp.id}:1`, `${comp.id}:2`);
+                if (poles >= 2) addPole(`${comp.id}:3`, `${comp.id}:4`);
+                if (poles >= 3) addPole(`${comp.id}:5`, `${comp.id}:6`);
+
+                // Group source terminals in this net by their conflicting potentials
+                const sourcesByPot = {};
+                for (const t of net) {
+                  const pot = sourceMap[t];
+                  if (pot && potentialsFound.has(pot)) {
+                    if (!sourcesByPot[pot]) sourcesByPot[pot] = [];
+                    sourcesByPot[pot].push(t);
+                  }
+                }
+
+                const potList = Object.keys(sourcesByPot);
+                let shortExistsWithoutBreaker = false;
+
+                // Check if any pair of conflicting potentials is connected WITHOUT using this breaker's poles
+                if (potList.length >= 2) {
+                  for (let i = 0; i < potList.length && !shortExistsWithoutBreaker; i++) {
+                    for (let j = i + 1; j < potList.length && !shortExistsWithoutBreaker; j++) {
+                      const startNodes = sourcesByPot[potList[i]];
+                      const targetNodes = new Set(sourcesByPot[potList[j]]);
+                      const q = [...startNodes];
+                      const vis = new Set(startNodes);
+
+                      while (q.length > 0) {
+                        const curr = q.shift();
+                        if (targetNodes.has(curr)) {
+                          shortExistsWithoutBreaker = true;
+                          break;
+                        }
+                        const neighbors = adj.get(curr) || [];
+                        for (const nb of neighbors) {
+                          if (internalEdges.has(`${curr}---${nb}`)) continue;
+                          if (!vis.has(nb)) {
+                            vis.add(nb);
+                            q.push(nb);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+
+                // If the short requires traversing this breaker's closed contacts, then the breaker trips!
+                // If the short exists WITHOUT the breaker (e.g. before the breaker), the breaker does NOT trip!
+                if (!shortExistsWithoutBreaker) {
+                  trippedBreakerIds.add(comp.id);
+                }
               }
             }
+          }
+
+          if (trippedBreakerIds.size === 0) {
+            description += ' ⚠️ Curto-circuito SEM PROTEÇÃO (a montante/antes do disjuntor)!';
           }
 
           shortCircuitDetails = {
