@@ -235,6 +235,7 @@ export default function Canvas({
   // Persistent refs for zero-latency dragging without re-attaching event listeners
   const isPanningRef = useRef(false);
   const draggedCompIdRef = useRef(null);
+  const dragMovedRef = useRef(false);
   const draggingSegmentRef = useRef(null);
   const draggingWaypointRef = useRef(null);
   const draggingSpliceRef = useRef(null);
@@ -543,17 +544,17 @@ export default function Canvas({
 
       let waypoints = wire.waypoints;
       
-      // Auto-recalculate route if:
-      // 1) Either connected component is currently being moved, OR
-      // 2) Wire is not custom-routed, OR
-      // 3) Wire has no waypoints
+      // Auto-recalculate route ONLY if:
+      // 1) Wire has no custom routing, AND
+      // 2) Wire has no waypoints OR either connected component is currently being moved
+      const isCustom = Boolean(wire.isCustomRouted && waypoints && waypoints.length > 0);
       const isConnectedToMovingComp = Boolean(
         draggedCompId &&
         (wire.fromComponent === draggedCompId || wire.toComponent === draggedCompId)
       );
 
       const shouldAutoRoute =
-        isConnectedToMovingComp || !wire.isCustomRouted || !waypoints || waypoints.length === 0;
+        !isCustom && (isConnectedToMovingComp || !waypoints || waypoints.length === 0);
 
       if (shouldAutoRoute && wire.fromComponent && wire.toComponent && comp1 && comp2) {
         waypoints = computeAutoRoute(p1, p2, comp1, comp2, term1, term2, idx, components);
@@ -639,6 +640,10 @@ export default function Canvas({
 
       // 2. Dragging a component (or all components if isAllSelected)
       if (draggedCompIdRef.current) {
+        if (!dragMovedRef.current) {
+          dragMovedRef.current = true;
+          setDraggedCompId(draggedCompIdRef.current);
+        }
         if (isAllSelectedRef.current && multiDragStartRef.current) {
           const { startCanvasPos, initialComponents, initialWires } = multiDragStartRef.current;
           const dx = Math.round(canvasPos.x - startCanvasPos.x);
@@ -897,6 +902,7 @@ export default function Canvas({
       }
       if (draggedCompIdRef.current) {
         const movedCompId = draggedCompIdRef.current;
+        const didMove = dragMovedRef.current;
         if (snapTargetRef.current) {
           if (snapTargetRef.current.isDinRail && onUpdateComponentStateRef.current) {
             onUpdateComponentStateRef.current(snapTargetRef.current.compId, {
@@ -908,13 +914,16 @@ export default function Canvas({
           }
         }
 
-        // Commit fresh waypoints for any wires attached to the moved component so they never snap back to old coordinates!
-        if (onUpdateWireRef.current && wiresPointListsRef.current) {
+        // Commit fresh waypoints for any wires attached to the moved component ONLY if the component was ACTUALLY moved!
+        if (didMove && onUpdateWireRef.current && wiresPointListsRef.current) {
           wiresRef.current.forEach((w, wIdx) => {
             if (w.fromComponent === movedCompId || w.toComponent === movedCompId) {
               const pts = wiresPointListsRef.current[wIdx];
               if (pts && pts.length >= 2) {
-                onUpdateWireRef.current(w.id, { waypoints: pts.slice(1, -1), isCustomRouted: false });
+                onUpdateWireRef.current(w.id, {
+                  waypoints: pts.slice(1, -1),
+                  isCustomRouted: Boolean(w.isCustomRouted),
+                });
               }
             }
           });
@@ -923,6 +932,7 @@ export default function Canvas({
         snapTargetRef.current = null;
         setSnapTarget(null);
         draggedCompIdRef.current = null;
+        dragMovedRef.current = false;
         setDraggedCompId(null);
       }
       if (draggingSegmentRef.current) {
@@ -1094,7 +1104,7 @@ export default function Canvas({
     }
 
     draggedCompIdRef.current = compId;
-    setDraggedCompId(compId);
+    dragMovedRef.current = false;
   };
 
   // Terminal Click handler (Supports multiple wires on same terminal, wire-to-terminal, and busbar continuous tapping)
