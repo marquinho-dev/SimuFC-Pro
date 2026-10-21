@@ -3346,7 +3346,7 @@
 .motor-chassis-stage {
   position: relative;
   width: 260px;
-  height: 494px;
+  height: 530px;
 }
 
 .motor-frontal-device .contactor-screw-container {
@@ -3360,6 +3360,18 @@
   height: 100%;
   pointer-events: none;
   display: block;
+}
+
+/* Permitir interação com os bornes e badges dentro do SVG do motor */
+.motor-svg-casing .motor-svg-terminal-group {
+  pointer-events: auto !important;
+  cursor: crosshair !important;
+}
+
+.motor-svg-casing .motor-overlay-badge-fechamento,
+.motor-svg-casing .motor-badge-rotacao-topright {
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 /* Ensure dragging does not draw an artificial card border around frameless motor */

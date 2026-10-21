@@ -34,12 +34,15 @@ function VectorBrassTerminal({
         isSelected ? 'selected' : ''
       } ${isConnecting ? 'wire-target-ready' : ''} ${isPowered ? 'is-powered' : ''}`}
       transform={`translate(${terminal.x}, ${terminal.y})`}
-      onPointerDown={(e) => e.stopPropagation()}
+      data-terminal-target={`${componentId}:${terminal.id}`}
+      style={{ cursor: 'crosshair', pointerEvents: 'auto' }}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+      }}
       onClick={(e) => {
         e.stopPropagation();
-        onTerminalClick(componentId, terminal.id);
+        onTerminalClick?.(componentId, terminal.id);
       }}
-      style={{ cursor: 'crosshair' }}
     >
       <title>{`${terminal.label || terminal.id}: ${voltage ? `Energizado (${voltage})` : 'Sem tensão'}`}</title>
 
@@ -107,7 +110,7 @@ function VectorBrassTerminal({
       )}
 
       {/* Invisible Large Hit Area for effortless click targeting */}
-      <circle cx="0" cy="0" r="28" fill="transparent" />
+      <circle cx="0" cy="0" r="32" fill="transparent" style={{ pointerEvents: 'auto' }} />
     </g>
   );
 }
@@ -233,7 +236,7 @@ export default function Motor6PElement({
     );
   };
 
-  const findTerminal = (id) => component.terminals.find((t) => t.id === id);
+  const findTerminal = (id) => component?.terminals?.find((t) => t.id === id) || { id, label: id };
 
   const tW2 = findTerminal('W2');
   const tU2 = findTerminal('U2');
@@ -243,12 +246,12 @@ export default function Motor6PElement({
   const tW1 = findTerminal('W1');
   const tPE = findTerminal('PE');
 
-  // Screws on the 45-degree angles of the front bearing flange
+  // Screws on the 45-degree angles of the front bearing flange (center cy = 810)
   const flangeScrews = [
-    { x: 250 + 60, y: 745 + 60 },
-    { x: 250 - 60, y: 745 + 60 },
-    { x: 250 + 60, y: 745 - 60 },
-    { x: 250 - 60, y: 745 - 60 },
+    { x: 250 + 60, y: 810 + 60 },
+    { x: 250 - 60, y: 810 + 60 },
+    { x: 250 + 60, y: 810 - 60 },
+    { x: 250 - 60, y: 810 - 60 },
   ];
 
   return (
@@ -257,25 +260,27 @@ export default function Motor6PElement({
         isRunning ? 'running' : ''
       } ${isStalled || isBiphasic ? 'vibrating-fault' : phaseError ? 'fault-warn' : ''}`}
     >
-      {/* Main Motor Viewport: Terminal box on top + Frontal Motor Body below (frameless) */}
+      {/* Main Motor Viewport: Terminal box on top + Frontal Motor Body below (afastados com folga estética) */}
       <div className="motor-chassis-stage">
         <svg
           className="motor-svg-casing"
-          viewBox="0 0 500 950"
+          viewBox="0 0 500 1020"
           width="500"
-          height="950"
+          height="1020"
         >
           <defs>
-            {/* Gradients from gemini-svg.svg for realistic metallic effects */}
-            <linearGradient id="blueBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#5a9bd4" />
-              <stop offset="50%" stopColor="#4682b4" />
-              <stop offset="100%" stopColor="#2c5e86" />
+            {/* Box Gradients adjusted to match the industrial blue WEG style of the motor */}
+            <linearGradient id="blueBoxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="30%" stopColor="#2563eb" />
+              <stop offset="70%" stopColor="#1d4ed8" />
+              <stop offset="100%" stopColor="#172554" />
             </linearGradient>
             
             <linearGradient id="innerBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#2b557a" />
-              <stop offset="100%" stopColor="#1e405e" />
+              <stop offset="0%" stopColor="#1e40af" />
+              <stop offset="60%" stopColor="#1e3a8a" />
+              <stop offset="100%" stopColor="#0f172a" />
             </linearGradient>
 
             <linearGradient id="blackPanelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -305,30 +310,30 @@ export default function Motor6PElement({
             
             {/* Outer Box Screw from gemini-svg.svg */}
             <g id="gemini-box-screw">
-              <circle r="12" fill="#1b3955" />
-              <circle r="6" fill="#112538" />
+              <circle r="12" fill="#1e3a8a" stroke="#0f172a" strokeWidth="1.2" />
+              <circle r="6" fill="#0f172a" />
             </g>
 
-            {/* Front Motor Stator Blue Gradient */}
+            {/* Front Motor Stator Blue Gradient (Restaurado ao azul industrial original WEG) */}
             <linearGradient id="motor-front-blue-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#4682b4" />
-              <stop offset="30%" stopColor="#2c5e86" />
-              <stop offset="70%" stopColor="#1e405e" />
+              <stop offset="0%" stopColor="#2563eb" />
+              <stop offset="25%" stopColor="#1d4ed8" />
+              <stop offset="65%" stopColor="#1e40af" />
               <stop offset="100%" stopColor="#172554" />
             </linearGradient>
 
             {/* Outer Bearing Shield Blue Gradient */}
             <linearGradient id="flange-outer-blue" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#5a9bd4" />
-              <stop offset="40%" stopColor="#4682b4" />
-              <stop offset="80%" stopColor="#1e3a8a" />
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="40%" stopColor="#2563eb" />
+              <stop offset="80%" stopColor="#1d4ed8" />
               <stop offset="100%" stopColor="#172554" />
             </linearGradient>
 
             {/* Inner Bearing Shield Blue Gradient */}
             <radialGradient id="flange-inner-blue" cx="45%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="#4682b4" />
-              <stop offset="70%" stopColor="#2b557a" />
+              <stop offset="0%" stopColor="#2563eb" />
+              <stop offset="70%" stopColor="#1d4ed8" />
               <stop offset="100%" stopColor="#172554" />
             </radialGradient>
 
@@ -347,11 +352,11 @@ export default function Motor6PElement({
 
           {/* ========================================================
               TOP SECTION: TERMINAL BOX (CAIXA DE LIGAÇÃO INDUSTRIAL)
-              Exactly from gemini-svg.svg
+              Fiel ao gemini-svg.svg com paleta harmonizada
               ======================================================== */}
           <g className="motor-terminal-box-group" filter="url(#box-shadow)">
             {/* Outer Blue Enclosure */}
-            <rect x="10" y="30" width="480" height="560" rx="25" fill="url(#blueBoxGrad)" stroke="#306896" strokeWidth="3" />
+            <rect x="10" y="30" width="480" height="560" rx="25" fill="url(#blueBoxGrad)" stroke="#1e3a8a" strokeWidth="3" />
             <rect x="30" y="50" width="440" height="520" rx="20" fill="url(#blueBoxGrad)" />
             
             {/* Outer Box Corner Screws */}
@@ -361,7 +366,7 @@ export default function Motor6PElement({
             <use href="#gemini-box-screw" x="465" y="565" />
 
             {/* Inner Blue Rim Cutout */}
-            <rect x="45" y="65" width="410" height="490" rx="15" fill="url(#innerBlueGrad)" stroke="#1a364f" strokeWidth="2" />
+            <rect x="45" y="65" width="410" height="490" rx="15" fill="url(#innerBlueGrad)" stroke="#172554" strokeWidth="2" />
 
             {/* Main Black Terminal Panel */}
             <rect x="60" y="120" width="380" height="410" rx="12" fill="url(#blackPanelGrad)" stroke="#111" strokeWidth="3" />
@@ -400,21 +405,27 @@ export default function Motor6PElement({
             {renderTerminal(tPE, true)}
           </g>
 
+          {/* Cast Metal Neck / Riser connecting box base to motor stator */}
+          <rect x="215" y="585" width="70" height="70" rx="4" fill="#1d4ed8" stroke="#172554" strokeWidth="2.5" />
+          <line x1="228" y1="595" x2="228" y2="645" stroke="#172554" strokeWidth="2" />
+          <line x1="272" y1="595" x2="272" y2="645" stroke="#172554" strokeWidth="2" />
+
           {/* ========================================================
               BOTTOM SECTION: MOTOR FRONTAL VIEW (CORPO DO MOTOR)
+              Afastado da caixa com respiro estético harmonioso
               ======================================================== */}
           <g className="motor-frontal-unit-group" filter="url(#box-shadow)">
             {/* Mounting Feet at bottom */}
-            <rect x="50" y="915" width="90" height="28" rx="6" fill="#172554" stroke="#0f172a" strokeWidth="2.5" />
-            <circle cx="70" cy="929" r="6.5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
+            <rect x="50" y="980" width="90" height="28" rx="6" fill="#172554" stroke="#0f172a" strokeWidth="2.5" />
+            <circle cx="70" cy="994" r="6.5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
 
-            <rect x="360" y="915" width="90" height="28" rx="6" fill="#172554" stroke="#0f172a" strokeWidth="2.5" />
-            <circle cx="430" cy="929" r="6.5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
+            <rect x="360" y="980" width="90" height="28" rx="6" fill="#172554" stroke="#0f172a" strokeWidth="2.5" />
+            <circle cx="430" cy="994" r="6.5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
 
             {/* Main Rounded Stator Body in Industrial Blue */}
             <rect
               x="50"
-              y="585"
+              y="650"
               width="400"
               height="335"
               rx="40"
@@ -425,31 +436,31 @@ export default function Motor6PElement({
             {/* Specular Inner Body Highlight */}
             <rect
               x="53"
-              y="588"
+              y="653"
               width="394"
               height="329"
               rx="37"
               fill="none"
-              stroke="rgba(255,255,255,0.2)"
+              stroke="rgba(255,255,255,0.25)"
               strokeWidth="2"
             />
 
             {/* Lateral Cooling Ribs / Tabs on Left */}
-            <rect x="38" y="640" width="14" height="12" rx="3" fill="#1e3a8a" />
-            <rect x="38" y="700" width="14" height="12" rx="3" fill="#1e3a8a" />
-            <rect x="38" y="760" width="14" height="12" rx="3" fill="#1e3a8a" />
-            <rect x="38" y="820" width="14" height="12" rx="3" fill="#1e3a8a" />
+            <rect x="36" y="705" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            <rect x="36" y="765" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            <rect x="36" y="825" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            <rect x="36" y="885" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
 
             {/* Lateral Cooling Ribs / Tabs on Right */}
-            <rect x="448" y="640" width="14" height="12" rx="3" fill="#1e3a8a" />
-            <rect x="448" y="700" width="14" height="12" rx="3" fill="#1e3a8a" />
-            <rect x="448" y="760" width="14" height="12" rx="3" fill="#1e3a8a" />
-            <rect x="448" y="820" width="14" height="12" rx="3" fill="#1e3a8a" />
+            <rect x="448" y="705" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            <rect x="448" y="765" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            <rect x="448" y="825" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
+            <rect x="448" y="885" width="16" height="12" rx="3" fill="#1e3a8a" stroke="#172554" strokeWidth="1.5" />
 
             {/* Large Circular Bearing Flange Shield */}
             <circle
               cx="250"
-              cy="745"
+              cy="810"
               r="125"
               fill="url(#flange-outer-blue)"
               stroke="#172554"
@@ -457,7 +468,7 @@ export default function Motor6PElement({
             />
             <circle
               cx="250"
-              cy="745"
+              cy="810"
               r="102"
               fill="url(#flange-inner-blue)"
               stroke="#1e40af"
@@ -468,9 +479,9 @@ export default function Motor6PElement({
             {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => {
               const radVal = (deg * Math.PI) / 180;
               const x1 = 250 + 104 * Math.cos(radVal);
-              const y1 = 745 + 104 * Math.sin(radVal);
+              const y1 = 810 + 104 * Math.sin(radVal);
               const x2 = 250 + 120 * Math.cos(radVal);
-              const y2 = 745 + 120 * Math.sin(radVal);
+              const y2 = 810 + 120 * Math.sin(radVal);
               return (
                 <line
                   key={`tick-${deg}`}
@@ -497,36 +508,36 @@ export default function Motor6PElement({
             {/* Rotating Rotor / Turned Steel Shaft Assembly */}
             <circle
               cx="250"
-              cy="745"
+              cy="810"
               r="58"
               fill="url(#shaft-turn-grad)"
               stroke="#334155"
               strokeWidth="3"
             />
-            <circle cx="272" cy="735" r="5" fill="#ffffff" />
-            <circle cx="250" cy="745" r="23" fill="#334155" />
+            <circle cx="272" cy="800" r="5" fill="#ffffff" />
+            <circle cx="250" cy="810" r="23" fill="#334155" />
 
             {/* Rotating Yellow Keyway Arrow / Indicator */}
-            <g transform={`rotate(${rotationAngle}, 250, 745)`}>
+            <g transform={`rotate(${rotationAngle}, 250, 810)`}>
               <polygon
-                points="242,745 244,706 250,690 256,706 258,745"
+                points="242,810 244,771 250,755 256,771 258,810"
                 fill="#f59e0b"
                 stroke="#1e293b"
                 strokeWidth="2.5"
               />
-              <line x1="250" y1="705" x2="250" y2="733" stroke="#b45309" strokeWidth="3.5" strokeLinecap="round" />
+              <line x1="250" y1="770" x2="250" y2="798" stroke="#b45309" strokeWidth="3.5" strokeLinecap="round" />
             </g>
 
             {/* Center Cap Nut */}
-            <circle cx="250" cy="745" r="11" fill="#475569" stroke="#1e293b" strokeWidth="1.5" />
+            <circle cx="250" cy="810" r="11" fill="#475569" stroke="#1e293b" strokeWidth="1.5" />
 
             {/* OVERLAID BADGES */}
             {/* 1. Badge Fechamento Estrela / Triângulo */}
             <g
               className="motor-overlay-badge-fechamento"
-              transform="translate(68, 600)"
+              transform="translate(68, 665)"
               filter="url(#box-shadow)"
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
             >
               <title>{connectionLabel}</title>
               <circle
@@ -572,9 +583,9 @@ export default function Motor6PElement({
             {isRunning && (
               <g
                 className="motor-badge-rotacao-topright"
-                transform="translate(432, 626)"
+                transform="translate(432, 690)"
                 filter="url(#box-shadow)"
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <title>{directionLabel}</title>
                 <circle cx="0" cy="0" r="24" fill="#15803d" stroke="#22c55e" strokeWidth="3.5" />
