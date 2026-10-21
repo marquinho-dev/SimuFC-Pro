@@ -17,11 +17,11 @@ export default function PowerSourceElement({
   // N, L1, L2, L3 are centered directly on the drawn sockets
   // PE location: placed safely on the tank face, completely clear of radiator fins
   const terminals = component.terminals || [
-    { id: 'N', label: 'N', x: 89, y: 104, color: '#2563eb', type: 'source_n' },
-    { id: 'L1', label: 'L1', x: 123, y: 104, color: '#a855f7', type: 'source_l1' },
-    { id: 'L2', label: 'L2', x: 156, y: 104, color: '#ffffff', type: 'source_l2' },
-    { id: 'L3', label: 'L3', x: 190, y: 104, color: '#ef4444', type: 'source_l3' },
-    { id: 'PE', label: 'PE', x: 48, y: 250, color: '#16a34a', type: 'source_pe' },
+    { id: 'N', label: 'N', x: 134, y: 156, color: '#2563eb', type: 'source_n' },
+    { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
+    { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
+    { id: 'L3', label: 'L3', x: 285, y: 156, color: '#ef4444', type: 'source_l3' },
+    { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
   ];
 
   const peTerminal = terminals.find((t) => t.id === 'PE');
@@ -31,8 +31,8 @@ export default function PowerSourceElement({
     <div
       className={`transformer-power-source-plate ${isPowered ? 'is-powered' : 'is-unpowered'}`}
       style={{
-        width: '280px',
-        height: '276px',
+        width: '420px',
+        height: '414px',
         position: 'relative',
         userSelect: 'none',
       }}

@@ -1,7 +1,7 @@
 // Smart Auto-Routing, Obstacle Avoidance, Segment Dragging, Rounded Fillets, and Wire Jump ("Voltinha") Engine
 
 export const COMP_DIMENSIONS = {
-  power_source: { w: 440, h: 250 },
+  power_source: { w: 420, h: 414 },
   circuit_breaker: { w: 156, h: 218 },
   breaker_3p: { w: 156, h: 218 },
   breaker_1p: { w: 52, h: 218 },

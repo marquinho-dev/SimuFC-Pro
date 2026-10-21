@@ -162,11 +162,11 @@ export const POWER_MODES = {
     badge: '3Ø + N + PE',
     description: 'Transformador Trifásico com Neutro e Aterramento PE',
     terminals: [
-      { id: 'N', label: 'N', x: 89, y: 104, color: '#2563eb', type: 'source_n' },
-      { id: 'L1', label: 'L1', x: 123, y: 104, color: '#a855f7', type: 'source_l1' },
-      { id: 'L2', label: 'L2', x: 156, y: 104, color: '#ffffff', type: 'source_l2' },
-      { id: 'L3', label: 'L3', x: 190, y: 104, color: '#ef4444', type: 'source_l3' },
-      { id: 'PE', label: 'PE', x: 48, y: 250, color: '#16a34a', type: 'source_pe' },
+      { id: 'N', label: 'N', x: 134, y: 156, color: '#2563eb', type: 'source_n' },
+      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
+      { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
+      { id: 'L3', label: 'L3', x: 285, y: 156, color: '#ef4444', type: 'source_l3' },
+      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
     ],
   },
   '3P': {
@@ -174,10 +174,10 @@ export const POWER_MODES = {
     badge: '3Ø',
     description: 'Trifásico sem Neutro (L1, L2, L3, PE)',
     terminals: [
-      { id: 'L1', label: 'L1', x: 123, y: 104, color: '#a855f7', type: 'source_l1' },
-      { id: 'L2', label: 'L2', x: 156, y: 104, color: '#ffffff', type: 'source_l2' },
-      { id: 'L3', label: 'L3', x: 190, y: 104, color: '#ef4444', type: 'source_l3' },
-      { id: 'PE', label: 'PE', x: 48, y: 250, color: '#16a34a', type: 'source_pe' },
+      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
+      { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
+      { id: 'L3', label: 'L3', x: 285, y: 156, color: '#ef4444', type: 'source_l3' },
+      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
     ],
   },
   '2P': {
@@ -185,9 +185,9 @@ export const POWER_MODES = {
     badge: '2Ø',
     description: 'Bifásico (L1, L2, PE)',
     terminals: [
-      { id: 'L1', label: 'L1', x: 123, y: 104, color: '#a855f7', type: 'source_l1' },
-      { id: 'L2', label: 'L2', x: 156, y: 104, color: '#ffffff', type: 'source_l2' },
-      { id: 'PE', label: 'PE', x: 48, y: 250, color: '#16a34a', type: 'source_pe' },
+      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
+      { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
+      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
     ],
   },
   '1P_N_PE': {
@@ -195,9 +195,9 @@ export const POWER_MODES = {
     badge: '1Ø + N + PE',
     description: 'Monofásico com Neutro e Aterramento PE',
     terminals: [
-      { id: 'N', label: 'N', x: 89, y: 104, color: '#2563eb', type: 'source_n' },
-      { id: 'L1', label: 'L1', x: 123, y: 104, color: '#a855f7', type: 'source_l1' },
-      { id: 'PE', label: 'PE', x: 48, y: 250, color: '#16a34a', type: 'source_pe' },
+      { id: 'N', label: 'N', x: 134, y: 156, color: '#2563eb', type: 'source_n' },
+      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
+      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
     ],
   },
 };

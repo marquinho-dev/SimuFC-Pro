@@ -541,11 +541,11 @@ export default function Canvas({
         if (term) {
           tx = term.x;
           ty = term.y;
-        } else if (termId.startsWith('L1') || termId === 'X1') { tx = 123; ty = 104; }
-        else if (termId.startsWith('L2') || termId === 'X2') { tx = 156; ty = 104; }
-        else if (termId.startsWith('L3') || termId === 'X3') { tx = 190; ty = 104; }
-        else if (termId.startsWith('N') || termId === 'X0') { tx = 89; ty = 104; }
-        else if (termId.startsWith('PE')) { tx = 48; ty = 250; }
+        } else if (termId.startsWith('L1') || termId === 'X1') { tx = 185; ty = 156; }
+        else if (termId.startsWith('L2') || termId === 'X2') { tx = 234; ty = 156; }
+        else if (termId.startsWith('L3') || termId === 'X3') { tx = 285; ty = 156; }
+        else if (termId.startsWith('N') || termId === 'X0') { tx = 134; ty = 156; }
+        else if (termId.startsWith('PE')) { tx = 72; ty = 375; }
       } else if (comp.type === 'button_start') {
         if (termId === '3' || termId === '13') { tx = 46; ty = 27; }
         else if (termId === '4' || termId === '14') { tx = 90; ty = 27; }
