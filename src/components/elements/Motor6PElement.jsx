@@ -192,10 +192,8 @@ export default function Motor6PElement({
   const targetRotorSettingRef = useRef(targetRotorSetting);
   const lentoSettingRef = useRef(lentoSetting);
   const rotorDomRef = useRef(null);
-  const campoDomRef = useRef(null);
 
   const rotorAngleRef = useRef(0);
-  const campoAngleRef = useRef(0);
   const rpmRef = useRef(0);
   const lastActiveDirectionRef = useRef(direction);
 
@@ -275,24 +273,14 @@ export default function Motor6PElement({
       const speedMult = activeDir === 'CW' ? 1 : -1;
       const lento = Math.max(1, lentoSettingRef.current);
 
-      // 1. Rotação mecânica do rotor (graus por segundo = rpm * 6 / lento)
+      // Rotação mecânica do eixo único do rotor (graus por segundo = rpm * 6 / lento)
       const degPerSecRotor = (rpmRef.current * 6) / lento;
       const newRotorAngle = (rotorAngleRef.current + speedMult * degPerSecRotor * dt) % 360;
       rotorAngleRef.current = newRotorAngle < 0 ? newRotorAngle + 360 : newRotorAngle;
 
-      // 2. Campo girante no entreferro (gira na velocidade síncrona 1800 rpm quando energizado)
-      if (isRunning) {
-        const degPerSecCampo = (nSinc * 6) / lento;
-        const newCampoAngle = (campoAngleRef.current + speedMult * degPerSecCampo * dt) % 360;
-        campoAngleRef.current = newCampoAngle < 0 ? newCampoAngle + 360 : newCampoAngle;
-      }
-
-      // Atualização direta do DOM via refs para desempenho impecável (60+ FPS sem re-renders)
+      // Atualização direta do DOM via ref do rotor (único eixo girante)
       if (rotorDomRef.current) {
         rotorDomRef.current.setAttribute('transform', `rotate(${rotorAngleRef.current} 200 200)`);
-      }
-      if (campoDomRef.current) {
-        campoDomRef.current.setAttribute('transform', `rotate(${campoAngleRef.current} 200 200)`);
       }
 
       // Atualiza o display numérico de RPM a cada 100ms
@@ -725,21 +713,6 @@ export default function Motor6PElement({
                 <circle cx="200" cy="200" r="34" fill="#4a5260" />
                 <circle cx="200" cy="200" r="16" fill="#cfd5de" />
                 <rect x="197" y="178" width="6" height="10" fill="#2b303a" />
-              </g>
-
-              {/* Campo girante: arco N (vermelho) e S (azul) no entreferro (gira síncrono quando energizado) */}
-              <g
-                ref={campoDomRef}
-                id="motor-v2-campo"
-                transform={`rotate(${campoAngleRef.current} 200 200)`}
-                opacity={isRunning ? 1 : 0}
-                fill="none"
-                strokeWidth="6"
-                strokeLinecap="round"
-                style={{ transition: 'opacity 0.2s ease' }}
-              >
-                <path d="M 118 118 A 116 116 0 0 1 282 118" stroke="#ff5a5f" />
-                <path d="M 282 282 A 116 116 0 0 1 118 282" stroke="#4da3ff" />
               </g>
             </g>
 

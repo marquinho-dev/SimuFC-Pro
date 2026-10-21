@@ -2057,8 +2057,16 @@ export default function Canvas({
             const isHovered = hoveredWireId === wire.id;
             const compFrom = wire.fromComponent ? components.find((c) => c.id === wire.fromComponent) : null;
             const compTo = wire.toComponent ? components.find((c) => c.id === wire.toComponent) : null;
-            const isFromPowerSource = Boolean(compFrom?.type === 'power_source');
-            const isToPowerSource = Boolean(compTo?.type === 'power_source');
+            const isCompFromSchematic = Boolean(
+              compFrom &&
+              (compFrom.displayMode === 'schematic' || compFrom.state?.displayMode === 'schematic' || viewMode === 'schematic')
+            );
+            const isCompToSchematic = Boolean(
+              compTo &&
+              (compTo.displayMode === 'schematic' || compTo.state?.displayMode === 'schematic' || viewMode === 'schematic')
+            );
+            const isFromPowerSource = Boolean(compFrom?.type === 'power_source' && !isCompFromSchematic && viewMode === 'real');
+            const isToPowerSource = Boolean(compTo?.type === 'power_source' && !isCompToSchematic && viewMode === 'real');
             const getTransformerTermColor = (termId) => {
               const t = String(termId || '').toUpperCase().trim();
               if (t === 'L1') return '#a855f7';
@@ -2072,25 +2080,25 @@ export default function Canvas({
             const isFromCageTerminal = Boolean(
               compFrom &&
               (compFrom.type === 'circuit_breaker' || compFrom.type === 'contactor' || compFrom.type === 'thermal_relay') &&
-              compFrom.displayMode !== 'schematic' &&
+              !isCompFromSchematic &&
               viewMode === 'real'
             );
             const isToCageTerminal = Boolean(
               compTo &&
               (compTo.type === 'circuit_breaker' || compTo.type === 'contactor' || compTo.type === 'thermal_relay') &&
-              compTo.displayMode !== 'schematic' &&
+              !isCompToSchematic &&
               viewMode === 'real'
             );
             const isFromMotor = Boolean(
               compFrom &&
               compFrom.type === 'motor_6p' &&
-              compFrom.displayMode !== 'schematic' &&
+              !isCompFromSchematic &&
               viewMode === 'real'
             );
             const isToMotor = Boolean(
               compTo &&
               compTo.type === 'motor_6p' &&
-              compTo.displayMode !== 'schematic' &&
+              !isCompToSchematic &&
               viewMode === 'real'
             );
 
@@ -2363,7 +2371,7 @@ export default function Canvas({
                   <WireMotorRingLug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 ) : isFromCageTerminal ? (
                   <WireTerminalCageEntry pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
-                ) : (
+                ) : isCompFromSchematic || viewMode === 'schematic' ? null : (
                   <WireFerrulePlug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 )}
 
@@ -2419,7 +2427,7 @@ export default function Canvas({
                   <WireMotorRingLug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 ) : isToCageTerminal ? (
                   <WireTerminalCageEntry pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
-                ) : (
+                ) : isCompToSchematic || viewMode === 'schematic' ? null : (
                   <WireFerrulePlug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 )}
 
