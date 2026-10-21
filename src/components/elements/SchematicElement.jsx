@@ -17,6 +17,17 @@ import {
   SCHEMATIC_SOURCE_BUS_X_END,
 } from '../../types/components';
 
+export function getConnectedWireColor(componentId, terminalId, wires, fallbackColor = null) {
+  if (!wires || !wires.length) return fallbackColor;
+  const w = wires.find(
+    (wire) =>
+      (wire.fromComponent === componentId && String(wire.fromTerminal) === String(terminalId)) ||
+      (wire.toComponent === componentId && String(wire.toTerminal) === String(terminalId))
+  );
+  if (!w) return fallbackColor;
+  return w.color || '#38bdf8';
+}
+
 /**
  * Technical IEC CAD Terminal Point (Borne de Conexão Esquemático)
  * Perfectly positioned at (terminal.x, terminal.y) matching physical terminal coordinates
@@ -25,6 +36,7 @@ export function SchematicTerminalPoint({
   componentId,
   terminal,
   voltage,
+  wireColor,
   isSelected,
   isConnecting,
   onTerminalClick,
@@ -51,6 +63,7 @@ export function SchematicTerminalPoint({
   };
 
   const voltColor = getVoltageColor(voltage);
+  const activeColor = wireColor || (isPowered ? voltColor : null);
 
   return (
     <div
@@ -72,29 +85,34 @@ export function SchematicTerminalPoint({
       title={`${terminal.label || terminal.id}: ${voltage ? `Energizado (${voltage})` : 'Sem tensão'}`}
     >
       <div
-        className="schematic-terminal-node"
+        className={`schematic-terminal-node ${activeColor ? 'has-wire-color' : ''}`}
         data-terminal-target={`${componentId}:${terminal.id}`}
         style={{
-          borderColor: isPowered ? voltColor : isSelected ? '#00e676' : 'rgba(148, 163, 184, 0.6)',
-          boxShadow: isPowered
-            ? `0 0 8px ${voltColor}`
+          borderColor: isSelected
+            ? '#00e676'
+            : activeColor || 'rgba(148, 163, 184, 0.6)',
+          backgroundColor: activeColor || 'rgba(30, 41, 59, 0.85)',
+          boxShadow: activeColor
+            ? `0 0 6px ${activeColor}`
             : isSelected
             ? '0 0 10px #00e676'
             : 'none',
         }}
       >
-        <div
-          className="schematic-terminal-dot"
-          style={{
-            backgroundColor: isPowered ? voltColor : '#0f172a',
-          }}
-        />
+        {!activeColor && (
+          <div
+            className="schematic-terminal-dot"
+            style={{
+              backgroundColor: 'rgba(148, 163, 184, 0.5)',
+            }}
+          />
+        )}
       </div>
 
       {!terminal.hideLabel && (
         <span
           className="schematic-terminal-label"
-          style={{ color: isPowered ? voltColor : '#cbd5e1' }}
+          style={{ color: activeColor || (isPowered ? voltColor : '#cbd5e1') }}
         >
           {terminal.label || terminal.id}
         </span>
@@ -110,6 +128,7 @@ function SchematicPowerSource({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
   onOpenSettings,
 }) {
@@ -180,13 +199,14 @@ function SchematicPowerSource({
               strokeLinecap="round"
             />
 
-            {/* Ponto terminal visual na extremidade direita do barramento */}
+            {/* Ponto terminal visual na extremidade direita do barramento (cor do barramento/fio) */}
             <circle
               cx={SCHEMATIC_SOURCE_BUS_X_END}
               cy={bus.y}
-              r="3.5"
+              r="4.5"
               fill={bus.color}
-              opacity="0.8"
+              stroke="#0f172a"
+              strokeWidth="1.2"
             />
           </g>
         ))}
@@ -195,6 +215,7 @@ function SchematicPowerSource({
       {/* Pontos de conexão posicionados exatamente na extremidade oposta da legenda (lado direito) */}
       {terminals.map((t) => {
         const bus = SCHEMATIC_SOURCE_BUSES[t.id];
+        const connectedColor = getConnectedWireColor(component.id, t.id, wires, bus?.color);
         return (
           <SchematicTerminalPoint
             key={t.id}
@@ -206,6 +227,7 @@ function SchematicPowerSource({
               hideLabel: true, // Sem duplicar texto flutuante, a legenda já está no barramento
             }}
             voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+            wireColor={connectedColor}
             isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
             isConnecting={Boolean(activeTerminal)}
             onTerminalClick={onTerminalClick}
@@ -225,6 +247,7 @@ function SchematicBreaker({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
   onUpdateComponentState,
   onOpenSettings,
@@ -255,12 +278,21 @@ function SchematicBreaker({
           const topNum = 1 + i * 2;
           const botNum = 2 + i * 2;
           const poleVolt = terminalVoltages.get(`${component.id}:${topNum}`);
+          const topWireColor = getConnectedWireColor(component.id, String(topNum), wires);
+          const botWireColor = getConnectedWireColor(component.id, String(botNum), wires);
           const wireColor = '#ffffff';
 
           return (
             <g key={`breaker-pole-${i}`}>
               {/* Borne Superior */}
-              <circle cx={xc} cy="60" r="4.5" fill="#090d16" stroke={wireColor} strokeWidth="2" />
+              <circle
+                cx={xc}
+                cy="60"
+                r="4.5"
+                fill={topWireColor || 'rgba(30, 41, 59, 0.85)'}
+                stroke={topWireColor || wireColor}
+                strokeWidth="2"
+              />
               <text x={xc + 9} y="72" fill="#ffffff" fontSize="12" fontWeight="bold" fontFamily="monospace">
                 {topNum}
               </text>
@@ -273,7 +305,14 @@ function SchematicBreaker({
               <line x1={xc - 4.5} y1="100" x2={xc + 4.5} y2="92" stroke={wireColor} strokeWidth="2.2" />
 
               {/* Borne Inferior */}
-              <circle cx={xc} cy="170.5" r="4.5" fill="#090d16" stroke={wireColor} strokeWidth="2" />
+              <circle
+                cx={xc}
+                cy="170.5"
+                r="4.5"
+                fill={botWireColor || 'rgba(30, 41, 59, 0.85)'}
+                stroke={botWireColor || wireColor}
+                strokeWidth="2"
+              />
               <text x={xc + 9} y="163" fill="#ffffff" fontSize="12" fontWeight="bold" fontFamily="monospace">
                 {botNum}
               </text>
@@ -337,12 +376,14 @@ function SchematicBreaker({
         const poleIndex = Math.floor((parseInt(t.id, 10) - 1) / 2);
         const xc = Math.round(57.5 + poleIndex * 56);
         const isTop = (parseInt(t.id, 10) % 2) === 1;
+        const poleWireColor = getConnectedWireColor(component.id, String(t.id), wires);
         return (
           <SchematicTerminalPoint
             key={t.id}
             componentId={component.id}
             terminal={{ ...t, x: xc, y: isTop ? 60 : 170.5, hideLabel: true }}
             voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+            wireColor={poleWireColor}
             isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
             isConnecting={Boolean(activeTerminal)}
             onTerminalClick={onTerminalClick}
@@ -368,6 +409,7 @@ function SchematicContactor({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
 }) {
   const isEnergized = Boolean(component.state?.energized);
@@ -397,6 +439,8 @@ function SchematicContactor({
         {poles.map((p, idx) => {
           const wireColor = '#ffffff';
           const xc = Math.round(p.xc);
+          const topWireColor = getConnectedWireColor(component.id, String(p.topId), wires);
+          const botWireColor = getConnectedWireColor(component.id, String(p.botId), wires);
 
           return (
             <g key={`main-pole-${idx}`}>
@@ -405,8 +449,8 @@ function SchematicContactor({
                 cx={xc}
                 cy="60"
                 r="4.5"
-                fill="#090d16"
-                stroke={wireColor}
+                fill={topWireColor || 'rgba(30, 41, 59, 0.85)'}
+                stroke={topWireColor || wireColor}
                 strokeWidth="2"
               />
               <text
@@ -443,8 +487,8 @@ function SchematicContactor({
                 cx={xc}
                 cy="170.5"
                 r="4.5"
-                fill="#090d16"
-                stroke={wireColor}
+                fill={botWireColor || 'rgba(30, 41, 59, 0.85)'}
+                stroke={botWireColor || wireColor}
                 strokeWidth="2"
               />
               <text
@@ -517,12 +561,14 @@ function SchematicContactor({
           const isTop = (parseInt(t.id, 10) % 2) === 1;
           const xc = Math.round(49.5 + poleIdx * 56);
           const yc = isTop ? 60 : 170.5;
+          const poleWireColor = getConnectedWireColor(component.id, String(t.id), wires);
           return (
             <SchematicTerminalPoint
               key={t.id}
               componentId={component.id}
               terminal={{ ...t, x: xc, y: yc, hideLabel: true }}
               voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+              wireColor={poleWireColor}
               isSelected={
                 activeTerminal?.componentId === component.id &&
                 activeTerminal?.terminalId === t.id
@@ -546,6 +592,7 @@ function SchematicContactorCoil({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
 }) {
   const isEnergized = Boolean(component.state?.energized);
@@ -559,6 +606,8 @@ function SchematicContactorCoil({
     : 'KM1';
 
   const wireColor = '#ffffff';
+  const a1WireColor = getConnectedWireColor(component.id, 'A1', wires);
+  const a2WireColor = getConnectedWireColor(component.id, 'A2', wires);
 
   return (
     <div
@@ -570,7 +619,14 @@ function SchematicContactorCoil({
     >
       <svg className="schematic-svg-canvas" viewBox="0 0 80 150">
         {/* Borne Superior A1 */}
-        <circle cx="40" cy="18" r="4.5" fill="#090d16" stroke={wireColor} strokeWidth="2" />
+        <circle
+          cx="40"
+          cy="18"
+          r="4.5"
+          fill={a1WireColor || 'rgba(30, 41, 59, 0.85)'}
+          stroke={a1WireColor || wireColor}
+          strokeWidth="2"
+        />
         <text x="49" y="23" fill="#ffffff" fontSize="12" fontWeight="bold" fontFamily="monospace">
           A1
         </text>
@@ -618,7 +674,14 @@ function SchematicContactorCoil({
         <line x1="40" y1="105" x2="40" y2="127.5" stroke={wireColor} strokeWidth="2" />
 
         {/* Borne Inferior A2 */}
-        <circle cx="40" cy="132" r="4.5" fill="#090d16" stroke={wireColor} strokeWidth="2" />
+        <circle
+          cx="40"
+          cy="132"
+          r="4.5"
+          fill={a2WireColor || 'rgba(30, 41, 59, 0.85)'}
+          stroke={a2WireColor || wireColor}
+          strokeWidth="2"
+        />
         <text x="49" y="137" fill="#ffffff" fontSize="12" fontWeight="bold" fontFamily="monospace">
           A2
         </text>
@@ -630,6 +693,7 @@ function SchematicContactorCoil({
           componentId={component.id}
           terminal={{ ...t, hideLabel: true }}
           voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
           isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
           isConnecting={Boolean(activeTerminal)}
           onTerminalClick={onTerminalClick}
@@ -648,6 +712,7 @@ function SchematicThermalRelay({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
 }) {
   const isTripped = Boolean(component.state?.tripped);
@@ -755,6 +820,7 @@ function SchematicThermalRelay({
           componentId={component.id}
           terminal={t}
           voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
           isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
           isConnecting={Boolean(activeTerminal)}
           onTerminalClick={onTerminalClick}
@@ -772,6 +838,7 @@ function SchematicTimerRelay({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
 }) {
   const isCoilEnergized = Boolean(component.state?.energized);
@@ -859,6 +926,7 @@ function SchematicTimerRelay({
           componentId={component.id}
           terminal={t}
           voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
           isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
           isConnecting={Boolean(activeTerminal)}
           onTerminalClick={onTerminalClick}
@@ -876,6 +944,7 @@ function SchematicButton({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
   onUpdateComponentState,
   isSimulationMode,
@@ -1041,6 +1110,7 @@ function SchematicButton({
           componentId={component.id}
           terminal={t}
           voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
           isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
           isConnecting={Boolean(activeTerminal)}
           onTerminalClick={onTerminalClick}
@@ -1058,6 +1128,7 @@ function SchematicMotor({
   component,
   terminalVoltages,
   activeTerminal,
+  wires = [],
   onTerminalClick,
 }) {
   const isRunning = Boolean(component.state?.running);
@@ -1153,6 +1224,7 @@ function SchematicMotor({
           componentId={component.id}
           terminal={t}
           voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
           isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
           isConnecting={Boolean(activeTerminal)}
           onTerminalClick={onTerminalClick}
@@ -1240,6 +1312,7 @@ export default function SchematicElement({
   onStartResizeDinRail,
   isSimulationMode,
   isSelected = false,
+  wires = [],
 }) {
   switch (component.type) {
     case 'power_source':
@@ -1248,6 +1321,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
           onOpenSettings={isSelected ? onOpenPowerSettings : undefined}
         />
@@ -1259,6 +1333,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
           onUpdateComponentState={onUpdateComponentState}
           onOpenSettings={isSelected ? onOpenBreakerSettings : undefined}
@@ -1271,6 +1346,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
         />
       );
@@ -1281,6 +1357,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
         />
       );
@@ -1291,6 +1368,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
         />
       );
@@ -1301,6 +1379,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
         />
       );
@@ -1313,6 +1392,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
           onUpdateComponentState={onUpdateComponentState}
           isSimulationMode={isSimulationMode}
@@ -1325,6 +1405,7 @@ export default function SchematicElement({
           component={component}
           terminalVoltages={terminalVoltages}
           activeTerminal={activeTerminal}
+          wires={wires}
           onTerminalClick={onTerminalClick}
         />
       );

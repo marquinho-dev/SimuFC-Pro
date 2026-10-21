@@ -1806,6 +1806,7 @@ export default function Canvas({
                   isSelected={isCompSelected}
                   terminalVoltages={terminalVoltages}
                   activeTerminal={connectingTerminal}
+                  wires={wires}
                   onTerminalClick={handleTerminalClick}
                   onUpdateComponentState={onUpdateComponentState}
                   onOpenBreakerSettings={!isSimulationMode ? () => onOpenBreakerSettings?.(comp) : undefined}
@@ -2328,8 +2329,25 @@ export default function Canvas({
                     title="Ponto de conexão (Emenda): Clique e arraste para mover ao longo do condutor"
                   >
                     <circle cx="0" cy="0" r="14" fill="transparent" />
-                    <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-                    <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
+                    {viewMode === 'schematic' ? (
+                      <circle cx="0" cy="0" r="5.5" fill={activeWireColor} stroke={activeWireColor} strokeWidth="1" />
+                    ) : (
+                      <>
+                        <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
+                        <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
+                      </>
+                    )}
+                  </g>
+                ) : isCompFromSchematic || viewMode === 'schematic' ? (
+                  <g className="schematic-wire-terminal-dot" pointerEvents="none">
+                    <circle
+                      cx={p1.x}
+                      cy={p1.y}
+                      r="5.5"
+                      fill={activeWireColor}
+                      stroke={activeWireColor}
+                      strokeWidth="1"
+                    />
                   </g>
                 ) : isFromPowerSource ? (
                   <g className="wire-transformer-bolt-cap" transform={`translate(${p1.x}, ${p1.y})`} pointerEvents="none">
@@ -2371,7 +2389,7 @@ export default function Canvas({
                   <WireMotorRingLug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 ) : isFromCageTerminal ? (
                   <WireTerminalCageEntry pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
-                ) : isCompFromSchematic || viewMode === 'schematic' ? null : (
+                ) : (
                   <WireFerrulePlug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 )}
 
@@ -2384,8 +2402,25 @@ export default function Canvas({
                     title="Ponto de conexão (Emenda): Clique e arraste para mover ao longo do condutor"
                   >
                     <circle cx="0" cy="0" r="14" fill="transparent" />
-                    <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-                    <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
+                    {viewMode === 'schematic' ? (
+                      <circle cx="0" cy="0" r="5.5" fill={activeWireColor} stroke={activeWireColor} strokeWidth="1" />
+                    ) : (
+                      <>
+                        <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
+                        <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
+                      </>
+                    )}
+                  </g>
+                ) : isCompToSchematic || viewMode === 'schematic' ? (
+                  <g className="schematic-wire-terminal-dot" pointerEvents="none">
+                    <circle
+                      cx={p2.x}
+                      cy={p2.y}
+                      r="5.5"
+                      fill={activeWireColor}
+                      stroke={activeWireColor}
+                      strokeWidth="1"
+                    />
                   </g>
                 ) : isToPowerSource ? (
                   <g className="wire-transformer-bolt-cap" transform={`translate(${p2.x}, ${p2.y})`} pointerEvents="none">
@@ -2427,7 +2462,7 @@ export default function Canvas({
                   <WireMotorRingLug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 ) : isToCageTerminal ? (
                   <WireTerminalCageEntry pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
-                ) : isCompToSchematic || viewMode === 'schematic' ? null : (
+                ) : (
                   <WireFerrulePlug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 )}
 

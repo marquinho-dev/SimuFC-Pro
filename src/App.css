@@ -5568,7 +5568,7 @@
   height: 14px;
   border-radius: 50%;
   border: 1.8px solid rgba(148, 163, 184, 0.6);
-  background: #090d16;
+  background: rgba(30, 41, 59, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5580,8 +5580,12 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #0f172a;
+  background: rgba(148, 163, 184, 0.5);
   transition: background 0.15s ease;
+}
+
+.schematic-terminal-node.has-wire-color {
+  border-width: 2px;
 }
 
 .schematic-terminal-point:hover .schematic-terminal-node {
