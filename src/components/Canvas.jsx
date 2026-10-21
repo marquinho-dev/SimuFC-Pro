@@ -1265,6 +1265,32 @@ export default function Canvas({
   const handleWireClick = (e, wireId) => {
     e.stopPropagation();
     const canvasPos = screenToCanvas(e.clientX, e.clientY);
+
+    // If connecting, check first if user actually clicked on or near a component terminal covered by this wire
+    if (connectingTerminal) {
+      let snappedCompId = null;
+      let snappedTermId = null;
+      let minDist = 28;
+
+      for (const comp of components) {
+        if (!comp.terminals) continue;
+        for (const t of comp.terminals) {
+          const tPos = getTerminalAbsolutePos(comp.id, t.id);
+          const dist = Math.hypot(tPos.x - canvasPos.x, tPos.y - canvasPos.y);
+          if (dist < minDist) {
+            minDist = dist;
+            snappedCompId = comp.id;
+            snappedTermId = t.id;
+          }
+        }
+      }
+
+      if (snappedCompId && snappedTermId) {
+        handleTerminalClick(snappedCompId, snappedTermId);
+        return;
+      }
+    }
+
     const targetWireIndex = wires.findIndex((w) => w.id === wireId);
     if (targetWireIndex === -1) return;
 
@@ -1896,6 +1922,7 @@ export default function Canvas({
                       onTerminalClick={handleTerminalClick}
                       onUpdateComponentState={onUpdateComponentState}
                       isSimulationMode={isSimulationMode}
+                      wires={wires}
                     />
                   )}
 

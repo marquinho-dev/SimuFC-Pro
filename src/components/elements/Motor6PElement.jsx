@@ -11,6 +11,56 @@ export const MOTOR_TERMINAL_POS = {
   PE: { x: 405, y: 345 },
 };
 
+export function detectMotorClosure(compId, wires) {
+  if (!wires || !compId) return 'NONE';
+  const adj = new Map();
+  const addEdge = (t1, t2) => {
+    if (!t1 || !t2) return;
+    if (!adj.has(t1)) adj.set(t1, new Set());
+    if (!adj.has(t2)) adj.set(t2, new Set());
+    adj.get(t1).add(t2);
+    adj.get(t2).add(t1);
+  };
+
+  for (const w of wires) {
+    if (w.fromComponent === compId && w.toComponent === compId) {
+      addEdge(w.fromTerminal, w.toTerminal);
+    }
+  }
+
+  const isConnected = (start, target) => {
+    if (start === target) return true;
+    const visited = new Set();
+    const queue = [start];
+    visited.add(start);
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      if (cur === target) return true;
+      const neighbors = adj.get(cur) || [];
+      for (const n of neighbors) {
+        if (!visited.has(n)) {
+          visited.add(n);
+          queue.push(n);
+        }
+      }
+    }
+    return false;
+  };
+
+  const isStar =
+    (isConnected('W2', 'U2') && isConnected('U2', 'V2')) ||
+    (isConnected('W1', 'U1') && isConnected('U1', 'V1'));
+
+  const isDelta =
+    isConnected('U1', 'W2') &&
+    isConnected('V1', 'U2') &&
+    isConnected('W1', 'V2');
+
+  if (isStar) return 'Y';
+  if (isDelta) return 'DELTA';
+  return 'NONE';
+}
+
 function VectorBrassTerminal({
   componentId,
   terminal,
@@ -66,13 +116,14 @@ function VectorBrassTerminal({
       )}
 
       {isPE ? (
-        /* Earth / Ground Terminal PE exactly from gemini-svg.svg */
+        /* Earth / Ground Terminal PE - Alto contraste, fundo escuro e traço branco nítido */
         <g className="motor-gemini-pe-terminal">
-          <circle cx="0" cy="0" r="16" fill="url(#nutBevel)" stroke="#777" strokeWidth="2" />
-          <line x1="0" y1="-8" x2="0" y2="4" stroke="#ffffff" strokeWidth="2.5" />
-          <line x1="-8" y1="4" x2="8" y2="4" stroke="#ffffff" strokeWidth="2.5" />
-          <line x1="-5" y1="8" x2="5" y2="8" stroke="#ffffff" strokeWidth="2.5" />
-          <line x1="-2" y1="12" x2="2" y2="12" stroke="#ffffff" strokeWidth="2.5" />
+          <circle cx="0" cy="0" r="17" fill="#0f172a" stroke="#64748b" strokeWidth="2" />
+          <circle cx="0" cy="0" r="14.5" fill="none" stroke="#1e293b" strokeWidth="1" />
+          <line x1="0" y1="-7" x2="0" y2="4" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" />
+          <line x1="-9" y1="4" x2="9" y2="4" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" />
+          <line x1="-6" y1="8" x2="6" y2="8" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" />
+          <line x1="-2.5" y1="12" x2="2.5" y2="12" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" />
         </g>
       ) : (
         /* Reusable Hexagonal Terminal Nut Component exactly from gemini-svg.svg */
@@ -120,6 +171,7 @@ export default function Motor6PElement({
   terminalVoltages,
   activeTerminal,
   onTerminalClick,
+  wires = [],
 }) {
   const isRunning = Boolean(component.state?.running);
   const direction = component.state?.direction || 'CW';
@@ -141,9 +193,20 @@ export default function Motor6PElement({
   const effectiveDirection = isRunning ? direction : (lastActiveDirectionRef.current || 'CW');
 
   // Detected connection topology from simulationEngine or wired bridges
+  const wiredClosure = React.useMemo(() => {
+    return detectMotorClosure(component.id, wires);
+  }, [component.id, wires]);
+
   const detectedConnection =
-    component.state?.detectedConnection ||
-    (component.state?.isStarWired ? 'Y' : component.state?.isDeltaWired ? 'DELTA' : component.state?.connectionType || 'NONE');
+    component.state?.detectedConnection && component.state.detectedConnection !== 'NONE'
+      ? component.state.detectedConnection
+      : component.state?.isStarWired
+      ? 'Y'
+      : component.state?.isDeltaWired
+      ? 'DELTA'
+      : wiredClosure !== 'NONE'
+      ? wiredClosure
+      : component.state?.connectionType || 'NONE';
 
   const connectionLabel =
     detectedConnection === 'Y'
@@ -574,39 +637,99 @@ export default function Motor6PElement({
             {/* Center Cap Pin */}
             <circle cx="250" cy="820" r="9" fill="#374151" stroke="#1e293b" strokeWidth="1.5" />
 
-            {/* OVERLAID BADGES - Posicionados com elegância sem cobrir a face do motor */}
-            {/* 1. Badge Fechamento Estrela / Triângulo - Exibido apenas se houver fechamento ativo */}
-            {detectedConnection !== 'NONE' && (
-              <g
-                className="motor-overlay-badge-fechamento"
-                transform="translate(250, 1031)"
-                filter="url(#box-shadow)"
-                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-              >
-                <title>{connectionLabel}</title>
-                <rect
-                  x="-65"
-                  y="-13"
-                  width="130"
-                  height="26"
-                  rx="13"
-                  fill="#0b1329"
-                  stroke={detectedConnection === 'DELTA' ? '#f59e0b' : '#38bdf8'}
-                  strokeWidth="2"
-                />
-                {detectedConnection === 'DELTA' ? (
-                  <>
-                    <polygon points="-46,-5 -37,7 -55,7" stroke="#f59e0b" strokeWidth="2" fill="rgba(245, 158, 11, 0.3)" />
-                    <text x="5" y="4.5" fill="#f59e0b" fontSize="12" fontWeight="bold" fontFamily="sans-serif" textAnchor="middle">Δ TRIÂNGULO</text>
-                  </>
-                ) : (
-                  <>
-                    <path d="M -50 -5 L -46 0 L -42 -5 M -46 0 L -46 6" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
-                    <text x="5" y="4.5" fill="#38bdf8" fontSize="12" fontWeight="bold" fontFamily="sans-serif" textAnchor="middle">Y ESTRELA</text>
-                  </>
-                )}
-              </g>
-            )}
+            {/* OVERLAID BADGES */}
+            {/* 1. Badge Fechamento Estrela / Triângulo no canto superior esquerdo da carcaça */}
+            <g
+              className="motor-overlay-badge-fechamento"
+              transform="translate(95, 665)"
+              filter="url(#box-shadow)"
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+            >
+              <title>{connectionLabel}</title>
+              <rect
+                x="-36"
+                y="-15"
+                width={detectedConnection !== 'NONE' ? 144 : 72}
+                height="30"
+                rx="15"
+                fill="#0b1329"
+                stroke={
+                  detectedConnection === 'DELTA'
+                    ? '#f59e0b'
+                    : detectedConnection === 'Y'
+                    ? '#38bdf8'
+                    : '#475569'
+                }
+                strokeWidth="2"
+              />
+              {detectedConnection === 'DELTA' ? (
+                <>
+                  <polygon
+                    points="-22,-6 -14,7 -30,7"
+                    stroke="#f59e0b"
+                    strokeWidth="2.2"
+                    strokeLinejoin="round"
+                    fill="rgba(245, 158, 11, 0.3)"
+                  />
+                  <text
+                    x="38"
+                    y="5"
+                    fill="#f59e0b"
+                    fontSize="13"
+                    fontWeight="bold"
+                    fontFamily="Arial, sans-serif"
+                    textAnchor="middle"
+                  >
+                    Δ TRIÂNGULO
+                  </text>
+                </>
+              ) : detectedConnection === 'Y' ? (
+                <>
+                  <path
+                    d="M -26 -6 L -22 0 L -18 -6 M -22 0 L -22 7"
+                    stroke="#38bdf8"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                  <text
+                    x="38"
+                    y="5"
+                    fill="#38bdf8"
+                    fontSize="13"
+                    fontWeight="bold"
+                    fontFamily="Arial, sans-serif"
+                    textAnchor="middle"
+                  >
+                    Y ESTRELA
+                  </text>
+                </>
+              ) : (
+                <>
+                  <line
+                    x1="-20"
+                    y1="0"
+                    x2="-10"
+                    y2="0"
+                    stroke="#64748b"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                  <text
+                    x="8"
+                    y="4.5"
+                    fill="#94a3b8"
+                    fontSize="11"
+                    fontWeight="bold"
+                    fontFamily="Arial, sans-serif"
+                    textAnchor="middle"
+                  >
+                    ABERTO
+                  </text>
+                </>
+              )}
+            </g>
 
             {/* 2. Badge Estático de Sentido de Rotação - No canto superior direito fora do mancal */}
             {isRunning && (

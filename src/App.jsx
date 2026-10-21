@@ -444,16 +444,15 @@ export default function App() {
   // Handler to move a component (drag) - moves linked Contactor and Relay, and DIN Rail mounted components in lockstep (blocked in simulation)
   const handleMoveComponent = useCallback((compId, newX, newY) => {
     if (isSimulationMode) return;
-    setComponents((prev) => {
-      const movingComp = prev.find((c) => c.id === compId);
-      if (!movingComp) return prev;
+    const movingComp = components.find((c) => c.id === compId);
+    if (!movingComp) return;
+    const dx = newX - movingComp.x;
+    const dy = newY - movingComp.y;
+    if (dx === 0 && dy === 0) return;
 
+    setComponents((prev) => {
       // 1. Moving a DIN Rail: Move all mounted components (and their linked thermal relays) by (dx, dy)
       if (movingComp.type === 'din_rail') {
-        const dx = newX - movingComp.x;
-        const dy = newY - movingComp.y;
-        if (dx === 0 && dy === 0) return prev;
-
         const mountedIds = new Set();
         prev.forEach((c) => {
           if (c.dinRailId === compId) {
@@ -500,7 +499,51 @@ export default function App() {
         return c;
       });
     });
-  }, [isSimulationMode]);
+
+    // Also update any internal jumper wires and any wire splices attached to this component
+    setWires((prevWires) => {
+      const internalWireIds = new Set(
+        prevWires
+          .filter((w) => w.fromComponent === compId && w.toComponent === compId)
+          .map((w) => w.id)
+      );
+
+      let changed = false;
+      const nextWires = prevWires.map((w) => {
+        let updated = false;
+        let newFromPoint = w.fromPoint;
+        let newToPoint = w.toPoint;
+        let newWaypoints = w.waypoints;
+
+        if (w.fromComponent === compId && w.toComponent === compId && w.waypoints?.length > 0) {
+          newWaypoints = w.waypoints.map((pt) => ({ x: pt.x + dx, y: pt.y + dy }));
+          updated = true;
+        }
+
+        if (w.fromWireId && internalWireIds.has(w.fromWireId) && w.fromPoint) {
+          newFromPoint = { x: w.fromPoint.x + dx, y: w.fromPoint.y + dy };
+          updated = true;
+        }
+        if (w.toWireId && internalWireIds.has(w.toWireId) && w.toPoint) {
+          newToPoint = { x: w.toPoint.x + dx, y: w.toPoint.y + dy };
+          updated = true;
+        }
+
+        if (updated) {
+          changed = true;
+          return {
+            ...w,
+            fromPoint: newFromPoint,
+            toPoint: newToPoint,
+            waypoints: newWaypoints,
+          };
+        }
+        return w;
+      });
+
+      return changed ? nextWires : prevWires;
+    });
+  }, [isSimulationMode, components]);
 
   // Handler to move all components and wires in block (dx, dy from drag start)
   const handleMoveAllComponents = useCallback((dx, dy, initialComponents, initialWires) => {
