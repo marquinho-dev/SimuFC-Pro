@@ -583,12 +583,12 @@ export default function Canvas({
           if (t) { tx = t.x; ty = t.y; }
         }
       } else if (comp.type === 'motor_6p') {
-        if (termId === 'U1') { tx = 99; ty = 36; }
-        else if (termId === 'V1') { tx = 156; ty = 36; }
-        else if (termId === 'W1') { tx = 213; ty = 36; }
-        else if (termId === 'W2') { tx = 99; ty = 86; }
-        else if (termId === 'U2') { tx = 156; ty = 86; }
-        else if (termId === 'V2') { tx = 213; ty = 86; }
+        if (termId === 'W2') { tx = 99; ty = 36; }
+        else if (termId === 'U2') { tx = 156; ty = 36; }
+        else if (termId === 'V2') { tx = 213; ty = 36; }
+        else if (termId === 'U1') { tx = 99; ty = 86; }
+        else if (termId === 'V1') { tx = 156; ty = 86; }
+        else if (termId === 'W1') { tx = 213; ty = 86; }
         else if (termId === 'PE') { tx = 38; ty = 36; }
       }
 

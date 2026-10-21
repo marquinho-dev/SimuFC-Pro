@@ -3,12 +3,12 @@ import { sounds } from '../../services/soundEffects';
 
 export const MOTOR_TERMINAL_POS = {
   PE: { x: 38, y: 36 },
-  U1: { x: 99, y: 36 },
-  V1: { x: 156, y: 36 },
-  W1: { x: 213, y: 36 },
-  W2: { x: 99, y: 86 },
-  U2: { x: 156, y: 86 },
-  V2: { x: 213, y: 86 },
+  W2: { x: 99, y: 36 },
+  U2: { x: 156, y: 36 },
+  V2: { x: 213, y: 36 },
+  U1: { x: 99, y: 86 },
+  V1: { x: 156, y: 86 },
+  W1: { x: 213, y: 86 },
 };
 
 function MotorBrassTerminal({
@@ -199,12 +199,12 @@ export default function Motor6PElement({
 
   const findTerminal = (id) => component.terminals.find((t) => t.id === id);
 
-  const tU1 = findTerminal('U1');
-  const tV1 = findTerminal('V1');
-  const tW1 = findTerminal('W1');
   const tW2 = findTerminal('W2');
   const tU2 = findTerminal('U2');
   const tV2 = findTerminal('V2');
+  const tU1 = findTerminal('U1');
+  const tV1 = findTerminal('V1');
+  const tW1 = findTerminal('W1');
   const tPE = findTerminal('PE');
 
   // Screws on the 45-degree angles of the front bearing flange
@@ -246,12 +246,20 @@ export default function Motor6PElement({
               <stop offset="100%" stopColor="#060911" />
             </radialGradient>
 
-            {/* Industrial Bakelite Black Board Gradient */}
-            <linearGradient id="plate-black-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#2c3038" />
-              <stop offset="25%" stopColor="#20232a" />
-              <stop offset="80%" stopColor="#16181d" />
-              <stop offset="100%" stopColor="#0f1115" />
+            {/* Molded Bakelite Block Charcoal-Black Gradient (Six-Terminal Motor Block Diagram) */}
+            <linearGradient id="bakelite-block-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#252830" />
+              <stop offset="8%" stopColor="#1b1d22" />
+              <stop offset="40%" stopColor="#131418" />
+              <stop offset="80%" stopColor="#101114" />
+              <stop offset="100%" stopColor="#0b0c0e" />
+            </linearGradient>
+
+            {/* Subtle highlight gradient along top edges */}
+            <linearGradient id="bakelite-rim-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
+              <stop offset="25%" stopColor="rgba(255,255,255,0.06)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0.6)" />
             </linearGradient>
 
             {/* PE Green Socket Gradient */}
@@ -308,9 +316,10 @@ export default function Motor6PElement({
 
           {/* ========================================================
               TOP SECTION: TERMINAL BOX (CAIXA DE LIGAÇÃO INDUSTRIAL)
+              Featuring the 6-Terminal Bakelite Block from Six-Terminal Motor Block Diagram
               ======================================================== */}
           <g className="motor-terminal-box-group" filter="url(#box-shadow)">
-            {/* Cast Blue Enclosure Box */}
+            {/* Cast Blue Outer Enclosure */}
             <rect
               x="10"
               y="6"
@@ -333,7 +342,7 @@ export default function Motor6PElement({
               strokeWidth="1.2"
             />
 
-            {/* 4 Lid Mounting Screw Bosses (Cantos com rebaixo para parafusos da tampa) */}
+            {/* 4 Lid Mounting Screw Bosses */}
             {[
               { cx: 22, cy: 18 },
               { cx: 238, cy: 18 },
@@ -359,7 +368,6 @@ export default function Motor6PElement({
               stroke="#0f172a"
               strokeWidth="1.5"
             />
-            {/* Cavity inner drop shadow */}
             <rect
               x="18"
               y="14"
@@ -373,10 +381,10 @@ export default function Motor6PElement({
 
             {/* Grounding Boss / Pad (PE) in the chassis recess */}
             <g className="motor-pe-chassis-pad">
-              <rect x="26" y="24" width="24" height="24" rx="4" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+              <rect x="25" y="24" width="26" height="25" rx="4" fill="#1e293b" stroke="#334155" strokeWidth="1" />
               {/* Metallic Grounding Lug Washer */}
               <circle cx="38" cy="36" r="11" fill="url(#socket-metal-grad)" stroke="#475569" strokeWidth="1" />
-              {/* Green grounding ring collar */}
+              {/* Green grounding collar */}
               <circle cx="38" cy="36" r="8" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="3 2" />
               {/* Crisp PE Identification */}
               <text
@@ -384,7 +392,7 @@ export default function Motor6PElement({
                 y="59"
                 fill="#cbd5e1"
                 fontSize="10"
-                fontWeight="800"
+                fontWeight="900"
                 fontFamily="system-ui, -apple-system, sans-serif"
                 textAnchor="middle"
                 letterSpacing="0.5"
@@ -393,131 +401,253 @@ export default function Motor6PElement({
               </text>
             </g>
 
-            {/* Black Industrial Bakelite Terminal Board (Placa de Bornes) */}
-            <rect
-              x="66"
-              y="16"
-              width="168"
-              height="98"
-              rx="7"
-              fill="url(#plate-black-grad)"
-              stroke="#090a0d"
-              strokeWidth="1.8"
+            {/* ========================================================
+                AUTHENTIC SIX-TERMINAL MOTOR BAKELITE BLOCK (PLACA DE BORNES 6P)
+                Exactly matching Six-Terminal Motor Block Diagram.png
+                ======================================================== */}
+            {/* Outer molded silhouette with top/bottom stepped crenellations, chamfered corners & 2 mounting ears */}
+            <path
+              d="
+                M 76 10
+                L 122 10
+                Q 123 10 123 12
+                L 123 16
+                Q 123 18 125 18
+                L 131 18
+                Q 133 18 133 16
+                L 133 12
+                Q 133 10 134 10
+                L 178 10
+                Q 179 10 179 12
+                L 179 16
+                Q 179 18 181 18
+                L 188 18
+                Q 190 18 190 16
+                L 190 12
+                Q 190 10 191 10
+                L 236 10
+                Q 240 10 243 13
+                L 247 17
+                Q 249 20 249 25
+                L 249 47
+                Q 249 50 252 52
+                A 10 10 0 0 1 252 70
+                Q 249 72 249 75
+                L 249 97
+                Q 249 101 247 104
+                L 243 108
+                Q 240 111 236 111
+                L 191 111
+                Q 190 111 190 109
+                L 190 105
+                Q 190 103 188 103
+                L 181 103
+                Q 179 103 179 105
+                L 179 109
+                Q 179 111 178 111
+                L 134 111
+                Q 133 111 133 109
+                L 133 105
+                Q 133 103 131 103
+                L 125 103
+                Q 123 103 123 105
+                L 123 109
+                Q 123 111 122 111
+                L 76 111
+                Q 72 111 69 108
+                L 65 104
+                Q 63 101 63 97
+                L 63 75
+                Q 63 72 60 70
+                A 10 10 0 0 1 60 52
+                Q 63 50 63 47
+                L 63 25
+                Q 63 20 65 17
+                L 69 13
+                Q 72 10 76 10
+                Z
+              "
+              fill="url(#bakelite-block-grad)"
+              stroke="#07080a"
+              strokeWidth="2"
             />
-            {/* Plate top bevel highlight */}
-            <rect
-              x="67"
-              y="17"
-              width="166"
-              height="96"
-              rx="6"
+
+            {/* Inner rim highlight on the molded perimeter */}
+            <path
+              d="
+                M 77 11.5
+                L 121 11.5
+                L 121 17.5
+                L 134 17.5
+                L 134 11.5
+                L 177 11.5
+                L 177 17.5
+                L 191 17.5
+                L 191 11.5
+                L 235 11.5
+                L 247.5 24
+                L 247.5 97
+                L 235 109.5
+                L 191 109.5
+                L 191 103.5
+                L 177 103.5
+                L 177 109.5
+                L 134 109.5
+                L 134 103.5
+                L 121 103.5
+                L 121 109.5
+                L 77 109.5
+                L 64.5 97
+                L 64.5 24
+                Z
+              "
               fill="none"
-              stroke="rgba(255,255,255,0.08)"
+              stroke="url(#bakelite-rim-grad)"
               strokeWidth="1"
             />
 
-            {/* 4 Allen/Hex Corner Screws Holding the Black Plate */}
-            {[
-              { cx: 73, cy: 23 },
-              { cx: 227, cy: 23 },
-              { cx: 73, cy: 107 },
-              { cx: 227, cy: 107 },
-            ].map((scr, idx) => (
-              <g key={`plate-scr-${idx}`}>
-                <circle cx={scr.cx} cy={scr.cy} r="3.2" fill="#1e232a" stroke="#0a0c0f" strokeWidth="0.8" />
-                <polygon
-                  points={`${scr.cx},${scr.cy - 1.4} ${scr.cx + 1.2},${scr.cy - 0.7} ${scr.cx + 1.2},${scr.cy + 0.7} ${scr.cx},${scr.cy + 1.4} ${scr.cx - 1.2},${scr.cy + 0.7} ${scr.cx - 1.2},${scr.cy - 0.7}`}
-                  fill="#090a0d"
-                />
-              </g>
-            ))}
+            {/* Molded Partition Dividers between Columns (conforme Six-Terminal Motor Block Diagram) */}
+            <path
+              d="
+                M 127 18 L 127 48
+                M 184.5 18 L 184.5 48
+                M 127 74 L 127 104
+                M 184.5 74 L 184.5 104
+              "
+              fill="none"
+              stroke="#0a0b0e"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="
+                M 127 18 L 127 48
+                M 184.5 18 L 184.5 48
+                M 127 74 L 127 104
+                M 184.5 74 L 184.5 104
+              "
+              fill="none"
+              stroke="#242732"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
 
-            {/* Socket Recesses for 6 Studs on the Bakelite Board */}
+            {/* Two Sunken Square Compartments in Central Bakelite area */}
+            <g className="motor-block-center-cavities">
+              {/* Left Cavity */}
+              <rect x="116" y="50" width="22" height="22" rx="4.5" fill="#090a0d" stroke="#252934" strokeWidth="1.3" />
+              <rect x="117.5" y="51.5" width="19" height="19" rx="3.5" fill="#0f1116" />
+              {/* Right Cavity */}
+              <rect x="173.5" y="50" width="22" height="22" rx="4.5" fill="#090a0d" stroke="#252934" strokeWidth="1.3" />
+              <rect x="175" y="51.5" width="19" height="19" rx="3.5" fill="#0f1116" />
+            </g>
+
+            {/* Left and Right Mounting Ear Holes with Metallic Bushings */}
+            {/* Left Ear Mounting Hole */}
+            <circle cx="62" cy="61" r="7.5" fill="#12141a" stroke="#262934" strokeWidth="1" />
+            <circle cx="62" cy="61" r="5" fill="#ffffff" stroke="#64748b" strokeWidth="1.2" />
+            <circle cx="62" cy="61" r="4" fill="#0f172a" />
+            {/* Right Ear Mounting Hole */}
+            <circle cx="250" cy="61" r="7.5" fill="#12141a" stroke="#262934" strokeWidth="1" />
+            <circle cx="250" cy="61" r="5" fill="#ffffff" stroke="#64748b" strokeWidth="1.2" />
+            <circle cx="250" cy="61" r="4" fill="#0f172a" />
+
+            {/* 6 Circular Recesses / Sockets in Bakelite for the Stud Terminals */}
             {[
-              { id: 'U1', x: 99, y: 36 },
-              { id: 'V1', x: 156, y: 36 },
-              { id: 'W1', x: 213, y: 36 },
-              { id: 'W2', x: 99, y: 86 },
-              { id: 'U2', x: 156, y: 86 },
-              { id: 'V2', x: 213, y: 86 },
+              { id: 'W2', x: 99, y: 36 },
+              { id: 'U2', x: 156, y: 36 },
+              { id: 'V2', x: 213, y: 36 },
+              { id: 'U1', x: 99, y: 86 },
+              { id: 'V1', x: 156, y: 86 },
+              { id: 'W1', x: 213, y: 86 },
             ].map((t) => (
               <g key={`t-socket-${t.id}`}>
-                {/* Circular recess in bakelite plate */}
-                <circle cx={t.x} cy={t.y} r="13" fill="#0b0d11" stroke="#1f232b" strokeWidth="1" />
-                {/* Dark inner bevel */}
-                <circle cx={t.x} cy={t.y} r="11" fill="#14171d" />
+                {/* Outer socket recess rim */}
+                <circle cx={t.x} cy={t.y} r="18" fill="#0c0d11" stroke="#262a34" strokeWidth="1.2" />
+                {/* Inner stepped shadow */}
+                <circle cx={t.x} cy={t.y} r="15.5" fill="#121419" stroke="#08090b" strokeWidth="0.8" />
               </g>
             ))}
 
-            {/* Crisp Silk-Screened Terminal Labels (U1, V1, W1, W2, U2, V2) directly on the black board */}
-            {/* Top Row: U1, V1, W1 placed to the left of the studs as in the reference image */}
-            <text
-              x="78"
-              y="39.5"
-              fill="#f8fafc"
-              fontSize="11"
-              fontWeight="800"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-            >
-              U1
-            </text>
-            <text
-              x="135"
-              y="39.5"
-              fill="#f8fafc"
-              fontSize="11"
-              fontWeight="800"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-            >
-              V1
-            </text>
-            <text
-              x="192"
-              y="39.5"
-              fill="#f8fafc"
-              fontSize="11"
-              fontWeight="800"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-            >
-              W1
-            </text>
-
-            {/* Bottom Row: W2, U2, V2 placed directly below the studs as in the reference image */}
+            {/* ========================================================
+                CRISP WHITE TECHNICAL MARKINGS (EXACT LAYOUT FROM DIAGRAM):
+                Top Row: W2, U2, V2
+                Bottom Row: U1, V1, W1
+                ======================================================== */}
+            {/* Top Row Labels on Upper Stepped Tabs */}
             <text
               x="99"
-              y="107"
-              fill="#f8fafc"
-              fontSize="11"
-              fontWeight="800"
+              y="23"
+              fill="#ffffff"
+              fontSize="14.5"
+              fontWeight="900"
               fontFamily="system-ui, -apple-system, sans-serif"
               textAnchor="middle"
+              letterSpacing="0.3"
             >
               W2
             </text>
             <text
               x="156"
-              y="107"
-              fill="#f8fafc"
-              fontSize="11"
-              fontWeight="800"
+              y="23"
+              fill="#ffffff"
+              fontSize="14.5"
+              fontWeight="900"
               fontFamily="system-ui, -apple-system, sans-serif"
               textAnchor="middle"
+              letterSpacing="0.3"
             >
               U2
             </text>
             <text
               x="213"
-              y="107"
-              fill="#f8fafc"
-              fontSize="11"
-              fontWeight="800"
+              y="23"
+              fill="#ffffff"
+              fontSize="14.5"
+              fontWeight="900"
               fontFamily="system-ui, -apple-system, sans-serif"
               textAnchor="middle"
+              letterSpacing="0.3"
             >
               V2
+            </text>
+
+            {/* Bottom Row Labels on Lower Stepped Tabs */}
+            <text
+              x="99"
+              y="105"
+              fill="#ffffff"
+              fontSize="14.5"
+              fontWeight="900"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+              letterSpacing="0.3"
+            >
+              U1
+            </text>
+            <text
+              x="156"
+              y="105"
+              fill="#ffffff"
+              fontSize="14.5"
+              fontWeight="900"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+              letterSpacing="0.3"
+            >
+              V1
+            </text>
+            <text
+              x="213"
+              y="105"
+              fill="#ffffff"
+              fontSize="14.5"
+              fontWeight="900"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+              letterSpacing="0.3"
+            >
+              W1
             </text>
           </g>
 
@@ -747,12 +877,12 @@ export default function Motor6PElement({
 
         {/* Interactive Brass Stud Terminals */}
         {renderTerminal(tPE, true)}
-        {renderTerminal(tU1, false)}
-        {renderTerminal(tV1, false)}
-        {renderTerminal(tW1, false)}
         {renderTerminal(tW2, false)}
         {renderTerminal(tU2, false)}
         {renderTerminal(tV2, false)}
+        {renderTerminal(tU1, false)}
+        {renderTerminal(tV1, false)}
+        {renderTerminal(tW1, false)}
       </div>
     </div>
   );
