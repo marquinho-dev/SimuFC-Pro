@@ -638,98 +638,49 @@ export default function Motor6PElement({
             <circle cx="250" cy="820" r="9" fill="#374151" stroke="#1e293b" strokeWidth="1.5" />
 
             {/* OVERLAID BADGES */}
-            {/* 1. Badge Fechamento Estrela / Triângulo no canto superior esquerdo da carcaça */}
-            <g
-              className="motor-overlay-badge-fechamento"
-              transform="translate(95, 665)"
-              filter="url(#box-shadow)"
-              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-            >
-              <title>{connectionLabel}</title>
-              <rect
-                x="-36"
-                y="-15"
-                width={detectedConnection !== 'NONE' ? 144 : 72}
-                height="30"
-                rx="15"
-                fill="#0b1329"
-                stroke={
-                  detectedConnection === 'DELTA'
-                    ? '#f59e0b'
-                    : detectedConnection === 'Y'
-                    ? '#38bdf8'
-                    : '#475569'
-                }
-                strokeWidth="2"
-              />
-              {detectedConnection === 'DELTA' ? (
-                <>
+            {/* 1. Ícone Estrela / Triângulo - Aparece na parte inferior esquerda do motor APENAS quando o motor ligar e estiver girando */}
+            {isRunning && (detectedConnection === 'DELTA' || detectedConnection === 'Y') && (
+              <g
+                className="motor-overlay-badge-fechamento"
+                transform="translate(75, 960)"
+                filter="url(#box-shadow)"
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+              >
+                <title>{detectedConnection === 'DELTA' ? 'Operando em Δ Triângulo (220V)' : 'Operando em Y Estrela (380V)'}</title>
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="24"
+                  fill="#0b1329"
+                  stroke={detectedConnection === 'DELTA' ? '#f59e0b' : '#38bdf8'}
+                  strokeWidth="2.5"
+                  style={{
+                    filter:
+                      detectedConnection === 'DELTA'
+                        ? 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.7))'
+                        : 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.7))',
+                  }}
+                />
+                {detectedConnection === 'DELTA' ? (
                   <polygon
-                    points="-22,-6 -14,7 -30,7"
+                    points="0,-12 13,10 -13,10"
                     stroke="#f59e0b"
-                    strokeWidth="2.2"
+                    strokeWidth="3.2"
                     strokeLinejoin="round"
-                    fill="rgba(245, 158, 11, 0.3)"
+                    fill="rgba(245, 158, 11, 0.25)"
                   />
-                  <text
-                    x="38"
-                    y="5"
-                    fill="#f59e0b"
-                    fontSize="13"
-                    fontWeight="bold"
-                    fontFamily="Arial, sans-serif"
-                    textAnchor="middle"
-                  >
-                    Δ TRIÂNGULO
-                  </text>
-                </>
-              ) : detectedConnection === 'Y' ? (
-                <>
+                ) : (
                   <path
-                    d="M -26 -6 L -22 0 L -18 -6 M -22 0 L -22 7"
+                    d="M -9 -11 L 0 0 L 9 -11 M 0 0 L 0 12"
                     stroke="#38bdf8"
-                    strokeWidth="2.2"
+                    strokeWidth="3.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     fill="none"
                   />
-                  <text
-                    x="38"
-                    y="5"
-                    fill="#38bdf8"
-                    fontSize="13"
-                    fontWeight="bold"
-                    fontFamily="Arial, sans-serif"
-                    textAnchor="middle"
-                  >
-                    Y ESTRELA
-                  </text>
-                </>
-              ) : (
-                <>
-                  <line
-                    x1="-20"
-                    y1="0"
-                    x2="-10"
-                    y2="0"
-                    stroke="#64748b"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                  <text
-                    x="8"
-                    y="4.5"
-                    fill="#94a3b8"
-                    fontSize="11"
-                    fontWeight="bold"
-                    fontFamily="Arial, sans-serif"
-                    textAnchor="middle"
-                  >
-                    ABERTO
-                  </text>
-                </>
-              )}
-            </g>
+                )}
+              </g>
+            )}
 
             {/* 2. Badge Estático de Sentido de Rotação - No canto superior direito fora do mancal */}
             {isRunning && (
