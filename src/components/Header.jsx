@@ -309,7 +309,7 @@ export default function Header({
               <Zap className="logo-zap" />
             </div>
             <div className="branding-text">
-              <h1 className="app-title">EletroSim Pro</h1>
+              <h1 className="app-title">SimuFC Pro</h1>
               <span className="app-subtitle">Simulador de Comandos Elétricos Industriais</span>
             </div>
           </div>

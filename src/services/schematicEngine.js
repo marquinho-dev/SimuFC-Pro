@@ -1,5 +1,5 @@
 /**
- * EletroSim Pro - Industrial Electrical Schematic Synthesis Engine
+ * SimuFC Pro - Industrial Electrical Schematic Synthesis Engine
  * 
  * Standard Compliant:
  * - IEC 60617: Graphical Symbols for Diagrams

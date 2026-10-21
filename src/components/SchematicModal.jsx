@@ -2084,7 +2084,7 @@ export default function SchematicModal({
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <span style={{ color: '#94a3b8', fontSize: '0.66rem', textTransform: 'uppercase' }}>INSTALAÇÃO / PROJETO:</span>
-                    <span style={{ color: '#f8fafc', fontWeight: 900 }}>ELETROSIM PRO • SIMULADOR DE COMANDOS ELÉTRICOS</span>
+                    <span style={{ color: '#f8fafc', fontWeight: 900 }}>SIMUFC PRO • SIMULADOR DE COMANDOS ELÉTRICOS</span>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>

@@ -1,4 +1,4 @@
-# EletroSim Pro - Simulador de Comandos Elétricos Industriais
+# SimuFC Pro - Simulador de Comandos Elétricos Industriais
 
 Simulador interativo de comandos elétricos e automação industrial voltado para o estudo, prática e validação de esquemas elétricos conforme normas **ABNT NBR 5410** e **IEC 60947**.
 
