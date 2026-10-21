@@ -170,6 +170,7 @@ export default function Motor6PElement({
   terminalVoltages,
   activeTerminal,
   onTerminalClick,
+  onUpdateComponentState,
   wires = [],
 }) {
   const isRunning = Boolean(component.state?.running);
@@ -179,8 +180,19 @@ export default function Motor6PElement({
   const isStalled = rotorState === 'STALLED_HUM';
   const isBiphasic = rotorState === 'BIPHASIC_RUN';
 
-  const [rotorAngle, setRotorAngle] = useState(0);
-  const [campoAngle, setCampoAngle] = useState(0);
+  // Configurações e Controles demonstrados no motor_ac_painel_v2_demo.html
+  const [targetRotorSetting, setTargetRotorSetting] = useState(
+    component.state?.targetRotorSetting ?? 1672
+  );
+  const [lentoSetting, setLentoSetting] = useState(
+    component.state?.lentoSetting ?? 60
+  );
+  const [currentRpm, setCurrentRpm] = useState(0);
+
+  const targetRotorSettingRef = useRef(targetRotorSetting);
+  const lentoSettingRef = useRef(lentoSetting);
+  const rotorDomRef = useRef(null);
+  const campoDomRef = useRef(null);
 
   const rotorAngleRef = useRef(0);
   const campoAngleRef = useRef(0);
@@ -192,6 +204,18 @@ export default function Motor6PElement({
   }
 
   const effectiveDirection = isRunning ? direction : (lastActiveDirectionRef.current || 'CW');
+
+  const handleRotorChange = (val) => {
+    setTargetRotorSetting(val);
+    targetRotorSettingRef.current = val;
+    onUpdateComponentState?.(component.id, { targetRotorSetting: val });
+  };
+
+  const handleLentoChange = (val) => {
+    setLentoSetting(val);
+    lentoSettingRef.current = val;
+    onUpdateComponentState?.(component.id, { lentoSetting: val });
+  };
 
   // Detected connection topology from simulationEngine or wired bridges
   const wiredClosure = React.useMemo(() => {
@@ -223,18 +247,21 @@ export default function Motor6PElement({
         ? 'HORÁRIO (CW ↻)'
         : 'ANTI-HOR. (CCW ↺)';
 
-  // Rotational physics animation loop (integra ângulos a partir de RPM: rotor com inércia mecânica e campo síncrono)
+  const calculatedSlip = (((1800 - targetRotorSetting) / 1800) * 100).toFixed(1);
+
+  // Rotational physics animation loop (conforme motor_ac_painel_v2_demo.html com inércia e câmera lenta)
   useEffect(() => {
     let animId;
     let lastTime = performance.now();
+    let lastUiUpdate = performance.now();
     const nSinc = 1800; // 4 polos, 60 Hz
 
     const loop = (now) => {
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
-      const targetRpm = component.state?.rpm ?? (isRunning ? 1750 : 0);
-      const rate = isRunning ? 1400 : 750; // Aceleração / desaceleração
+      const targetRpm = isRunning ? targetRotorSettingRef.current : 0;
+      const rate = isRunning ? 1600 : 800; // Aceleração / desaceleração suave realista
 
       if (rpmRef.current < targetRpm) {
         rpmRef.current = Math.min(targetRpm, rpmRef.current + rate * dt);
@@ -244,21 +271,33 @@ export default function Motor6PElement({
 
       const activeDir = isRunning ? direction : lastActiveDirectionRef.current;
       const speedMult = activeDir === 'CW' ? 1 : -1;
+      const lento = Math.max(1, lentoSettingRef.current);
 
-      // 1. Rotação mecânica do rotor (graus por segundo = rpm * 6)
-      const degPerSecRotor = rpmRef.current * 6;
+      // 1. Rotação mecânica do rotor (graus por segundo = rpm * 6 / lento)
+      const degPerSecRotor = (rpmRef.current * 6) / lento;
       const newRotorAngle = (rotorAngleRef.current + speedMult * degPerSecRotor * dt) % 360;
       rotorAngleRef.current = newRotorAngle < 0 ? newRotorAngle + 360 : newRotorAngle;
 
       // 2. Campo girante no entreferro (gira na velocidade síncrona 1800 rpm quando energizado)
       if (isRunning) {
-        const degPerSecCampo = nSinc * 6;
+        const degPerSecCampo = (nSinc * 6) / lento;
         const newCampoAngle = (campoAngleRef.current + speedMult * degPerSecCampo * dt) % 360;
         campoAngleRef.current = newCampoAngle < 0 ? newCampoAngle + 360 : newCampoAngle;
       }
 
-      setRotorAngle(rotorAngleRef.current);
-      setCampoAngle(campoAngleRef.current);
+      // Atualização direta do DOM via refs para desempenho impecável (60+ FPS sem re-renders)
+      if (rotorDomRef.current) {
+        rotorDomRef.current.setAttribute('transform', `rotate(${rotorAngleRef.current} 200 200)`);
+      }
+      if (campoDomRef.current) {
+        campoDomRef.current.setAttribute('transform', `rotate(${campoAngleRef.current} 200 200)`);
+      }
+
+      // Atualiza o display numérico de RPM a cada 100ms
+      if (now - lastUiUpdate > 100) {
+        lastUiUpdate = now;
+        setCurrentRpm(Math.round(rpmRef.current));
+      }
 
       try {
         sounds.updateMotorHum(rpmRef.current, isRunning, isStalled);
@@ -269,7 +308,7 @@ export default function Motor6PElement({
 
     animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [isRunning, direction, isStalled, component.state?.rpm]);
+  }, [isRunning, direction, isStalled]);
 
   const renderTerminal = (t, isPE = false) => {
     if (!t) return null;
@@ -305,8 +344,6 @@ export default function Motor6PElement({
   const tV1 = findTerminal('V1');
   const tW1 = findTerminal('W1');
   const tPE = findTerminal('PE');
-
-  const currentRpm = Math.round(rpmRef.current);
 
   return (
     <div
@@ -661,7 +698,7 @@ export default function Motor6PElement({
               <circle cx="200" cy="200" r="119" fill="#0a1530" />
 
               {/* Rotor com gaiola de esquilo e barra amarela de referência (gira em torno de 200, 200) */}
-              <g id="motor-v2-rotor" transform={`rotate(${rotorAngle} 200 200)`}>
+              <g ref={rotorDomRef} id="motor-v2-rotor" transform={`rotate(${rotorAngleRef.current} 200 200)`}>
                 <circle cx="200" cy="200" r="112" fill="#9aa3b0" />
                 <circle cx="200" cy="200" r="60" fill="#7c8593" />
                 <g fill="#c8824a" stroke="#6b3f1d" strokeWidth="1">
@@ -690,8 +727,9 @@ export default function Motor6PElement({
 
               {/* Campo girante: arco N (vermelho) e S (azul) no entreferro (gira síncrono quando energizado) */}
               <g
+                ref={campoDomRef}
                 id="motor-v2-campo"
-                transform={`rotate(${campoAngle} 200 200)`}
+                transform={`rotate(${campoAngleRef.current} 200 200)`}
                 opacity={isRunning ? 1 : 0}
                 fill="none"
                 strokeWidth="6"
@@ -711,7 +749,7 @@ export default function Motor6PElement({
             <circle cx="200" cy="180" r="102" fill="none" stroke="#06112e" strokeWidth="3" />
 
             {/* ========================================================
-                INDICAÇÕES INTERATIVAS NO PAINEL
+                INDICAÇÕES INTERATIVAS NO PAINEL DO MOTOR
                 ======================================================== */}
             {/* 1. Ícone Estrela / Triângulo na parte inferior esquerda APENAS quando o motor ligar e estiver girando */}
             {isRunning && (detectedConnection === 'DELTA' || detectedConnection === 'Y') && (
@@ -756,46 +794,134 @@ export default function Motor6PElement({
                 )}
               </g>
             )}
-
-            {/* 2. Indicador de Rotação e RPM na parte inferior direita quando girando */}
-            {isRunning && (
-              <g
-                className="motor-badge-rotacao-painel"
-                transform="translate(332, 305)"
-                filter="url(#box-shadow)"
-                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-              >
-                <title>{`${directionLabel} • ${currentRpm} RPM`}</title>
-                <rect
-                  x="-38"
-                  y="-14"
-                  width="76"
-                  height="28"
-                  rx="14"
-                  fill="#0b1329"
-                  stroke="#22c55e"
-                  strokeWidth="2"
-                  style={{ filter: 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.6))' }}
-                />
-                <circle cx="-22" cy="0" r="9" fill="#15803d" />
-                {effectiveDirection === 'CW' ? (
-                  <g transform="translate(-29, -7) scale(0.6)" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                    <path d="M21 3v5h-5" />
-                  </g>
-                ) : (
-                  <g transform="translate(-29, -7) scale(0.6)" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                    <path d="M3 3v5h5" />
-                  </g>
-                )}
-                <text x="6" y="4" fill="#4ade80" fontSize="10.5" fontWeight="bold" fontFamily="system-ui, sans-serif" textAnchor="middle">
-                  {currentRpm > 0 ? `${currentRpm}` : '0'}
-                </text>
-              </g>
-            )}
           </g>
+
+          {/* ========================================================
+              INDICAÇÃO DE ROTAÇÃO NO CANTO SUPERIOR DIREITO FORA DA PEÇA
+              ======================================================== */}
+          {isRunning && (
+            <g
+              className="motor-badge-rotacao-topright"
+              transform="translate(442, 638)"
+              filter="url(#box-shadow)"
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+            >
+              <title>{directionLabel}</title>
+              <circle
+                cx="0"
+                cy="0"
+                r="22"
+                fill="#0b1329"
+                stroke="#22c55e"
+                strokeWidth="2.5"
+                style={{ filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.75))' }}
+              />
+              <circle cx="0" cy="0" r="17" fill="#15803d" />
+              {effectiveDirection === 'CW' ? (
+                <g
+                  transform="translate(-13, -13) scale(1.08)"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                  <path d="M21 3v5h-5" />
+                </g>
+              ) : (
+                <g
+                  transform="translate(-13, -13) scale(1.08)"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </g>
+              )}
+            </g>
+          )}
         </svg>
+      </div>
+
+      {/* ========================================================
+          PAINEL DE CONTROLES E INDICAÇÃO DE ROTAÇÃO LOGO ABAIXO DA PEÇA
+          (Conforme modelos/motor_ac_painel_v2_demo.html)
+          ======================================================== */}
+      <div
+        className="motor-controls-panel w-[94%] mt-1 px-3 py-2.5 rounded-xl bg-slate-900/90 border border-blue-900/40 shadow-xl backdrop-blur-md flex flex-col gap-2 select-none"
+        style={{ pointerEvents: 'auto' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        {/* Indicação de rotação logo abaixo */}
+        <div
+          className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+            isRunning
+              ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(34,197,94,0.25)]'
+              : 'bg-slate-800/80 border-slate-700/60 text-slate-400'
+          }`}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="text-base leading-none">
+              {isRunning ? (effectiveDirection === 'CW' ? '↻' : '↺') : '⚪'}
+            </span>
+            <span>
+              {isRunning
+                ? `ROTAÇÃO: ${effectiveDirection === 'CW' ? 'HORÁRIA (CW)' : 'ANTI-HORÁRIA (CCW)'}`
+                : 'MOTOR DESLIGADO (PARADO)'}
+            </span>
+          </div>
+          <span className="font-mono text-sm font-bold text-sky-400">
+            {isRunning ? `${Math.round(currentRpm)} RPM` : '0 RPM'}
+          </span>
+        </div>
+
+        {/* Sliders de Controle conforme demonstrado em motor_ac_painel_v2_demo.html */}
+        <div className="grid grid-cols-[auto_1fr_auto] gap-x-2.5 gap-y-1.5 items-center text-xs text-slate-300">
+          <label htmlFor={`nRotor-${component.id}`} className="font-medium cursor-pointer">
+            Rotor
+          </label>
+          <input
+            id={`nRotor-${component.id}`}
+            type="range"
+            min="0"
+            max="1800"
+            step="1"
+            value={targetRotorSetting}
+            onChange={(e) => handleRotorChange(Number(e.target.value))}
+            className="w-full accent-blue-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+          />
+          <output className="min-w-[65px] text-right font-mono text-sky-400 font-semibold tabular-nums">
+            {targetRotorSetting} rpm
+          </output>
+
+          <label htmlFor={`lento-${component.id}`} className="font-medium whitespace-nowrap cursor-pointer">
+            Câmera lenta
+          </label>
+          <input
+            id={`lento-${component.id}`}
+            type="range"
+            min="1"
+            max="200"
+            step="1"
+            value={lentoSetting}
+            onChange={(e) => handleLentoChange(Number(e.target.value))}
+            className="w-full accent-blue-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+          />
+          <output className="min-w-[65px] text-right font-mono text-sky-400 font-semibold tabular-nums">
+            1/{lentoSetting}
+          </output>
+        </div>
+
+        {/* Informações de Campo Síncrono e Escorregamento */}
+        <div className="text-[11px] text-slate-400 text-center font-mono pt-1.5 border-t border-slate-800/80">
+          Campo: 1800 rpm | escorregamento: {calculatedSlip}%
+        </div>
       </div>
     </div>
   );

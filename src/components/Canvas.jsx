@@ -1136,6 +1136,8 @@ export default function Canvas({
       e.target.closest('.motor-svg-terminal-group') ||
       e.target.closest('.motor-brass-terminal-container') ||
       e.target.closest('.motor-overlay-badge-fechamento') ||
+      e.target.closest('.motor-controls-panel') ||
+      e.target.closest('input') ||
       e.target.closest('.btn-toggle-switch') ||
       e.target.closest('.btn-push-action') ||
       e.target.closest('.btn-remove-comp') ||
