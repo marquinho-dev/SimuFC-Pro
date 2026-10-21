@@ -5745,14 +5745,39 @@
 }
 
 /* Motor */
+.schematic-motor {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.schematic-motor .schematic-motor-terminal .schematic-terminal-node {
+  background: transparent;
+  border: 2px solid transparent;
+  width: 16px;
+  height: 16px;
+}
+
+.schematic-motor .schematic-motor-terminal .schematic-terminal-dot {
+  display: none;
+}
+
+.schematic-motor .schematic-motor-terminal:hover .schematic-terminal-node,
+.schematic-motor .schematic-motor-terminal.wire-target-ready .schematic-terminal-node {
+  border-color: #00e676 !important;
+  background: rgba(0, 230, 118, 0.3);
+  transform: scale(1.3);
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.7);
+}
+
 .schematic-motor.motor-spinning .schematic-motor-circle-running {
   animation: motor-pulse-ring 2s infinite ease-in-out;
 }
 
 @keyframes motor-pulse-ring {
-  0% { stroke-width: 2.5px; stroke: #22c55e; }
-  50% { stroke-width: 3.8px; stroke: #4ade80; }
-  100% { stroke-width: 2.5px; stroke: #22c55e; }
+  0% { stroke-width: 2.5px; stroke: #00e676; }
+  50% { stroke-width: 3.5px; stroke: #4ade80; }
+  100% { stroke-width: 2.5px; stroke: #00e676; }
 }
 
 /* Timer Relay */

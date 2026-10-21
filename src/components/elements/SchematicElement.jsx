@@ -1188,6 +1188,13 @@ function SchematicButton({
 
 /**
  * 7. Motor Trifásico 6 Pontas Esquemático (Motor M1)
+ * Representação técnica fiel ao padrão industrial IEC / CAD:
+ * - Círculo central com "M" e subtítulo "3~ Y/Δ"
+ * - Tag "M1" posicionada à esquerda do círculo
+ * - Bornes superiores: U1, V1, W1 (com linhas anguladas nos extremos)
+ * - Bornes inferiores: W2, U2, V2 (com linhas anguladas nos extremos)
+ * - Linha pontilhada verde do terra (PE) com símbolo de aterramento no canto inferior esquerdo
+ * - Ponto de aterramento lateral direito da carcaça com símbolo de terra
  */
 function SchematicMotor({
   component,
@@ -1198,102 +1205,213 @@ function SchematicMotor({
 }) {
   const isRunning = Boolean(component.state?.running);
   const direction = component.state?.direction || 'CW';
-  const terminals = component.terminals || [];
+  const displayTag = component.tag || 'M1';
+
+  // Coordenadas dos bornes esquemáticos (U1, V1, W1 no topo; W2, U2, V2 na base; PE no terra)
+  const schematicTerminals = [
+    { id: 'U1', label: 'U1', x: 80, y: 35 },
+    { id: 'V1', label: 'V1', x: 140, y: 35 },
+    { id: 'W1', label: 'W1', x: 200, y: 35 },
+    { id: 'W2', label: 'W2', x: 80, y: 245 },
+    { id: 'U2', label: 'U2', x: 140, y: 245 },
+    { id: 'V2', label: 'V2', x: 200, y: 245 },
+    { id: 'PE', label: 'PE', x: 36, y: 230 },
+  ];
+
+  const u1Color = getConnectedWireColor(component.id, 'U1', wires);
+  const v1Color = getConnectedWireColor(component.id, 'V1', wires);
+  const w1Color = getConnectedWireColor(component.id, 'W1', wires);
+  const w2Color = getConnectedWireColor(component.id, 'W2', wires);
+  const u2Color = getConnectedWireColor(component.id, 'U2', wires);
+  const v2Color = getConnectedWireColor(component.id, 'V2', wires);
+  const peColor = getConnectedWireColor(component.id, 'PE', wires, '#00e676');
 
   return (
     <div
-      className={`schematic-device-card schematic-motor ${
-        isRunning ? 'motor-spinning' : ''
-      }`}
-      style={{ width: '280px', height: '240px' }}
+      className={`schematic-device-card schematic-motor ${isRunning ? 'motor-spinning' : ''}`}
+      style={{
+        width: '280px',
+        height: '280px',
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        position: 'relative',
+      }}
+      title={`Motor Trifásico ${displayTag} (3~ Y/Δ): ${isRunning ? `EM OPERAÇÃO (${direction === 'CW' ? '↻ Horário' : '↺ Anti-horário'})` : 'PARADO'}`}
     >
-      <div className="schematic-device-header">
-        <span className="schematic-device-tag">{component.tag || '-M1'}</span>
-        <span className="schematic-motor-spec">3~ INDUÇÃO (6P)</span>
-        <span className={`schematic-status-pill ${isRunning ? 'active' : ''}`}>
-          {isRunning ? (direction === 'CW' ? '↻ 1750 RPM' : '↺ -1750 RPM') : 'PARADO'}
-        </span>
-      </div>
-
-      <svg className="schematic-svg-canvas" viewBox="0 0 280 240">
-        {/* Central Motor Circle (IEC 60617) */}
+      <svg
+        className="schematic-svg-canvas"
+        viewBox="0 0 280 280"
+        style={{ width: '100%', height: '100%', display: 'block', background: 'transparent' }}
+      >
+        {/* --- Círculo Central do Motor (IEC 60617) --- */}
         <circle
-          cx="156"
-          cy="145"
-          r="48"
-          fill="#090d16"
-          stroke={isRunning ? '#22c55e' : '#38bdf8'}
+          cx="140"
+          cy="140"
+          r="46"
+          fill="rgba(15, 23, 42, 0.4)"
+          stroke={isRunning ? '#00e676' : '#ffffff'}
           strokeWidth="2.5"
-          className={isRunning ? 'schematic-motor-circle-running' : ''}
+          filter={isRunning ? 'drop-shadow(0 0 8px rgba(0, 230, 118, 0.5))' : 'none'}
+          style={{ transition: 'all 0.3s ease' }}
         />
 
-        {/* Text inside motor symbol */}
+        {/* Textos dentro do círculo do motor */}
         <text
-          x="156"
-          y="142"
-          fill="#f8fafc"
-          fontSize="18"
-          fontWeight="900"
+          x="140"
+          y="132"
+          fill="#ffffff"
+          fontSize="30"
+          fontWeight="bold"
+          fontFamily="Arial, system-ui, sans-serif"
           textAnchor="middle"
+          dominantBaseline="middle"
         >
           M
         </text>
         <text
-          x="156"
-          y="160"
-          fill="#94a3b8"
-          fontSize="11"
+          x="140"
+          y="158"
+          fill="#ffffff"
+          fontSize="13"
           fontWeight="bold"
+          fontFamily="Arial, system-ui, sans-serif"
           textAnchor="middle"
+          dominantBaseline="middle"
         >
-          3 ~
+          3~ Y/Δ
         </text>
 
-        {/* Rotation indicator ring if running */}
+        {/* Tag M1 à esquerda do círculo */}
+        <text
+          x="84"
+          y="140"
+          fill="#ffffff"
+          fontSize="18"
+          fontWeight="bold"
+          fontFamily="Arial, system-ui, sans-serif"
+          textAnchor="end"
+          dominantBaseline="middle"
+        >
+          {displayTag}
+        </text>
+
+        {/* --- Condutores Superiores: U1, V1, W1 --- */}
+        {/* V1 (linha vertical central) */}
+        <path d="M 140 35 L 140 94" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+        {/* U1 (linha vertical depois inclinada a 45° descendo para a direita) */}
+        <path d="M 80 35 L 80 68 L 107.5 107.5" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        {/* W1 (linha vertical depois inclinada a 45° descendo para a esquerda) */}
+        <path d="M 200 35 L 200 68 L 172.5 107.5" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Identificadores textuais U1, V1, W1 */}
+        <text x="89" y="52" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="monospace">
+          U1
+        </text>
+        <text x="149" y="52" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="monospace">
+          V1
+        </text>
+        <text x="209" y="52" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="monospace">
+          W1
+        </text>
+
+        {/* --- Bornes Superiores (Círculos vazados padrão CAD) --- */}
+        <circle cx="80" cy="35" r="4.5" fill={u1Color || 'rgba(15, 23, 42, 0.85)'} stroke={u1Color || '#ffffff'} strokeWidth="2" />
+        <circle cx="140" cy="35" r="4.5" fill={v1Color || 'rgba(15, 23, 42, 0.85)'} stroke={v1Color || '#ffffff'} strokeWidth="2" />
+        <circle cx="200" cy="35" r="4.5" fill={w1Color || 'rgba(15, 23, 42, 0.85)'} stroke={w1Color || '#ffffff'} strokeWidth="2" />
+
+        {/* --- Condutores Inferiores: W2, U2, V2 --- */}
+        {/* U2 (linha vertical central) */}
+        <path d="M 140 186 L 140 245" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+        {/* W2 (linha inclinada a 45° depois vertical descendo) */}
+        <path d="M 107.5 172.5 L 80 212 L 80 245" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        {/* V2 (linha inclinada a 45° depois vertical descendo) */}
+        <path d="M 172.5 172.5 L 200 212 L 200 245" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Identificadores textuais W2, U2, V2 */}
+        <text x="89" y="230" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="monospace">
+          W2
+        </text>
+        <text x="149" y="230" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="monospace">
+          U2
+        </text>
+        <text x="209" y="230" fill="#ffffff" fontSize="13" fontWeight="bold" fontFamily="monospace">
+          V2
+        </text>
+
+        {/* --- Bornes Inferiores (Círculos vazados padrão CAD) --- */}
+        <circle cx="80" cy="245" r="4.5" fill={w2Color || 'rgba(15, 23, 42, 0.85)'} stroke={w2Color || '#ffffff'} strokeWidth="2" />
+        <circle cx="140" cy="245" r="4.5" fill={u2Color || 'rgba(15, 23, 42, 0.85)'} stroke={u2Color || '#ffffff'} strokeWidth="2" />
+        <circle cx="200" cy="245" r="4.5" fill={v2Color || 'rgba(15, 23, 42, 0.85)'} stroke={v2Color || '#ffffff'} strokeWidth="2" />
+
+        {/* --- Ramal de Aterramento da Carcaça à Direita (Padrão CAD IEC) --- */}
+        <line x1="186" y1="140" x2="232" y2="140" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="232" cy="140" r="4.5" fill="rgba(15, 23, 42, 0.85)" stroke="#ffffff" strokeWidth="2" />
+        {/* Símbolo de terra sob o ramal direito */}
+        <line x1="216" y1="140" x2="216" y2="150" stroke="#ffffff" strokeWidth="1.8" />
+        <line x1="208" y1="150" x2="224" y2="150" stroke="#ffffff" strokeWidth="1.8" />
+        <line x1="211" y1="154" x2="221" y2="154" stroke="#ffffff" strokeWidth="1.5" />
+        <line x1="214" y1="158" x2="218" y2="158" stroke="#ffffff" strokeWidth="1.2" />
+
+        {/* --- Linha Pontilhada do Terra (PE) com Símbolo de Terra (conforme rascunho em verde do usuário) --- */}
+        <path
+          d="M 99 155 L 36 155 L 36 230"
+          fill="none"
+          stroke="#00e676"
+          strokeWidth="2.5"
+          strokeDasharray="3 3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* Símbolo de Terra em verde */}
+        <line x1="22" y1="230" x2="50" y2="230" stroke="#00e676" strokeWidth="2.6" strokeLinecap="round" />
+        <line x1="27" y1="236" x2="45" y2="236" stroke="#00e676" strokeWidth="2.2" strokeLinecap="round" />
+        <line x1="32" y1="242" x2="40" y2="242" stroke="#00e676" strokeWidth="1.8" strokeLinecap="round" />
+        {/* Borne elétrico de aterramento PE */}
+        <circle cx="36" cy="230" r="4.5" fill={peColor || 'rgba(15, 23, 42, 0.85)'} stroke="#00e676" strokeWidth="2" />
+
+        {/* --- Indicador de Rotação quando em Operação --- */}
         {isRunning && (
-          <path
-            d={
-              direction === 'CW'
-                ? 'M 130 115 A 36 36 0 0 1 182 115'
-                : 'M 182 115 A 36 36 0 0 1 130 115'
-            }
-            fill="none"
-            stroke="#22c55e"
-            strokeWidth="3"
-            strokeDasharray="12 6"
-          />
+          <g transform="translate(242, 32)">
+            <circle cx="0" cy="0" r="14" fill="rgba(0, 230, 118, 0.15)" stroke="#00e676" strokeWidth="1.5" />
+            <text
+              x="0"
+              y="4"
+              fill="#00e676"
+              fontSize="14"
+              fontWeight="bold"
+              textAnchor="middle"
+            >
+              {direction === 'CW' ? '↻' : '↺'}
+            </text>
+            <text
+              x="0"
+              y="22"
+              fill="#00e676"
+              fontSize="9"
+              fontWeight="bold"
+              textAnchor="middle"
+              fontFamily="monospace"
+            >
+              1750 RPM
+            </text>
+          </g>
         )}
-
-        {/* Top Terminal Connections: U1 (99), V1 (156), W1 (213) */}
-        <line x1="99" y1="36" x2="99" y2="108" stroke="#38bdf8" strokeWidth="2" />
-        <line x1="156" y1="36" x2="156" y2="97" stroke="#38bdf8" strokeWidth="2" />
-        <line x1="213" y1="36" x2="213" y2="108" stroke="#38bdf8" strokeWidth="2" />
-
-        {/* Bottom Terminal Connections: W2 (99), U2 (156), V2 (213) */}
-        <line x1="99" y1="86" x2="99" y2="120" stroke="#64748b" strokeWidth="1.8" strokeDasharray="3 3" />
-        <line x1="156" y1="86" x2="156" y2="120" stroke="#64748b" strokeWidth="1.8" strokeDasharray="3 3" />
-        <line x1="213" y1="86" x2="213" y2="120" stroke="#64748b" strokeWidth="1.8" strokeDasharray="3 3" />
-
-        {/* PE Earth Ground Line & Symbol at (38, 36) */}
-        <line x1="38" y1="36" x2="38" y2="145" stroke="#16a34a" strokeWidth="2" strokeDasharray="4 2" />
-        <line x1="38" y1="145" x2="108" y2="145" stroke="#16a34a" strokeWidth="2" strokeDasharray="4 2" />
-        {/* IEC Ground symbol */}
-        <line x1="26" y1="155" x2="50" y2="155" stroke="#16a34a" strokeWidth="2" />
-        <line x1="31" y1="160" x2="45" y2="160" stroke="#16a34a" strokeWidth="1.6" />
-        <line x1="35" y1="165" x2="41" y2="165" stroke="#16a34a" strokeWidth="1.2" />
       </svg>
 
-      {terminals.map((t) => (
+      {/* Pontos de Conexão Clicáveis para Fios (SchematicTerminalPoint) */}
+      {schematicTerminals.map((t) => (
         <SchematicTerminalPoint
           key={t.id}
           componentId={component.id}
-          terminal={t}
-          voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+          terminal={{ ...t, hideLabel: true }}
+          voltage={terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined}
           wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
           isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
           isConnecting={Boolean(activeTerminal)}
           onTerminalClick={onTerminalClick}
-          labelPosition={t.id === 'PE' ? 'left' : t.y < 50 ? 'top' : 'bottom'}
+          labelPosition={t.y < 50 ? 'top' : t.id === 'PE' ? 'left' : 'bottom'}
+          className="schematic-motor-terminal"
         />
       ))}
     </div>

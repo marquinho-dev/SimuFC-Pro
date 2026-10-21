@@ -571,13 +571,23 @@ export default function Canvas({
           if (t) { tx = t.x; ty = t.y; }
         }
       } else if (comp.type === 'motor_6p') {
-        if (termId === 'W2') { tx = 73; ty = 135; }
-        else if (termId === 'U2') { tx = 127; ty = 135; }
-        else if (termId === 'V2') { tx = 182; ty = 135; }
-        else if (termId === 'U1') { tx = 73; ty = 224; }
-        else if (termId === 'V1') { tx = 127; ty = 224; }
-        else if (termId === 'W1') { tx = 182; ty = 224; }
-        else if (termId === 'PE') { tx = 211; ty = 179; }
+        if (isCompSchematic) {
+          if (termId === 'U1') { tx = 80; ty = 35; }
+          else if (termId === 'V1') { tx = 140; ty = 35; }
+          else if (termId === 'W1') { tx = 200; ty = 35; }
+          else if (termId === 'W2') { tx = 80; ty = 245; }
+          else if (termId === 'U2') { tx = 140; ty = 245; }
+          else if (termId === 'V2') { tx = 200; ty = 245; }
+          else if (termId === 'PE') { tx = 36; ty = 230; }
+        } else {
+          if (termId === 'W2') { tx = 73; ty = 135; }
+          else if (termId === 'U2') { tx = 127; ty = 135; }
+          else if (termId === 'V2') { tx = 182; ty = 135; }
+          else if (termId === 'U1') { tx = 73; ty = 224; }
+          else if (termId === 'V1') { tx = 127; ty = 224; }
+          else if (termId === 'W1') { tx = 182; ty = 224; }
+          else if (termId === 'PE') { tx = 211; ty = 179; }
+        }
       }
 
       return {
