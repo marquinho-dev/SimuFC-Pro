@@ -708,10 +708,10 @@ export function Motor6PThumbnail() {
     <svg viewBox="0 0 88 100" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="m6pTBoxBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#4a88e8" />
-          <stop offset="35%" stopColor="#3572d4" />
-          <stop offset="70%" stopColor="#225bb5" />
-          <stop offset="100%" stopColor="#143c7e" />
+          <stop offset="0%" stopColor="#4a8cf2" />
+          <stop offset="35%" stopColor="#2a63cf" />
+          <stop offset="70%" stopColor="#1b48ac" />
+          <stop offset="100%" stopColor="#0f2c78" />
         </linearGradient>
         <linearGradient id="m6pPlateBlack" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#1e2328" />
@@ -724,10 +724,17 @@ export function Motor6PThumbnail() {
           <stop offset="100%" stopColor="#475569" />
         </linearGradient>
         <linearGradient id="m6pStatorBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#4a88e8" />
-          <stop offset="35%" stopColor="#3572d4" />
-          <stop offset="70%" stopColor="#225bb5" />
-          <stop offset="100%" stopColor="#143c7e" />
+          <stop offset="0%" stopColor="#4a8cf2" />
+          <stop offset="35%" stopColor="#2a63cf" />
+          <stop offset="70%" stopColor="#1b48ac" />
+          <stop offset="100%" stopColor="#0f2c78" />
+        </linearGradient>
+        <linearGradient id="m6pChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#eaf0f8" />
+          <stop offset="25%" stopColor="#7a8c9e" />
+          <stop offset="50%" stopColor="#f0f5fa" />
+          <stop offset="75%" stopColor="#506070" />
+          <stop offset="100%" stopColor="#d5e0ea" />
         </linearGradient>
         <radialGradient id="m6pShaftSteel" cx="40%" cy="35%" r="65%">
           <stop offset="0%" stopColor="#f8fafc" />
@@ -741,12 +748,12 @@ export function Motor6PThumbnail() {
           ====================================================== */}
       {/* 3 Top Conduit Hubs */}
       {[25, 44, 63].map((hx, i) => (
-        <rect key={`hub-${i}`} x={hx - 4.5} y="1" width="9" height="4" rx="1" fill="#152e47" stroke="#081018" strokeWidth="0.6" />
+        <rect key={`hub-${i}`} x={hx - 4.5} y="1" width="9" height="4" rx="1" fill="#1b48ac" stroke="#081018" strokeWidth="0.6" />
       ))}
 
       {/* Outer Blue Cast Enclosure Box */}
       <rect x="7" y="3.5" width="74" height="35" rx="4" fill="url(#m6pTBoxBlue)" stroke="#09131d" strokeWidth="1" />
-      <rect x="9" y="5" width="70" height="32" rx="3" fill="none" stroke="#2c5070" strokeWidth="0.6" opacity="0.6" />
+      <rect x="9" y="5" width="70" height="32" rx="3" fill="none" stroke="#60a5fa" strokeWidth="0.6" opacity="0.4" />
 
       {/* 4 Corner Lid Bolts */}
       {[
@@ -755,7 +762,7 @@ export function Motor6PThumbnail() {
         { cx: 10.5, cy: 35 },
         { cx: 77.5, cy: 35 },
       ].map((b, idx) => (
-        <circle key={`t-bolt-${idx}`} cx={b.cx} cy={b.cy} r="1.5" fill="#475569" stroke="#0f172a" strokeWidth="0.4" />
+        <circle key={`t-bolt-${idx}`} cx={b.cx} cy={b.cy} r="1.5" fill="#cbd5e1" stroke="#0f172a" strokeWidth="0.4" />
       ))}
 
       {/* Black Bakelite Terminal Plate */}
@@ -801,72 +808,58 @@ export function Motor6PThumbnail() {
       </g>
 
       {/* ======================================================
-          BOTTOM: MOTOR FRONTAL VIEW (CORPO DO MOTOR)
+          BOTTOM: MOTOR FRONTAL VIEW (CORPO DO MOTOR V2)
           ====================================================== */}
       {/* Mounting Feet */}
-      <rect x="11" y="93" width="16" height="4.5" rx="1" fill="#172554" stroke="#0f172a" strokeWidth="0.8" />
-      <circle cx="15" cy="95" r="1.2" fill="#94a3b8" />
-      <rect x="61" y="93" width="16" height="4.5" rx="1" fill="#172554" stroke="#0f172a" strokeWidth="0.8" />
-      <circle cx="73" cy="95" r="1.2" fill="#94a3b8" />
+      <rect x="11" y="93" width="16" height="4.5" rx="1" fill="#1b48ac" stroke="#0b1e4a" strokeWidth="0.8" />
+      <circle cx="15" cy="95" r="1.2" fill="#cbd5e1" />
+      <rect x="61" y="93" width="16" height="4.5" rx="1" fill="#1b48ac" stroke="#0b1e4a" strokeWidth="0.8" />
+      <circle cx="73" cy="95" r="1.2" fill="#cbd5e1" />
 
-      {/* Main Rounded Stator Body in Industrial Blue */}
-      <rect x="12" y="41" width="64" height="54" rx="8" fill="url(#m6pStatorBlue)" stroke="#1e3a8a" strokeWidth="1" />
+      {/* Main Square/Rounded Panel in Gradient Blue V2 */}
+      <rect x="12" y="41" width="64" height="54" rx="8" fill="url(#m6pStatorBlue)" stroke="#0b1e4a" strokeWidth="1" />
+      {/* Inner subtle glow */}
+      <rect x="13.5" y="42.5" width="61" height="51" rx="6.5" fill="none" stroke="#60a5fa" strokeWidth="0.6" opacity="0.5" />
 
-      {/* Specular Diagonal Shine on Top-Left Corner */}
-      <path d="M 16 42 Q 32 42 38 50 Q 26 55 15 51 Z" fill="rgba(255, 255, 255, 0.25)" />
+      {/* Chrome Bezel Ring */}
+      <circle cx="44" cy="68" r="21" fill="url(#m6pChrome)" stroke="#1a2530" strokeWidth="0.8" />
+      {/* Dark Dial Chamber */}
+      <circle cx="44" cy="68" r="17.5" fill="#09101d" stroke="#1e293b" strokeWidth="0.8" />
 
-      {/* Lateral Cooling Tabs (Left & Right) */}
-      <rect x="10" y="52" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-      <rect x="10" y="62" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-      <rect x="10" y="72" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-      <rect x="10" y="82" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
+      {/* Stator Coils Hints (A, B, C) */}
+      <circle cx="44" cy="54" r="2.2" fill="#e03030" opacity="0.85" />
+      <circle cx="44" cy="82" r="2.2" fill="#e03030" opacity="0.85" />
+      <circle cx="32" cy="61" r="2.2" fill="#2070e0" opacity="0.85" />
+      <circle cx="56" cy="75" r="2.2" fill="#2070e0" opacity="0.85" />
+      <circle cx="32" cy="75" r="2.2" fill="#d49010" opacity="0.85" />
+      <circle cx="56" cy="61" r="2.2" fill="#d49010" opacity="0.85" />
 
-      <rect x="75.5" y="52" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-      <rect x="75.5" y="62" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-      <rect x="75.5" y="72" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-      <rect x="75.5" y="82" width="2.5" height="2" rx="0.5" fill="#1e3a8a" />
-
-      {/* Bearing Shield Flange in Blue */}
-      <circle cx="44" cy="68" r="20" fill="#2563eb" stroke="#172554" strokeWidth="1.2" />
-      <circle cx="44" cy="68" r="16.5" fill="#1d4ed8" stroke="#1e40af" strokeWidth="0.8" />
-
-      {/* Radial Ticks around Bearing Flange */}
-      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+      {/* Squirrel-cage Rotor Core */}
+      <circle cx="44" cy="68" r="9.5" fill="#64748b" stroke="#334155" strokeWidth="0.6" />
+      {/* Copper bars around rotor */}
+      {[0, 60, 120, 180, 240, 300].map((deg) => {
         const rad = (deg * Math.PI) / 180;
         return (
           <line
-            key={`flange-tick-${deg}`}
-            x1={44 + 17 * Math.cos(rad)}
-            y1={68 + 17 * Math.sin(rad)}
-            x2={44 + 19.5 * Math.cos(rad)}
-            y2={68 + 19.5 * Math.sin(rad)}
-            stroke="#172554"
-            strokeWidth="0.8"
+            key={`bar-${deg}`}
+            x1={44 + 5.5 * Math.cos(rad)}
+            y1={68 + 5.5 * Math.sin(rad)}
+            x2={44 + 8.5 * Math.cos(rad)}
+            y2={68 + 8.5 * Math.sin(rad)}
+            stroke={deg === 0 ? '#fbbf24' : '#f97316'}
+            strokeWidth="1.2"
+            strokeLinecap="round"
           />
         );
       })}
 
-      {/* 4 Hex Screws on Flange */}
-      {[
-        { x: 44 + 9.5, y: 68 + 9.5 },
-        { x: 44 - 9.5, y: 68 + 9.5 },
-        { x: 44 + 9.5, y: 68 - 9.5 },
-        { x: 44 - 9.5, y: 68 - 9.5 },
-      ].map((pos, idx) => (
-        <circle key={`flange-scr-${idx}`} cx={pos.x} cy={pos.y} r="1.3" fill="#94a3b8" stroke="#0f172a" strokeWidth="0.4" />
-      ))}
+      {/* Mechanical Shaft Center */}
+      <circle cx="44" cy="68" r="4.2" fill="url(#m6pShaftSteel)" stroke="#1e293b" strokeWidth="0.6" />
+      <circle cx="44" cy="68" r="1.8" fill="#1e293b" />
 
-      {/* Turned Steel Rotor Shaft with Yellow Pointer */}
-      <circle cx="44" cy="68" r="9.5" fill="url(#m6pShaftSteel)" stroke="#334155" strokeWidth="0.8" />
-      <circle cx="44" cy="68" r="4" fill="#334155" />
-
-      {/* Rotating Keyway Yellow Pointer */}
-      <polygon points="42.8,68 43.2,61 44,58 44.8,61 45.2,68" fill="#f59e0b" stroke="#1e293b" strokeWidth="0.6" />
-      <circle cx="44" cy="68" r="2" fill="#475569" stroke="#1e293b" strokeWidth="0.4" />
-
-      {/* Star / Delta Indicator Emblem at top left */}
-      <circle cx="19" cy="46" r="4.5" fill="#0b1329" stroke="#f59e0b" strokeWidth="0.8" />
-      <polygon points="19,43.5 21.5,47.8 16.5,47.8" stroke="#f59e0b" strokeWidth="0.8" fill="rgba(245, 158, 11, 0.3)" />
+      {/* Bottom-Left Star/Delta Badge Indicator */}
+      <circle cx="19" cy="87.5" r="4.5" fill="#081020" stroke="#f59e0b" strokeWidth="0.8" />
+      <polygon points="19,85 21.5,89.2 16.5,89.2" stroke="#f59e0b" strokeWidth="0.8" fill="rgba(245, 158, 11, 0.35)" />
     </svg>
   );
 }

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor AC em painel</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #1d2230; color: #e6e9ef;
+         display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 16px; }
+  svg { width: min(460px, 92vw); height: auto; }
+  .painel { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 12px; align-items: center;
+            width: min(460px, 92vw); font-size: 14px; }
+  .painel output { min-width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+  .info { font-size: 14px; color: #aab2c0; }
+</style>
+</head>
+<body>
+
+<svg id="motor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <title>Motor de indução trifásico em painel</title>
+  <defs>
+    <!-- painel -->
+    <linearGradient id="azul" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a8cf2"/>
+      <stop offset="0.35" stop-color="#2a63cf"/>
+      <stop offset="0.7" stop-color="#1b48ac"/>
+      <stop offset="1" stop-color="#0f2c78"/>
+    </linearGradient>
+    <radialGradient id="vinheta" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#04112e" stop-opacity="0"/>
+      <stop offset="1" stop-color="#04112e" stop-opacity="0.55"/>
+    </radialGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.14"/>
+    </linearGradient>
+    <linearGradient id="borda" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d6e6ff" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#d6e6ff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#05102b" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- aro cromado e mostrador -->
+    <linearGradient id="cromo" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#f2f7ff"/>
+      <stop offset="0.3" stop-color="#8fa6d0"/>
+      <stop offset="0.55" stop-color="#243865"/>
+      <stop offset="0.8" stop-color="#7e96c6"/>
+      <stop offset="1" stop-color="#dfeaff"/>
+    </linearGradient>
+    <linearGradient id="bisel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#081646"/>
+      <stop offset="1" stop-color="#3d62b8"/>
+    </linearGradient>
+    <radialGradient id="anel" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0.6" stop-color="#2d60c8"/>
+      <stop offset="1" stop-color="#1a4096"/>
+    </radialGradient>
+    <linearGradient id="recesso" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#020a1f"/>
+      <stop offset="1" stop-color="#6089dc"/>
+    </linearGradient>
+    <radialGradient id="prata" cx="0.38" cy="0.32" r="0.7">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#b8c2d3"/>
+      <stop offset="1" stop-color="#6b788f"/>
+    </radialGradient>
+    <linearGradient id="vidroGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- estator e bobinas -->
+    <linearGradient id="aco" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6a7fa8"/>
+      <stop offset="1" stop-color="#34466b"/>
+    </linearGradient>
+    <linearGradient id="gA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8f8a"/>
+      <stop offset="1" stop-color="#c93a36"/>
+    </linearGradient>
+    <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#93ccff"/>
+      <stop offset="1" stop-color="#2f7fe0"/>
+    </linearGradient>
+    <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffdb63"/>
+      <stop offset="1" stop-color="#d19a00"/>
+    </linearGradient>
+
+    <!-- pés da carcaça -->
+    <linearGradient id="azulPe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f66d4"/>
+      <stop offset="1" stop-color="#10307f"/>
+    </linearGradient>
+    <path id="pePath" d="M44 318 V364 Q44 376 56 376 H128 Q140 376 140 364 V318 Z"/>
+    <g id="pe">
+      <use href="#pePath" fill="url(#azulPe)" stroke="#06112e" stroke-width="2"/>
+      <path d="M47 334 V364" fill="none" stroke="#8fb8ff" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round"/>
+      <rect x="64" y="352" width="56" height="8" rx="4" fill="#04102c"/>
+      <rect x="66" y="361.5" width="52" height="1.5" rx="0.75" fill="#7fb2ff" fill-opacity="0.35"/>
+    </g>
+
+    <filter id="sombra" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <clipPath id="vidro"><circle cx="200" cy="180" r="100"/></clipPath>
+
+    <rect id="bobina" x="178" y="42" width="44" height="34" rx="6"/>
+    <rect id="barra" x="196" y="90" width="8" height="18" rx="2"/>
+    <circle id="mais" cx="200" cy="59" r="4.5" fill="#ffffff"/>
+    <path id="menos" d="M196 55 L204 63 M204 55 L196 63" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <line id="tl" x1="200" y1="55" x2="200" y2="71" stroke="#0b1c42" stroke-width="3" stroke-linecap="round"/>
+    <line id="tk" x1="200" y1="55" x2="200" y2="64" stroke="#0b1c42" stroke-width="2" stroke-linecap="round"/>
+    <g id="parafuso">
+      <circle r="9" fill="url(#prata)" stroke="#06112e" stroke-width="1.5"/>
+      <circle r="6.8" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="0.8"/>
+      <path d="M-5 1.2H5" stroke="#ffffff" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round"/>
+      <path d="M-5 0H5" stroke="#3f4d69" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <!-- pés da carcaça (atrás do painel) -->
+  <ellipse cx="200" cy="382" rx="170" ry="5" fill="#000000" opacity="0.28"/>
+  <use href="#pe"/>
+  <use href="#pe" transform="translate(216 0)"/>
+
+  <!-- painel azul brilhante -->
+  <rect x="20" y="14" width="360" height="332" rx="40" fill="#07122e" filter="url(#sombra)"/>
+  <rect x="23" y="17" width="354" height="326" rx="37" fill="url(#azul)"/>
+  <rect x="23" y="17" width="354" height="326" rx="37" fill="url(#vinheta)"/>
+  <path d="M33 72 Q33 25 80 25 H320 Q367 25 367 72 Q367 120 200 120 Q33 120 33 72 Z" fill="url(#gloss)"/>
+  <path d="M50 337 Q200 347 350 337" fill="none" stroke="#7fb2ff" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round"/>
+  <rect x="23" y="17" width="354" height="326" rx="37" fill="none" stroke="url(#borda)" stroke-width="2"/>
+
+  <!-- ranhuras laterais com realce -->
+  <g>
+    <g fill="#0b1b45" opacity="0.9">
+      <rect x="38" y="57" width="20" height="6" rx="3"/>
+      <rect x="38" y="117" width="20" height="6" rx="3"/>
+      <rect x="38" y="177" width="20" height="6" rx="3"/>
+      <rect x="38" y="237" width="20" height="6" rx="3"/>
+      <rect x="38" y="297" width="20" height="6" rx="3"/>
+      <rect x="342" y="57" width="20" height="6" rx="3"/>
+      <rect x="342" y="117" width="20" height="6" rx="3"/>
+      <rect x="342" y="177" width="20" height="6" rx="3"/>
+      <rect x="342" y="237" width="20" height="6" rx="3"/>
+      <rect x="342" y="297" width="20" height="6" rx="3"/>
+    </g>
+    <g fill="#7fb2ff" opacity="0.35">
+      <rect x="40" y="63.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="40" y="123.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="40" y="183.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="40" y="243.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="40" y="303.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="344" y="63.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="344" y="123.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="344" y="183.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="344" y="243.5" width="16" height="1.4" rx="0.7"/>
+      <rect x="344" y="303.5" width="16" height="1.4" rx="0.7"/>
+    </g>
+  </g>
+
+  <!-- aro cromado, bisel e placa com marcas -->
+  <circle cx="200" cy="180" r="138" fill="#06112e"/>
+  <circle cx="200" cy="180" r="136" fill="url(#cromo)"/>
+  <circle cx="200" cy="180" r="130" fill="url(#bisel)"/>
+  <circle cx="200" cy="180" r="127" fill="url(#anel)"/>
+  <g>
+    <use href="#tl" transform="rotate(0 200 180)"/>
+    <use href="#tl" transform="rotate(90 200 180)"/>
+    <use href="#tl" transform="rotate(180 200 180)"/>
+    <use href="#tl" transform="rotate(270 200 180)"/>
+    <use href="#tk" transform="rotate(15 200 180)"/>
+    <use href="#tk" transform="rotate(30 200 180)"/>
+    <use href="#tk" transform="rotate(60 200 180)"/>
+    <use href="#tk" transform="rotate(75 200 180)"/>
+    <use href="#tk" transform="rotate(105 200 180)"/>
+    <use href="#tk" transform="rotate(120 200 180)"/>
+    <use href="#tk" transform="rotate(150 200 180)"/>
+    <use href="#tk" transform="rotate(165 200 180)"/>
+    <use href="#tk" transform="rotate(195 200 180)"/>
+    <use href="#tk" transform="rotate(210 200 180)"/>
+    <use href="#tk" transform="rotate(240 200 180)"/>
+    <use href="#tk" transform="rotate(255 200 180)"/>
+    <use href="#tk" transform="rotate(285 200 180)"/>
+    <use href="#tk" transform="rotate(300 200 180)"/>
+    <use href="#tk" transform="rotate(330 200 180)"/>
+    <use href="#tk" transform="rotate(345 200 180)"/>
+  </g>
+
+  <!-- parafusos nas diagonais, cada um com a fenda num ângulo -->
+  <use href="#parafuso" transform="translate(118 98) rotate(25)"/>
+  <use href="#parafuso" transform="translate(282 98) rotate(-15)"/>
+  <use href="#parafuso" transform="translate(118 262) rotate(70)"/>
+  <use href="#parafuso" transform="translate(282 262) rotate(-50)"/>
+
+  <!-- recesso do mostrador -->
+  <circle cx="200" cy="180" r="104" fill="url(#recesso)"/>
+  <circle cx="200" cy="180" r="102" fill="#0b1c42"/>
+
+  <!-- motor (mesmo desenho, reduzido para caber no mostrador) -->
+  <g transform="translate(200 180) scale(0.59) translate(-200 -200)">
+    <circle id="estator" cx="200" cy="200" r="142" fill="none" stroke="url(#aco)" stroke-width="46"/>
+    <circle cx="200" cy="200" r="164" fill="none" stroke="#9fb4dc" stroke-opacity="0.35" stroke-width="2"/>
+    <g id="bobinas" stroke="#101a33" stroke-width="1.5">
+      <use href="#bobina" fill="url(#gA)" transform="rotate(0 200 200)"/>
+      <use href="#bobina" fill="url(#gC)" transform="rotate(60 200 200)"/>
+      <use href="#bobina" fill="url(#gB)" transform="rotate(120 200 200)"/>
+      <use href="#bobina" fill="url(#gA)" transform="rotate(180 200 200)"/>
+      <use href="#bobina" fill="url(#gC)" transform="rotate(240 200 200)"/>
+      <use href="#bobina" fill="url(#gB)" transform="rotate(300 200 200)"/>
+    </g>
+    <use href="#mais"  transform="rotate(0 200 200)"/>
+    <use href="#menos" transform="rotate(60 200 200)"/>
+    <use href="#mais"  transform="rotate(120 200 200)"/>
+    <use href="#menos" transform="rotate(180 200 200)"/>
+    <use href="#mais"  transform="rotate(240 200 200)"/>
+    <use href="#menos" transform="rotate(300 200 200)"/>
+
+    <circle cx="200" cy="200" r="119" fill="#0a1530"/>
+
+    <!-- rotor: gira em torno de 200,200 (coordenadas locais) -->
+    <g id="rotor">
+      <circle cx="200" cy="200" r="112" fill="#9aa3b0"/>
+      <circle cx="200" cy="200" r="60" fill="#7c8593"/>
+      <g fill="#c8824a" stroke="#6b3f1d" stroke-width="1">
+        <use href="#barra" transform="rotate(22.5 200 200)"/>
+        <use href="#barra" transform="rotate(45 200 200)"/>
+        <use href="#barra" transform="rotate(67.5 200 200)"/>
+        <use href="#barra" transform="rotate(90 200 200)"/>
+        <use href="#barra" transform="rotate(112.5 200 200)"/>
+        <use href="#barra" transform="rotate(135 200 200)"/>
+        <use href="#barra" transform="rotate(157.5 200 200)"/>
+        <use href="#barra" transform="rotate(180 200 200)"/>
+        <use href="#barra" transform="rotate(202.5 200 200)"/>
+        <use href="#barra" transform="rotate(225 200 200)"/>
+        <use href="#barra" transform="rotate(247.5 200 200)"/>
+        <use href="#barra" transform="rotate(270 200 200)"/>
+        <use href="#barra" transform="rotate(292.5 200 200)"/>
+        <use href="#barra" transform="rotate(315 200 200)"/>
+        <use href="#barra" transform="rotate(337.5 200 200)"/>
+      </g>
+      <!-- barra de referência para enxergar a rotação -->
+      <use href="#barra" fill="#ffd36b" stroke="#6b3f1d" stroke-width="1"/>
+      <circle cx="200" cy="200" r="34" fill="#4a5260"/>
+      <circle cx="200" cy="200" r="16" fill="#cfd5de"/>
+      <rect x="197" y="178" width="6" height="10" fill="#2b303a"/>
+    </g>
+
+    <!-- campo girante: arco N (vermelho) e S (azul) no entreferro -->
+    <g id="campo" fill="none" stroke-width="6" stroke-linecap="round">
+      <path d="M 118 118 A 116 116 0 0 1 282 118" stroke="#ff5a5f"/>
+      <path d="M 282 282 A 116 116 0 0 1 118 282" stroke="#4da3ff"/>
+    </g>
+  </g>
+
+  <!-- vidro do mostrador: reflexo no topo e luz fraca embaixo -->
+  <g clip-path="url(#vidro)">
+    <path d="M121.4 124.9 A96 96 0 0 1 278.6 124.9 Q200 100 121.4 124.9 Z" fill="url(#vidroGrad)"/>
+    <path d="M146.1 257 A94 94 0 0 0 253.9 257" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <circle cx="200" cy="180" r="102" fill="none" stroke="#06112e" stroke-width="3"/>
+</svg>
+
+<div class="painel">
+  <label for="nRotor">Rotor</label>
+  <input id="nRotor" type="range" min="0" max="1800" step="1" value="1672">
+  <output id="nRotorTxt"></output>
+
+  <label for="lento">Câmera lenta</label>
+  <input id="lento" type="range" min="1" max="200" step="1" value="60">
+  <output id="lentoTxt"></output>
+</div>
+<div class="info" id="info"></div>
+
+<script>
+// ---- API para o seu simulador -------------------------------------------
+// Ângulos em graus. O campo gira na velocidade síncrona, o rotor (e o ponteiro laranja) na mecânica.
+const rotorEl = document.getElementById('rotor');
+const campoEl = document.getElementById('campo');
+
+function atualizarMotor(angRotorGraus, angCampoGraus) {
+  rotorEl.setAttribute('transform', `rotate(${angRotorGraus} 200 200)`);
+  campoEl.setAttribute('transform', `rotate(${angCampoGraus} 200 200)`);
+}
+
+// ---- Demo: integra os ângulos a partir de rpm (graus por segundo = rpm * 6) ----
+const nSinc = 1800;            // 4 polos, 60 Hz
+let angRotor = 0, angCampo = 0, tAnt = null;
+
+const nRotorIn = document.getElementById('nRotor');
+const lentoIn  = document.getElementById('lento');
+const nRotorTxt = document.getElementById('nRotorTxt');
+const lentoTxt  = document.getElementById('lentoTxt');
+const info = document.getElementById('info');
+
+function atualizarTextos() {
+  const n = +nRotorIn.value;
+  nRotorTxt.textContent = n + ' rpm';
+  lentoTxt.textContent = '1/' + lentoIn.value;
+  const s = (nSinc - n) / nSinc;
+  info.textContent = 'Campo: ' + nSinc + ' rpm | escorregamento: ' + (s * 100).toFixed(1) + ' %';
+}
+nRotorIn.addEventListener('input', atualizarTextos);
+lentoIn.addEventListener('input', atualizarTextos);
+atualizarTextos();
+
+function quadro(t) {
+  if (tAnt === null) tAnt = t;
+  const dt = (t - tAnt) / 1000;
+  tAnt = t;
+  const lento = +lentoIn.value;
+  angCampo = (angCampo + nSinc * 6 * dt / lento) % 360;
+  angRotor = (angRotor + (+nRotorIn.value) * 6 * dt / lento) % 360;
+  atualizarMotor(angRotor, angCampo);
+  requestAnimationFrame(quadro);
+}
+requestAnimationFrame(quadro);
+</script>
+</body>
+</html>
