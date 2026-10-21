@@ -463,43 +463,6 @@ export default function Canvas({
         if (termId === '1' || termId === '11' || termId === '11_bot') { tx = 68; ty = 18; }
         else if (termId === '2' || termId === '12' || termId === '12_bot') { tx = 68; ty = 150; }
         else { tx = term.x ?? 68; ty = term.y ?? 18; }
-      } else if (comp.type === 'contactor' && !isCompSchematic) {
-        // Entradas nos bornes (notches) do contator em vista real:
-        // Bornes de força superiores (1, 3, 5): entram pelos recortes superiores (y = 0)
-        // Bornes de força inferiores (2, 4, 6): entram pelos recortes inferiores (y = 355)
-        // Bornes auxiliares superiores (13, 21, A1): entram pela canaleta superior (y = 72)
-        // Bornes auxiliares inferiores (14, 22, A2): entram pela canaleta inferior (y = 278)
-        if (['1', '3', '5'].includes(termId)) {
-          ty = 0;
-        } else if (['13', '21', 'A1'].includes(termId)) {
-          ty = 72;
-        } else if (['14', '22', 'A2'].includes(termId)) {
-          ty = 278;
-        } else if (['2', '4', '6'].includes(termId)) {
-          ty = 355;
-        }
-      } else if ((comp.type === 'circuit_breaker' || comp.type === 'breaker_3p' || comp.type === 'breaker_1p') && !isCompSchematic) {
-        // Entradas nas aberturas dos bornes de gaiola do disjuntor em vista real:
-        // Entradas superiores (1, 3, 5): y = 0
-        // Saídas inferiores (2, 4, 6): y = 218
-        const pNum = parseInt(termId, 10);
-        if (pNum % 2 === 1) {
-          ty = 0;
-        } else {
-          ty = 218;
-        }
-      } else if (comp.type === 'thermal_relay' && !isCompSchematic) {
-        // Entradas nos bornes do relé térmico em vista real:
-        // Contatos de comando (98, 97, 96, 95): entram pelo rebaixo inferior (y = 280), como na imagem do borne 95
-        // Saídas de força para o motor (2, 4, 6): entram pela abertura inferior (y = 355)
-        // Pinos de entrada de força (1, 3, 5) quando desacoplado: y = 0
-        if (['98', '97', '96', '95'].includes(termId)) {
-          ty = 280;
-        } else if (['2', '4', '6'].includes(termId)) {
-          ty = 355;
-        } else if (['1', '3', '5'].includes(termId)) {
-          ty = 0;
-        }
       } else if (comp.type === 'timer_relay') {
         const config = TIMER_RELAY_TERMINALS[termId];
         if (config) {
@@ -508,19 +471,6 @@ export default function Canvas({
         } else {
           const t = comp.terminals?.find((x) => x.id === termId);
           if (t) { tx = t.x; ty = t.y; }
-        }
-        if (!isCompSchematic) {
-          // Entradas nos bornes do relé temporizador em vista real:
-          // Bornes superiores (A1, 15, 25): topo (y = 0)
-          // Bornes intermediários (18, 16): canaleta (y = 286)
-          // Bornes inferiores (28, 26, A2): base (y = 355)
-          if (['A1', '15', '25'].includes(termId)) {
-            ty = 0;
-          } else if (['18', '16'].includes(termId)) {
-            ty = 286;
-          } else if (['28', '26', 'A2'].includes(termId)) {
-            ty = 355;
-          }
         }
       } else if (comp.type === 'motor_6p') {
         if (termId === 'U1') { tx = 99; ty = 36; }
@@ -1842,13 +1792,6 @@ export default function Canvas({
               <stop offset="70%" stopColor="#64748b" />
               <stop offset="100%" stopColor="#1e293b" />
             </linearGradient>
-            <radialGradient id="screwCapMetalGrad" cx="35%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#ffffff" />
-              <stop offset="40%" stopColor="#cbd5e1" />
-              <stop offset="80%" stopColor="#64748b" />
-              <stop offset="100%" stopColor="#334155" />
-            </radialGradient>
-
           </defs>
 
           {/* Existing Wires with Automatic Bridge Jumps ("Voltinhas") */}
@@ -2151,7 +2094,11 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
-                ) : null}
+                ) : isFromCageTerminal ? (
+                  <WireTerminalCageEntry pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
+                ) : (
+                  <WireFerrulePlug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
+                )}
 
                 {/* Terminal tipo ilhós / ferrule plug, borne gaiola ou parafuso sextavado no P2 */}
                 {wire.toWireId ? (
@@ -2195,7 +2142,11 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
-                ) : null}
+                ) : isToCageTerminal ? (
+                  <WireTerminalCageEntry pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
+                ) : (
+                  <WireFerrulePlug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
+                )}
 
                 {/* Segment drag handles on selected wire (hidden during simulation) */}
                 {!isSimulationMode && isSelected &&
