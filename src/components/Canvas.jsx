@@ -16,10 +16,13 @@ import {
   computeAutoRoute,
   buildWirePathWithJumps,
   simplifyOrthogonalPoints,
+  ensureOrthogonalPath,
   splitSegmentForDrag,
   dragOrthogonalSegment,
   getClosestPointOnWire,
+  getTerminalExitVector,
 } from '../services/wireRouter';
+
 
 function WireFerrulePlug({ pt, nextPt, wireColor }) {
   if (!pt || !nextPt) return null;
@@ -164,6 +167,19 @@ function WireTerminalCageEntry({ pt, nextPt, wireColor }) {
       />
     </g>
   );
+}
+
+function findCompTerminal(comp, termId) {
+  if (!comp) return null;
+  let t = comp.terminals?.find((x) => x.id === termId);
+  if (!t && (comp.type === 'circuit_breaker' || comp.type === 'breaker_3p' || comp.type === 'breaker_1p')) {
+    const poles = Number(comp.state?.poles) || 3;
+    t = getBreakerTerminals(poles).find((x) => x.id === termId);
+  }
+  if (!t && comp.type === 'timer_relay') {
+    t = TIMER_RELAY_TERMINALS[termId];
+  }
+  return t || null;
 }
 
 export default function Canvas({
@@ -506,14 +522,26 @@ export default function Canvas({
           ? wire.toPoint
           : getTerminalAbsolutePos(wire.toComponent, wire.toTerminal);
 
+      const term1 = findCompTerminal(comp1, wire.fromTerminal);
+      const term2 = findCompTerminal(comp2, wire.toTerminal);
+      const exit1 = getTerminalExitVector(term1, comp1);
+      const exit2 = getTerminalExitVector(term2, comp2);
+
       let waypoints = wire.waypoints;
-      // Wires that are not custom-routed should dynamically recalculate their orthogonal route
-      // so when a component is dragged, the entire wire moves logically instead of leaving frozen waypoints!
-      const shouldAutoRoute = !wire.isCustomRouted || !waypoints || waypoints.length === 0;
+      
+      // Auto-recalculate route if:
+      // 1) Either connected component is currently being moved, OR
+      // 2) Wire is not custom-routed, OR
+      // 3) Wire has no waypoints
+      const isConnectedToMovingComp = Boolean(
+        draggedCompId &&
+        (wire.fromComponent === draggedCompId || wire.toComponent === draggedCompId)
+      );
+
+      const shouldAutoRoute =
+        isConnectedToMovingComp || !wire.isCustomRouted || !waypoints || waypoints.length === 0;
 
       if (shouldAutoRoute && wire.fromComponent && wire.toComponent && comp1 && comp2) {
-        const term1 = comp1?.terminals?.find((t) => t.id === wire.fromTerminal);
-        const term2 = comp2?.terminals?.find((t) => t.id === wire.toTerminal);
         waypoints = computeAutoRoute(p1, p2, comp1, comp2, term1, term2, idx, components);
       } else if (!waypoints || waypoints.length === 0) {
         // Fallback clean orthogonal step
@@ -522,9 +550,11 @@ export default function Canvas({
           { x: p2.x, y: Math.round((p1.y + p2.y) / 2) },
         ];
       }
-      return [p1, ...waypoints, p2];
+
+      // Ensure every wire is 100% strictly orthogonal (90-deg angles, never diagonal or slanted)
+      return ensureOrthogonalPath([p1, ...waypoints, p2], exit1, exit2);
     });
-  }, [wires, components, getTerminalAbsolutePos]);
+  }, [wires, components, getTerminalAbsolutePos, draggedCompId]);
 
   // Extract all electrical splice/junction points between wires and busbars so we don't draw bridge jumps over them
   const allJunctionPoints = useMemo(() => {
@@ -808,10 +838,10 @@ export default function Canvas({
           }
         }
 
-        // Commit fresh waypoints for any auto-routed wires attached to the moved component
+        // Commit fresh waypoints for any wires attached to the moved component so they never snap back to old coordinates!
         if (onUpdateWireRef.current && wiresPointListsRef.current) {
           wiresRef.current.forEach((w, wIdx) => {
-            if ((w.fromComponent === movedCompId || w.toComponent === movedCompId) && !w.isCustomRouted) {
+            if (w.fromComponent === movedCompId || w.toComponent === movedCompId) {
               const pts = wiresPointListsRef.current[wIdx];
               if (pts && pts.length >= 2) {
                 onUpdateWireRef.current(w.id, { waypoints: pts.slice(1, -1), isCustomRouted: false });

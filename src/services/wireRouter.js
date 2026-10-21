@@ -353,6 +353,57 @@ export function simplifyOrthogonalPoints(points) {
 }
 
 /**
+ * Ensures that any non-orthogonal (slanted/diagonal) segment in a wire path
+ * is converted into a clean 90-degree orthogonal step, preserving terminal exit orientations.
+ */
+export function ensureOrthogonalPath(points, exit1, exit2) {
+  if (!points || points.length < 2) return points ? points.map((p) => ({ ...p })) : [];
+
+  const result = [{ ...points[0] }];
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = result[result.length - 1];
+    const b = points[i + 1];
+    const isFirstSeg = i === 0;
+    const isLastSeg = i === points.length - 2;
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+
+    // If already horizontal or vertical (within 1.5px tolerance), push b directly
+    if (Math.abs(dx) < 2 || Math.abs(dy) < 2) {
+      result.push({ ...b });
+      continue;
+    }
+
+    // Segment is slanted / diagonal! Insert an orthogonal corner point to fix it cleanly!
+    let corner;
+    if (isFirstSeg && exit1 && exit1.dx !== 0) {
+      // First segment exits horizontally from p1 -> step horizontally first, then vertically
+      corner = { x: b.x, y: a.y };
+    } else if (isFirstSeg && exit1 && exit1.dy !== 0) {
+      // First segment exits vertically from p1 -> step vertically first, then horizontally
+      corner = { x: a.x, y: b.y };
+    } else if (isLastSeg && exit2 && exit2.dy !== 0) {
+      // Last segment enters vertically into p2 -> arrive horizontally first, then vertically into p2
+      corner = { x: b.x, y: a.y };
+    } else if (isLastSeg && exit2 && exit2.dx !== 0) {
+      // Last segment enters horizontally into p2 -> arrive vertically first, then horizontally into p2
+      corner = { x: a.x, y: b.y };
+    } else {
+      // General orthogonal corner
+      corner = { x: b.x, y: a.y };
+    }
+
+    result.push(corner);
+    result.push({ ...b });
+  }
+
+  return simplifyOrthogonalPoints(result);
+}
+
+
+/**
  * Prepares points for dragging a segment.
  */
 export function splitSegmentForDrag(points, segIdx) {
