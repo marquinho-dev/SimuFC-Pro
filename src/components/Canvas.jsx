@@ -164,6 +164,68 @@ function WireTerminalCageEntry({ pt, nextPt, wireColor }) {
       />
     </g>
   );
+}function WireTerminalScrewCap({ pt, voltage, isEnergized, isShorted }) {
+  if (!pt) return null;
+  const badgeColor =
+    voltage === 'L1'
+      ? '#a855f7'
+      : voltage === 'L2'
+      ? '#ffffff'
+      : voltage === 'L3'
+      ? '#ef4444'
+      : voltage === 'N'
+      ? '#2563eb'
+      : voltage === 'PE'
+      ? '#16a34a'
+      : null;
+
+  return (
+    <g className="wire-terminal-screw-cap" transform={`translate(${pt.x}, ${pt.y})`} pointerEvents="none">
+      {/* Sombra de oclusão e profundidade sob a arruela prensando o fio */}
+      <circle cx="0" cy="0" r="11" fill="rgba(0,0,0,0.65)" transform="translate(0, 1.2)" />
+
+      {/* Arruela de aperto lisa do borne que prensa o condutor */}
+      <circle
+        cx="0"
+        cy="0"
+        r="10"
+        fill="#0f172a"
+        stroke={badgeColor && isEnergized ? badgeColor : '#334155'}
+        strokeWidth="1.4"
+        style={{
+          filter: isShorted
+            ? 'drop-shadow(0 0 6px #ef4444)'
+            : isEnergized && badgeColor
+            ? `drop-shadow(0 0 5px ${badgeColor})`
+            : undefined,
+        }}
+      />
+      <circle cx="0" cy="0" r="8.8" fill="#1e293b" stroke="rgba(255,255,255,0.2)" strokeWidth="0.6" />
+
+      {/* Cabeça do Parafuso de Fenda Cruzada (Phillips) sobreposta ao cabo */}
+      <circle
+        cx="0"
+        cy="0"
+        r="7.5"
+        fill="url(#screwCapMetalGrad)"
+        stroke="#1e293b"
+        strokeWidth="0.8"
+      />
+
+      {/* Ranhura em cruz Phillips usinada na cabeça do parafuso */}
+      <line x1="-4.2" y1="0" x2="4.2" y2="0" stroke="#1e293b" strokeWidth="1.6" strokeLinecap="round" />
+      <line x1="0" y1="-4.2" x2="0" y2="4.2" stroke="#1e293b" strokeWidth="1.6" strokeLinecap="round" />
+      <line x1="-3.8" y1="0" x2="3.8" y2="0" stroke="#0f172a" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="0" y1="-3.8" x2="0" y2="3.8" stroke="#0f172a" strokeWidth="0.9" strokeLinecap="round" />
+
+      {/* Rebaixo central e indicador de fase/tensão */}
+      {isEnergized && badgeColor ? (
+        <circle cx="0" cy="0" r="2.2" fill={badgeColor} stroke="#0f172a" strokeWidth="0.6" />
+      ) : (
+        <circle cx="0" cy="0" r="1.4" fill="#0f172a" />
+      )}
+    </g>
+  );
 }
 
 export default function Canvas({
@@ -1792,6 +1854,13 @@ export default function Canvas({
               <stop offset="70%" stopColor="#64748b" />
               <stop offset="100%" stopColor="#1e293b" />
             </linearGradient>
+            <radialGradient id="screwCapMetalGrad" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="40%" stopColor="#cbd5e1" />
+              <stop offset="80%" stopColor="#64748b" />
+              <stop offset="100%" stopColor="#334155" />
+            </radialGradient>
+
           </defs>
 
           {/* Existing Wires with Automatic Bridge Jumps ("Voltinhas") */}
@@ -2094,11 +2163,14 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
-                ) : isFromCageTerminal ? (
-                  <WireTerminalCageEntry pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
-                ) : (
-                  <WireFerrulePlug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
-                )}
+                ) : viewMode === 'real' && compFrom?.displayMode !== 'schematic' ? (
+                  <WireTerminalScrewCap
+                    pt={p1}
+                    voltage={potential || vFrom}
+                    isEnergized={isEnergized}
+                    isShorted={isShorted}
+                  />
+                ) : null}
 
                 {/* Terminal tipo ilhós / ferrule plug, borne gaiola ou parafuso sextavado no P2 */}
                 {wire.toWireId ? (
@@ -2142,11 +2214,14 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
-                ) : isToCageTerminal ? (
-                  <WireTerminalCageEntry pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
-                ) : (
-                  <WireFerrulePlug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
-                )}
+                ) : viewMode === 'real' && compTo?.displayMode !== 'schematic' ? (
+                  <WireTerminalScrewCap
+                    pt={p2}
+                    voltage={potential || vTo}
+                    isEnergized={isEnergized}
+                    isShorted={isShorted}
+                  />
+                ) : null}
 
                 {/* Segment drag handles on selected wire (hidden during simulation) */}
                 {!isSimulationMode && isSelected &&
