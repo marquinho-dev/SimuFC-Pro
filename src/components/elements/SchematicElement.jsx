@@ -252,6 +252,7 @@ function SchematicBreaker({
   onTerminalClick,
   onUpdateComponentState,
   onOpenSettings,
+  isSimulationMode = false,
 }) {
   const poles = Math.max(1, Math.min(3, Number(component.state?.poles) || 3));
   // In initial state or de-energized normal state, breaker is OPEN (closed: false)
@@ -262,18 +263,83 @@ function SchematicBreaker({
 
   const handleToggle = (e) => {
     e.stopPropagation();
-    sounds.playBreakerToggle(!isClosed);
-    onUpdateComponentState(component.id, { closed: !isClosed });
+    try {
+      if (typeof sounds.playBreakerToggle === 'function') {
+        sounds.playBreakerToggle(!isClosed);
+      } else if (typeof sounds.playSwitch === 'function') {
+        sounds.playSwitch();
+      }
+    } catch {}
+    if (onUpdateComponentState) {
+      onUpdateComponentState(component.id, { closed: !isClosed });
+    }
   };
+
+  const lastXc = Math.round(57.5 + (poles - 1) * 56);
+  const dashEndX = Math.max(lastXc + 18, 176);
+  const tagX = Math.min(225, Math.max(lastXc + 34, 200));
 
   return (
     <div
       className={`schematic-device-card schematic-breaker ${isClosed ? 'state-closed' : 'state-open'}`}
-      style={{ width: `${cardWidth}px`, height: '200px', background: 'transparent', border: 'none' }}
-      onClick={handleToggle}
-      title={`Disjuntor ${displayTag}: ${isClosed ? 'FECHADO (Conduzindo)' : 'ABERTO / DESARMADO'}. Clique para comutar.`}
+      style={{ width: `${cardWidth}px`, height: '200px', background: 'transparent', border: 'none', position: 'relative' }}
+      title={`Disjuntor ${displayTag}: ${isClosed ? 'FECHADO / LIGADO (Conduzindo)' : 'ABERTO / DESARMADO'}. Clique para alternar.`}
     >
+      {/* Interactive Toggle Switch Handle Pill */}
+      <div
+        className="breaker-interactive-handle schematic-breaker-handle"
+        onClick={handleToggle}
+        onPointerDown={(e) => e.stopPropagation()}
+        title={`Disjuntor ${displayTag}: ${isClosed ? 'LIGADO (I) - Clique para desligar' : 'DESLIGADO (0) - Clique para ligar'}`}
+        style={{
+          position: 'absolute',
+          top: '14px',
+          right: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '3px 8px',
+          borderRadius: '6px',
+          background: isClosed ? 'rgba(0, 230, 118, 0.18)' : 'rgba(239, 68, 68, 0.14)',
+          border: `1.5px solid ${isClosed ? '#00e676' : '#ef4444'}`,
+          color: isClosed ? '#00e676' : '#f87171',
+          fontSize: '11px',
+          fontWeight: '700',
+          letterSpacing: '0.5px',
+          cursor: 'pointer',
+          zIndex: 22,
+          userSelect: 'none',
+          boxShadow: isClosed ? '0 0 10px rgba(0, 230, 118, 0.4)' : 'none',
+          transition: 'all 0.18s ease',
+        }}
+      >
+        <span
+          style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: isClosed ? '#00e676' : '#ef4444',
+            boxShadow: isClosed ? '0 0 6px #00e676' : 'none',
+            display: 'inline-block',
+          }}
+        />
+        <span>{isClosed ? 'LIGADO (I)' : 'DESLIGADO (0)'}</span>
+      </div>
+
       <svg className="schematic-svg-canvas" viewBox="0 0 240 200" style={{ width: '100%', height: '100%', display: 'block', background: 'transparent' }}>
+        {/* Clickable Area Over Breaker Mechanism */}
+        <rect
+          x="0"
+          y="80"
+          width={cardWidth}
+          height="65"
+          fill="transparent"
+          className="breaker-interactive-handle"
+          onClick={handleToggle}
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{ cursor: 'pointer' }}
+        />
+
         {Array.from({ length: poles }).map((_, i) => {
           const xc = Math.round(57.5 + i * 56);
           const topNum = 1 + i * 2;
@@ -337,40 +403,38 @@ function SchematicBreaker({
         })}
 
         {/* Manopla com Ícone de Pulso à esquerda e Linha Tracejada de Acoplamento */}
-        {poles > 1 && (
-          <g>
-            {/* Ícone de degrau / pulso da manopla no lado esquerdo */}
-            <path
-              d="M 4 112 L 10 112 L 10 104 L 16 104 L 16 112 L 22 112"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="1.8"
-            />
-            {/* Linha tracejada através das palhetas */}
-            <line
-              x1="22"
-              y1="112"
-              x2="176"
-              y2="112"
-              stroke="#ffffff"
-              strokeWidth="1.6"
-              strokeDasharray="5 4"
-            />
-            {/* Tag Q1 à direita */}
-            <text
-              x="200"
-              y="116"
-              fill="#ffffff"
-              fontSize="15"
-              fontWeight="bold"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              dominantBaseline="middle"
-            >
-              {displayTag}
-            </text>
-          </g>
-        )}
+        <g>
+          {/* Ícone de degrau / pulso da manopla no lado esquerdo */}
+          <path
+            d="M 4 112 L 10 112 L 10 104 L 16 104 L 16 112 L 22 112"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="1.8"
+          />
+          {/* Linha tracejada através das palhetas */}
+          <line
+            x1="22"
+            y1="112"
+            x2={dashEndX}
+            y2="112"
+            stroke="#ffffff"
+            strokeWidth="1.6"
+            strokeDasharray="5 4"
+          />
+          {/* Tag Q1 à direita */}
+          <text
+            x={tagX}
+            y="116"
+            fill="#ffffff"
+            fontSize="15"
+            fontWeight="bold"
+            fontFamily="system-ui, -apple-system, sans-serif"
+            textAnchor="middle"
+            dominantBaseline="middle"
+          >
+            {displayTag}
+          </text>
+        </g>
       </svg>
 
       {terminals.map((t) => {
@@ -1338,6 +1402,7 @@ export default function SchematicElement({
           onTerminalClick={onTerminalClick}
           onUpdateComponentState={onUpdateComponentState}
           onOpenSettings={isSelected ? onOpenBreakerSettings : undefined}
+          isSimulationMode={isSimulationMode}
         />
       );
 

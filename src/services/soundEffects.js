@@ -227,6 +227,12 @@ class SoundSystem {
     }
   }
 
+  // Circuit breaker mechanical toggle sound (closing / opening)
+  playBreakerToggle(closed = true) {
+    if (this.muted) return;
+    this.playSwitch();
+  }
+
   // Thermal relay trip sound
   playTrip() {
     if (this.muted) return;

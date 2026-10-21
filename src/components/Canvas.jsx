@@ -497,7 +497,7 @@ export default function Canvas({
       if (!term) return { x: Math.round(comp.x + 50), y: Math.round(comp.y + 50) };
 
       const isCompSchematic =
-        comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic';
+        comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic' || viewMode === 'schematic';
       if (isCompSchematic) {
         if (comp.type === 'power_source') {
           const bus = SCHEMATIC_SOURCE_BUSES[termId] ||
@@ -1127,6 +1127,10 @@ export default function Canvas({
       e.target.closest('.btn-busbar-gear') ||
       e.target.closest('.breaker-terminal-socket') ||
       e.target.closest('.breaker-interactive-handle') ||
+      e.target.closest('.schematic-breaker-handle') ||
+      e.target.closest('.schematic-breaker-toggle-btn') ||
+      e.target.closest('.schematic-terminal-point') ||
+      e.target.closest('.schematic-terminal-node') ||
       e.target.closest('.btn-breaker-gear') ||
       e.target.closest('.breaker-external-controls') ||
       e.target.closest('.btn-breaker-remove') ||
@@ -1683,7 +1687,7 @@ export default function Canvas({
           const isCompSelected = isAllSelected || selectedComponentId === comp.id;
           const showLateralButtons = !isSimulationMode && !isAllSelected && selectedComponentId === comp.id;
           const isCompSchematic =
-            comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic';
+            comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic' || viewMode === 'schematic';
 
           return (
             <div
