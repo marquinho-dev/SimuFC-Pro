@@ -990,16 +990,21 @@ export const COMPONENT_THUMBNAILS = {
 export function SchematicPowerSourceThumbnail() {
   return (
     <svg viewBox="0 0 100 70" className="comp-thumb-svg">
-      <line x1="20" y1="14" x2="85" y2="14" stroke="#ea580c" strokeWidth="2" />
-      <line x1="20" y1="26" x2="85" y2="26" stroke="#16a34a" strokeWidth="2" />
-      <line x1="20" y1="38" x2="85" y2="38" stroke="#9333ea" strokeWidth="2" />
-      <line x1="20" y1="50" x2="85" y2="50" stroke="#2563eb" strokeWidth="2" />
-      <line x1="20" y1="62" x2="85" y2="62" stroke="#22c55e" strokeWidth="2" strokeDasharray="4 2" />
-      <text x="10" y="17" fill="#ea580c" fontSize="8" fontWeight="bold">L1</text>
-      <text x="10" y="29" fill="#16a34a" fontSize="8" fontWeight="bold">L2</text>
-      <text x="10" y="41" fill="#9333ea" fontSize="8" fontWeight="bold">L3</text>
-      <text x="10" y="53" fill="#2563eb" fontSize="8" fontWeight="bold">N</text>
-      <text x="8" y="65" fill="#22c55e" fontSize="7" fontWeight="bold">PE</text>
+      <line x1="26" y1="14" x2="88" y2="14" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="26" y1="26" x2="88" y2="26" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+      <line x1="26" y1="38" x2="88" y2="38" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
+      <line x1="26" y1="50" x2="88" y2="50" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" />
+      <line x1="26" y1="62" x2="88" y2="62" stroke="#16a34a" strokeWidth="2" strokeDasharray="4 2" strokeLinecap="round" />
+      <circle cx="88" cy="14" r="2" fill="#a855f7" />
+      <circle cx="88" cy="26" r="2" fill="#ffffff" />
+      <circle cx="88" cy="38" r="2" fill="#ef4444" />
+      <circle cx="88" cy="50" r="2" fill="#0ea5e9" />
+      <circle cx="88" cy="62" r="2" fill="#16a34a" />
+      <text x="8" y="17" fill="#a855f7" fontSize="8" fontWeight="bold">L1</text>
+      <text x="8" y="29" fill="#ffffff" fontSize="8" fontWeight="bold">L2</text>
+      <text x="8" y="41" fill="#ef4444" fontSize="8" fontWeight="bold">L3</text>
+      <text x="8" y="53" fill="#0ea5e9" fontSize="8" fontWeight="bold">N</text>
+      <text x="7" y="65" fill="#16a34a" fontSize="7" fontWeight="bold">PE</text>
     </svg>
   );
 }

@@ -202,6 +202,17 @@ export const POWER_MODES = {
   },
 };
 
+export const SCHEMATIC_SOURCE_BUSES = {
+  L1: { id: 'L1', label: 'L1', y: 52, color: '#a855f7', strokeWidth: 3 },
+  L2: { id: 'L2', label: 'L2', y: 88, color: '#ffffff', strokeWidth: 3 },
+  L3: { id: 'L3', label: 'L3', y: 124, color: '#ef4444', strokeWidth: 3 },
+  N:  { id: 'N',  label: 'N',  y: 172, color: '#0ea5e9', strokeWidth: 3 },
+  PE: { id: 'PE', label: 'PE', y: 220, color: '#16a34a', strokeWidth: 3, dashed: true },
+};
+
+export const SCHEMATIC_SOURCE_BUS_X_START = 48;
+export const SCHEMATIC_SOURCE_BUS_X_END = 196;
+
 export const BRAZIL_VOLTAGE_STANDARDS = [
   {
     id: '380_220',

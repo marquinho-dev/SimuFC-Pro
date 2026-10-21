@@ -413,8 +413,22 @@
 }
 
 .wire-junction-splice {
-  pointer-events: none;
-  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+  pointer-events: auto !important;
+  cursor: grab;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.7));
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.wire-junction-splice:hover {
+  cursor: grab;
+  transform: scale(1.35);
+  filter: drop-shadow(0 0 8px #38bdf8);
+}
+
+.wire-junction-splice:active,
+.wire-junction-splice.is-dragging {
+  cursor: grabbing !important;
+  transform: scale(1.4);
 }
 
 .btn-wire-del-badge,

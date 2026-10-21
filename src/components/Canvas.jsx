@@ -10,7 +10,7 @@ import { ButtonStopElement, ButtonStartElement, ButtonEmergencyElement } from '.
 import PilotLampElement from './elements/PilotLampsElement';
 import DinRailElement from './elements/DinRailElement';
 import SchematicElement from './elements/SchematicElement';
-import { TIMER_RELAY_TERMINALS, getBreakerTerminals } from '../types/components';
+import { TIMER_RELAY_TERMINALS, getBreakerTerminals, SCHEMATIC_SOURCE_BUSES, SCHEMATIC_SOURCE_BUS_X_END } from '../types/components';
 import { sounds } from '../services/soundEffects';
 import {
   computeAutoRoute,
@@ -237,6 +237,7 @@ export default function Canvas({
   const draggedCompIdRef = useRef(null);
   const draggingSegmentRef = useRef(null);
   const draggingWaypointRef = useRef(null);
+  const draggingSpliceRef = useRef(null);
   const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const dragOffsetRef = useRef({ x: 0, y: 0 });
 
@@ -430,7 +431,20 @@ export default function Canvas({
       const isCompSchematic =
         comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic';
       if (isCompSchematic) {
-        if (comp.type === 'circuit_breaker' || comp.type === 'breaker_3p' || comp.type === 'breaker_1p') {
+        if (comp.type === 'power_source') {
+          const bus = SCHEMATIC_SOURCE_BUSES[termId] ||
+            (termId.startsWith('L1') ? SCHEMATIC_SOURCE_BUSES.L1 :
+             termId.startsWith('L2') ? SCHEMATIC_SOURCE_BUSES.L2 :
+             termId.startsWith('L3') ? SCHEMATIC_SOURCE_BUSES.L3 :
+             termId.startsWith('N')  ? SCHEMATIC_SOURCE_BUSES.N  :
+             termId.startsWith('PE') ? SCHEMATIC_SOURCE_BUSES.PE : null);
+          if (bus) {
+            return {
+              x: Math.round(comp.x + SCHEMATIC_SOURCE_BUS_X_END),
+              y: Math.round(comp.y + bus.y),
+            };
+          }
+        } else if (comp.type === 'circuit_breaker' || comp.type === 'breaker_3p' || comp.type === 'breaker_1p') {
           const poleIdx = Math.floor((parseInt(termId, 10) - 1) / 2);
           const isTop = (parseInt(termId, 10) % 2) === 1;
           const xc = Math.round(57.5 + poleIdx * 56);
@@ -812,6 +826,62 @@ export default function Canvas({
           }
         }
       }
+
+      // 5. Dragging a wire-to-wire junction splice along target wire
+      if (draggingSpliceRef.current && onUpdateWireRef.current) {
+        const { wireId, isFrom, targetWireId } = draggingSpliceRef.current;
+        const targetWireIndex = wiresRef.current.findIndex((w) => w.id === targetWireId);
+        if (targetWireIndex !== -1) {
+          const targetPts = wiresPointListsRef.current[targetWireIndex];
+          if (targetPts && targetPts.length >= 2) {
+            const closest = getClosestPointOnWire(targetPts, canvasPos.x, canvasPos.y);
+            if (closest && closest.point) {
+              const childIdx = wiresRef.current.findIndex((w) => w.id === wireId);
+              const childPts = wiresPointListsRef.current[childIdx];
+              const childWire = wiresRef.current[childIdx];
+
+              if (isFrom) {
+                // Moving p1 (fromPoint)
+                const otherEnd = childPts ? childPts[childPts.length - 1] : { x: 0, y: 0 };
+                let newWaypoints;
+                if (childWire?.waypoints && childWire.waypoints.length > 0) {
+                  const updatedOrth = ensureOrthogonalPath([closest.point, ...childWire.waypoints, otherEnd]);
+                  newWaypoints = updatedOrth.slice(1, -1);
+                } else {
+                  newWaypoints = [
+                    { x: closest.point.x, y: Math.round((closest.point.y + otherEnd.y) / 2) },
+                    { x: otherEnd.x, y: Math.round((closest.point.y + otherEnd.y) / 2) },
+                  ];
+                }
+                onUpdateWireRef.current(wireId, {
+                  fromPoint: closest.point,
+                  waypoints: newWaypoints,
+                  isCustomRouted: true,
+                });
+              } else {
+                // Moving p2 (toPoint)
+                const otherEnd = childPts ? childPts[0] : { x: 0, y: 0 };
+                let newWaypoints;
+                if (childWire?.waypoints && childWire.waypoints.length > 0) {
+                  const updatedOrth = ensureOrthogonalPath([otherEnd, ...childWire.waypoints, closest.point]);
+                  newWaypoints = updatedOrth.slice(1, -1);
+                } else {
+                  newWaypoints = [
+                    { x: otherEnd.x, y: Math.round((otherEnd.y + closest.point.y) / 2) },
+                    { x: closest.point.x, y: Math.round((otherEnd.y + closest.point.y) / 2) },
+                  ];
+                }
+                onUpdateWireRef.current(wireId, {
+                  toPoint: closest.point,
+                  waypoints: newWaypoints,
+                  isCustomRouted: true,
+                });
+              }
+            }
+          }
+        }
+        return;
+      }
     };
 
     const handleWindowPointerUp = () => {
@@ -871,6 +941,20 @@ export default function Canvas({
       }
       if (draggingWaypointRef.current) {
         draggingWaypointRef.current = null;
+      }
+      if (draggingSpliceRef.current) {
+        if (onUpdateWireRef.current) {
+          const { wireId } = draggingSpliceRef.current;
+          const childIdx = wiresRef.current.findIndex((w) => w.id === wireId);
+          if (childIdx !== -1) {
+            const currentPts = wiresPointListsRef.current[childIdx];
+            if (currentPts && currentPts.length >= 2) {
+              const simplified = simplifyOrthogonalPoints(currentPts);
+              onUpdateWireRef.current(wireId, { waypoints: simplified.slice(1, -1), isCustomRouted: true });
+            }
+          }
+        }
+        draggingSpliceRef.current = null;
       }
     };
 
@@ -1149,6 +1233,20 @@ export default function Canvas({
 
     // Normal wire selection
     sounds.playButtonClick();
+    setSelectedWireId(wireId);
+  };
+
+  // Pointer down on wire-to-wire junction splice to move it along target wire
+  const handleSplicePointerDown = (e, wireId, isFrom, targetWireId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSimulationMode) return;
+    if (e.button !== 0) return;
+    draggingSpliceRef.current = {
+      wireId,
+      isFrom,
+      targetWireId,
+    };
     setSelectedWireId(wireId);
   };
 
@@ -2084,7 +2182,13 @@ export default function Canvas({
 
                 {/* Terminal tipo ilhós / ferrule plug, borne gaiola ou parafuso sextavado no P1 */}
                 {wire.fromWireId ? (
-                  <g className="wire-junction-splice" transform={`translate(${p1.x}, ${p1.y})`}>
+                  <g
+                    className="wire-junction-splice"
+                    transform={`translate(${p1.x}, ${p1.y})`}
+                    onPointerDown={(e) => handleSplicePointerDown(e, wire.id, true, wire.fromWireId)}
+                    title="Ponto de conexão (Emenda): Clique e arraste para mover ao longo do condutor"
+                  >
+                    <circle cx="0" cy="0" r="14" fill="transparent" />
                     <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
                     <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
                   </g>
@@ -2132,7 +2236,13 @@ export default function Canvas({
 
                 {/* Terminal tipo ilhós / ferrule plug, borne gaiola ou parafuso sextavado no P2 */}
                 {wire.toWireId ? (
-                  <g className="wire-junction-splice" transform={`translate(${p2.x}, ${p2.y})`}>
+                  <g
+                    className="wire-junction-splice"
+                    transform={`translate(${p2.x}, ${p2.y})`}
+                    onPointerDown={(e) => handleSplicePointerDown(e, wire.id, false, wire.toWireId)}
+                    title="Ponto de conexão (Emenda): Clique e arraste para mover ao longo do condutor"
+                  >
+                    <circle cx="0" cy="0" r="14" fill="transparent" />
                     <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
                     <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
                   </g>

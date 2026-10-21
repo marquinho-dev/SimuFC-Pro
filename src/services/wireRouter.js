@@ -63,8 +63,13 @@ export function getLineIntersection(p1, p2, p3, p4) {
 export function getTerminalExitVector(term, comp) {
   if (!comp || !term) return { dx: 0, dy: 1 }; // Default exit downward
 
-  // Power source sockets always exit downwards
+  // Power source sockets exit downwards in real mode, or rightwards in schematic mode
   if (comp.type === 'power_source') {
+    const isCompSchematic =
+      comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic';
+    if (isCompSchematic) {
+      return { dx: 1, dy: 0 };
+    }
     return { dx: 0, dy: 1 };
   }
 

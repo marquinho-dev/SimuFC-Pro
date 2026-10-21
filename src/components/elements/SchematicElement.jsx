@@ -9,7 +9,13 @@ import {
   Maximize2,
 } from 'lucide-react';
 import { sounds } from '../../services/soundEffects';
-import { TIMER_RELAY_TERMINALS, getBreakerTerminals } from '../../types/components';
+import {
+  TIMER_RELAY_TERMINALS,
+  getBreakerTerminals,
+  SCHEMATIC_SOURCE_BUSES,
+  SCHEMATIC_SOURCE_BUS_X_START,
+  SCHEMATIC_SOURCE_BUS_X_END,
+} from '../../types/components';
 
 /**
  * Technical IEC CAD Terminal Point (Borne de Conexão Esquemático)
@@ -112,57 +118,101 @@ function SchematicPowerSource({
 
   const terminals = component.terminals || [];
 
+  // Determine active phases according to configured mode
+  const isL1Active = true;
+  const isL2Active = !mode.startsWith('1P');
+  const isL3Active = mode.includes('3P');
+  const isNActive = mode.includes('N');
+  const isPEActive = mode.includes('PE');
+
+  const activeBuses = [
+    isL1Active && SCHEMATIC_SOURCE_BUSES.L1,
+    isL2Active && SCHEMATIC_SOURCE_BUSES.L2,
+    isL3Active && SCHEMATIC_SOURCE_BUSES.L3,
+    isNActive && SCHEMATIC_SOURCE_BUSES.N,
+    isPEActive && SCHEMATIC_SOURCE_BUSES.PE,
+  ].filter(Boolean);
+
   return (
-    <div className="schematic-device-card schematic-power-source">
+    <div
+      className="schematic-device-card schematic-power-source"
+      style={{
+        width: '220px',
+        height: '250px',
+        position: 'relative',
+        userSelect: 'none',
+      }}
+    >
       <div className="schematic-device-header">
         <span className="schematic-device-tag">{component.tag || '-X1'}</span>
         <span className="schematic-source-spec">REDE {vStd} 60Hz</span>
       </div>
 
-      <svg className="schematic-svg-canvas" viewBox="0 0 130 250">
-        {/* Busbar Lines */}
-        <line x1="16" y1="52" x2="110" y2="52" stroke="#a855f7" strokeWidth="2.5" />
-        <line x1="16" y1="86" x2="110" y2="86" stroke="#ffffff" strokeWidth="2.5" />
-        <line x1="16" y1="120" x2="110" y2="120" stroke="#ef4444" strokeWidth="2.5" />
-        {mode.includes('N') && (
-          <line x1="16" y1="172" x2="110" y2="172" stroke="#0ea5e9" strokeWidth="2.5" />
-        )}
-        {mode.includes('PE') && (
-          <line
-            x1="16"
-            y1="220"
-            x2="110"
-            y2="220"
-            stroke="#16a34a"
-            strokeWidth="2.5"
-            strokeDasharray="6 3"
-          />
-        )}
+      <svg
+        className="schematic-svg-canvas"
+        viewBox="0 0 220 250"
+        style={{ width: '100%', height: '100%', display: 'block' }}
+      >
+        {activeBuses.map((bus) => (
+          <g key={`bus-${bus.id}`}>
+            {/* Legenda à esquerda, totalmente desimpedida e legível */}
+            <text
+              x="14"
+              y={bus.y + 5}
+              fill={bus.color}
+              fontSize="14"
+              fontWeight="800"
+              fontFamily="var(--font-mono, monospace)"
+              letterSpacing="0.5px"
+            >
+              {bus.label}
+            </text>
 
-        {/* Bus Labels */}
-        <text x="12" y="55" fill="#a855f7" fontSize="10" fontWeight="bold">L1</text>
-        <text x="12" y="89" fill="#ffffff" fontSize="10" fontWeight="bold">L2</text>
-        <text x="12" y="123" fill="#ef4444" fontSize="10" fontWeight="bold">L3</text>
-        {mode.includes('N') && (
-          <text x="12" y="175" fill="#0ea5e9" fontSize="10" fontWeight="bold">N</text>
-        )}
-        {mode.includes('PE') && (
-          <text x="12" y="223" fill="#16a34a" fontSize="10" fontWeight="bold">PE</text>
-        )}
+            {/* Linha do barramento inicia DEPOIS da legenda (sem sobreposição) e vai até o borne na extremidade oposta */}
+            <line
+              x1={SCHEMATIC_SOURCE_BUS_X_START}
+              y1={bus.y}
+              x2={SCHEMATIC_SOURCE_BUS_X_END}
+              y2={bus.y}
+              stroke={bus.color}
+              strokeWidth={bus.strokeWidth || 3}
+              strokeDasharray={bus.dashed ? '7 4' : undefined}
+              strokeLinecap="round"
+            />
+
+            {/* Ponto terminal visual na extremidade direita do barramento */}
+            <circle
+              cx={SCHEMATIC_SOURCE_BUS_X_END}
+              cy={bus.y}
+              r="3.5"
+              fill={bus.color}
+              opacity="0.8"
+            />
+          </g>
+        ))}
       </svg>
 
-      {terminals.map((t) => (
-        <SchematicTerminalPoint
-          key={t.id}
-          componentId={component.id}
-          terminal={t}
-          voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
-          isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
-          isConnecting={Boolean(activeTerminal)}
-          onTerminalClick={onTerminalClick}
-          labelPosition="left"
-        />
-      ))}
+      {/* Pontos de conexão posicionados exatamente na extremidade oposta da legenda (lado direito) */}
+      {terminals.map((t) => {
+        const bus = SCHEMATIC_SOURCE_BUSES[t.id];
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={{
+              ...t,
+              x: SCHEMATIC_SOURCE_BUS_X_END,
+              y: bus ? bus.y : t.y,
+              hideLabel: true, // Sem duplicar texto flutuante, a legenda já está no barramento
+            }}
+            voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition="right"
+          />
+        );
+      })}
     </div>
   );
 }
