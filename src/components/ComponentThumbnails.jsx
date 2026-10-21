@@ -707,14 +707,14 @@ export function Motor6PThumbnail() {
   return (
     <svg viewBox="0 0 88 100" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <linearGradient id="m6pTBoxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#94a3b8" />
-          <stop offset="50%" stopColor="#6c7c8d" />
-          <stop offset="100%" stopColor="#5a6878" />
+        <linearGradient id="m6pTBoxBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="40%" stopColor="#2563eb" />
+          <stop offset="100%" stopColor="#1e3a8a" />
         </linearGradient>
-        <linearGradient id="m6pPlateOrange" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ea580c" />
-          <stop offset="100%" stopColor="#9a3412" />
+        <linearGradient id="m6pPlateBlack" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#242730" />
+          <stop offset="100%" stopColor="#0b0c0e" />
         </linearGradient>
         <linearGradient id="m6pStatorBlue" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#2563eb" />
@@ -730,49 +730,66 @@ export function Motor6PThumbnail() {
       </defs>
 
       {/* ======================================================
-          TOP: TERMINAL BOX (CAIXA DE BORNES 6 PONTAS)
+          TOP: TERMINAL BOX (CAIXA DE BORNES INDUSTRIAL)
           ====================================================== */}
-      {/* Outer Gray Enclosure Box */}
-      <rect x="7" y="3" width="74" height="34" rx="4" fill="url(#m6pTBoxGrad)" stroke="#475569" strokeWidth="1" />
+      {/* 3 Top Conduit Hubs */}
+      {[25, 44, 63].map((hx, i) => (
+        <rect key={`hub-${i}`} x={hx - 4.5} y="1" width="9" height="4" rx="1" fill="#1d4ed8" stroke="#172554" strokeWidth="0.6" />
+      ))}
 
-      {/* PE Ground Socket on Left */}
-      <circle cx="15" cy="12" r="4.2" fill="#22c55e" stroke="#15803d" strokeWidth="0.8" />
-      <circle cx="15" cy="12" r="2.2" fill="#86efac" />
-      <rect x="11.5" y="18" width="7" height="4.5" rx="1" fill="#ffffff" />
-      <text x="15" y="21.5" fill="#0f172a" fontSize="2.8" fontWeight="900" textAnchor="middle" fontFamily="sans-serif">PE</text>
+      {/* Outer Blue Cast Enclosure Box */}
+      <rect x="7" y="3.5" width="74" height="35" rx="4" fill="url(#m6pTBoxBlue)" stroke="#1e3a8a" strokeWidth="1" />
 
-      {/* Terracotta Bakelite Terminal Plate */}
-      <rect x="25" y="5.5" width="53" height="29" rx="3" fill="url(#m6pPlateOrange)" stroke="#9a3412" strokeWidth="0.8" />
+      {/* 4 Corner Lid Bolts */}
+      {[
+        { cx: 10.5, cy: 7 },
+        { cx: 77.5, cy: 7 },
+        { cx: 10.5, cy: 35 },
+        { cx: 77.5, cy: 35 },
+      ].map((b, idx) => (
+        <circle key={`t-bolt-${idx}`} cx={b.cx} cy={b.cy} r="1.5" fill="#0f172a" stroke="#1e3a8a" strokeWidth="0.5" />
+      ))}
 
-      {/* Row 1: U1, V1, W1 */}
-      {[34, 51.5, 69].map((cx, idx) => {
-        const names = ['U1', 'V1', 'W1'];
-        return (
-          <g key={`m6p-top-${names[idx]}`}>
-            <circle cx={cx} cy="11.5" r="3.2" fill="#7c2d12" />
-            <circle cx={cx} cy="11.5" r="2.5" fill="#cbd5e1" stroke="#475569" strokeWidth="0.4" />
-            <rect x={cx - 3.5} y="15.5" width="7" height="4" rx="1" fill="#ffffff" />
-            <text x={cx} y="18.8" fill="#0f172a" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
-              {names[idx]}
-            </text>
-          </g>
-        );
-      })}
+      {/* Black Bakelite Terminal Plate */}
+      <rect x="14" y="6" width="60" height="30" rx="3" fill="url(#m6pPlateBlack)" stroke="#090a0d" strokeWidth="0.8" />
 
-      {/* Row 2: W2, U2, V2 */}
-      {[34, 51.5, 69].map((cx, idx) => {
+      {/* Row 1: W2, U2, V2 */}
+      {[25, 42, 59].map((cx, idx) => {
         const names = ['W2', 'U2', 'V2'];
         return (
+          <g key={`m6p-top-${names[idx]}`}>
+            <text x={cx} y="11" fill="#ffffff" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+              {names[idx]}
+            </text>
+            <circle cx={cx} cy="15.5" r="3.2" fill="#090a0e" />
+            <circle cx={cx} cy="15.5" r="2.5" fill="#cbd5e1" stroke="#000000" strokeWidth="0.6" />
+            <circle cx={cx} cy="15.5" r="1.2" fill="#ffffff" />
+          </g>
+        );
+      })}
+
+      {/* Row 2: U1, V1, W1 */}
+      {[25, 42, 59].map((cx, idx) => {
+        const names = ['U1', 'V1', 'W1'];
+        return (
           <g key={`m6p-bot-${names[idx]}`}>
-            <circle cx={cx} cy="24.5" r="3.2" fill="#7c2d12" />
-            <circle cx={cx} cy="24.5" r="2.5" fill="#cbd5e1" stroke="#475569" strokeWidth="0.4" />
-            <rect x={cx - 3.5} y="28.5" width="7" height="4" rx="1" fill="#ffffff" />
-            <text x={cx} y="31.8" fill="#0f172a" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+            <circle cx={cx} cy="25" r="3.2" fill="#090a0e" />
+            <circle cx={cx} cy="25" r="2.5" fill="#cbd5e1" stroke="#000000" strokeWidth="0.6" />
+            <circle cx={cx} cy="25" r="1.2" fill="#ffffff" />
+            <text x={cx} y="32" fill="#ffffff" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
               {names[idx]}
             </text>
           </g>
         );
       })}
+
+      {/* Ground PE on Right */}
+      <g>
+        <circle cx="69.5" cy="20" r="3" fill="#15803d" stroke="#000000" strokeWidth="0.6" />
+        <line x1="69.5" y1="18.5" x2="69.5" y2="20" stroke="#ffffff" strokeWidth="0.6" />
+        <line x1="68" y1="20" x2="71" y2="20" stroke="#ffffff" strokeWidth="0.6" />
+        <line x1="68.6" y1="20.8" x2="70.4" y2="20.8" stroke="#ffffff" strokeWidth="0.6" />
+      </g>
 
       {/* ======================================================
           BOTTOM: MOTOR FRONTAL VIEW (CORPO DO MOTOR)

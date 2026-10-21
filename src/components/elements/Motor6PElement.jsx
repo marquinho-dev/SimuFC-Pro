@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { sounds } from '../../services/soundEffects';
 
 export const MOTOR_TERMINAL_POS = {
-  PE: { x: 38, y: 36 },
-  W2: { x: 99, y: 36 },
-  U2: { x: 156, y: 36 },
-  V2: { x: 213, y: 36 },
-  U1: { x: 99, y: 86 },
-  V1: { x: 156, y: 86 },
-  W1: { x: 213, y: 86 },
+  W2: { x: 76, y: 50 },
+  U2: { x: 130, y: 50 },
+  V2: { x: 184, y: 50 },
+  U1: { x: 76, y: 96 },
+  V1: { x: 130, y: 96 },
+  W1: { x: 184, y: 96 },
+  PE: { x: 208, y: 73 },
 };
 
 function VectorBrassTerminal({
@@ -63,69 +63,63 @@ function VectorBrassTerminal({
       )}
 
       {isPE ? (
-        /* Grounding Terminal PE (Zinc-plated steel screw on green grounding pad) */
+        /* Grounding Terminal PE (International Ground Symbol ⏚ with Turned Steel Stud) */
         <g className="motor-vector-pe-terminal">
-          <circle cx="0" cy="0" r="14" fill="url(#pe-green-grad)" stroke="#000000" strokeWidth="2.2" />
-          <circle cx="0" cy="0" r="12" fill="none" stroke="#86efac" strokeWidth="1" opacity="0.6" />
-          {/* Zinc hex bolt with thick black border */}
-          <polygon
-            points="5.25,-9.09 -5.25,-9.09 -10.5,0 -5.25,9.09 5.25,9.09 10.5,0"
-            fill="url(#zinc-hex-grad)"
-            stroke="#000000"
-            strokeWidth="2.2"
-            strokeLinejoin="round"
-          />
-          {/* Steel center */}
-          <circle cx="0" cy="0" r="5" fill="#e2e8f0" stroke="#000000" strokeWidth="1.5" />
-          <ellipse cx="1" cy="-1.2" rx="2" ry="1.2" fill="#ffffff" opacity="0.9" />
+          <circle cx="0" cy="0" r="14" fill="url(#socket-metal-grad)" stroke="#000000" strokeWidth="2.2" />
+          <circle cx="0" cy="0" r="11.5" fill="#15803d" stroke="#000000" strokeWidth="1" />
+          {/* Earth Ground Symbol ⏚ */}
+          <line x1="0" y1="-6.5" x2="0" y2="0.5" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="-6.5" y1="0.5" x2="6.5" y2="0.5" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="-4" y1="3.5" x2="4" y2="3.5" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="-1.8" y1="6.5" x2="1.8" y2="6.5" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
         </g>
       ) : (
-        /* Pure Vector Brass Terminal Stud exactly as in Six-Terminal Motor Block Diagram.png */
-        <g className="motor-vector-brass-stud">
-          {/* 1. Golden Brass Washer with Crisp Black Border */}
-          <circle cx="0" cy="0" r="14" fill="url(#brass-washer-grad)" stroke="#000000" strokeWidth="2.2" />
-          <circle cx="0" cy="0" r="12.2" fill="none" stroke="#fef08a" strokeWidth="0.8" opacity="0.6" />
+        /* Pure Vector Turned Steel Terminal Stud & Hex Nut (Gemini_Generated_Image_qbwx2kqbwx2kqbwx.jpeg) */
+        <g className="motor-vector-steel-stud">
+          {/* 1. Turned Steel Silver Washer with Crisp Black Border */}
+          <circle cx="0" cy="0" r="14" fill="url(#steel-washer-grad)" stroke="#000000" strokeWidth="2.2" />
+          <circle cx="0" cy="0" r="12.2" fill="none" stroke="#ffffff" strokeWidth="0.8" opacity="0.6" />
 
-          {/* 2. Six Facets of the Hexagonal Nut with Individual 3D Shading */}
-          {/* Top Facet (lightest reflection) */}
+          {/* 2. Six Facets of the Hexagonal Nut with Individual 3D Steel Shading */}
+          {/* Top Facet (brightest reflection) */}
           <polygon
             points="-5.25,-9.09 5.25,-9.09 2.75,-4.76 -2.75,-4.76"
-            fill="#fff59d"
+            fill="#ffffff"
             stroke="#000000"
             strokeWidth="1.2"
           />
           {/* Top-Right Facet */}
           <polygon
             points="5.25,-9.09 10.5,0 5.5,0 2.75,-4.76"
-            fill="#fdd835"
+            fill="#e2e8f0"
             stroke="#000000"
             strokeWidth="1.2"
           />
           {/* Bottom-Right Facet */}
           <polygon
             points="10.5,0 5.25,9.09 2.75,4.76 5.5,0"
-            fill="#f57f17"
+            fill="#94a3b8"
             stroke="#000000"
             strokeWidth="1.2"
           />
-          {/* Bottom Facet */}
+          {/* Bottom Facet (shadowed) */}
           <polygon
             points="5.25,9.09 -5.25,9.09 -2.75,4.76 2.75,4.76"
-            fill="#d97706"
+            fill="#64748b"
             stroke="#000000"
             strokeWidth="1.2"
           />
           {/* Bottom-Left Facet */}
           <polygon
             points="-5.25,9.09 -10.5,0 -5.5,0 -2.75,4.76"
-            fill="#f59e0b"
+            fill="#94a3b8"
             stroke="#000000"
             strokeWidth="1.2"
           />
           {/* Top-Left Facet */}
           <polygon
             points="-10.5,0 -5.25,-9.09 -2.75,-4.76 -5.5,0"
-            fill="#ffee58"
+            fill="#f1f5f9"
             stroke="#000000"
             strokeWidth="1.2"
           />
@@ -140,13 +134,13 @@ function VectorBrassTerminal({
           />
 
           {/* 3. Inner Circular Bevel of the Nut */}
-          <circle cx="0" cy="0" r="5.6" fill="#facc15" stroke="#000000" strokeWidth="1.5" />
+          <circle cx="0" cy="0" r="5.6" fill="#cbd5e1" stroke="#000000" strokeWidth="1.4" />
 
           {/* 4. Silver Steel Threaded Pin Center */}
           <circle cx="0" cy="0" r="4.6" fill="url(#steel-stud-pin)" stroke="#000000" strokeWidth="1.2" />
           {/* Specular White Highlight Crescent */}
-          <ellipse cx="1" cy="-1.2" rx="2" ry="1.2" fill="#ffffff" opacity="0.9" />
-          <path d="M -3.2 -3.2 A 4.6 4.6 0 0 0 -3.2 3.2" fill="none" stroke="#64748b" strokeWidth="1" opacity="0.7" />
+          <ellipse cx="1" cy="-1.2" rx="2" ry="1.2" fill="#ffffff" opacity="0.95" />
+          <path d="M -3.2 -3.2 A 4.6 4.6 0 0 0 -3.2 3.2" fill="none" stroke="#475569" strokeWidth="1" opacity="0.75" />
         </g>
       )}
 
@@ -332,6 +326,15 @@ export default function Motor6PElement({
               <stop offset="100%" stopColor="#172554" />
             </linearGradient>
 
+            {/* Conduit Hub Gradient */}
+            <linearGradient id="hub-blue-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#1d4ed8" />
+              <stop offset="25%" stopColor="#3b82f6" />
+              <stop offset="50%" stopColor="#60a5fa" />
+              <stop offset="80%" stopColor="#2563eb" />
+              <stop offset="100%" stopColor="#172554" />
+            </linearGradient>
+
             {/* Terminal Box Cavity Shadow */}
             <radialGradient id="tbox-cavity-grad" cx="50%" cy="40%" r="60%">
               <stop offset="0%" stopColor="#131b2e" />
@@ -339,44 +342,37 @@ export default function Motor6PElement({
               <stop offset="100%" stopColor="#060911" />
             </radialGradient>
 
-            {/* Molded Bakelite Block Charcoal-Black Gradient (Six-Terminal Motor Block Diagram) */}
-            <linearGradient id="bakelite-block-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#252830" />
-              <stop offset="8%" stopColor="#1b1d22" />
-              <stop offset="40%" stopColor="#131418" />
-              <stop offset="80%" stopColor="#101114" />
-              <stop offset="100%" stopColor="#0b0c0e" />
+            {/* Molded Bakelite Plate Charcoal-Black Gradient */}
+            <linearGradient id="bakelite-plate-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#282b33" />
+              <stop offset="15%" stopColor="#1c1d24" />
+              <stop offset="50%" stopColor="#131418" />
+              <stop offset="85%" stopColor="#0e0f12" />
+              <stop offset="100%" stopColor="#090a0d" />
             </linearGradient>
 
             {/* Subtle highlight gradient along top edges */}
             <linearGradient id="bakelite-rim-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
-              <stop offset="25%" stopColor="rgba(255,255,255,0.06)" />
+              <stop offset="0%" stopColor="rgba(255,255,255,0.25)" />
+              <stop offset="25%" stopColor="rgba(255,255,255,0.08)" />
               <stop offset="100%" stopColor="rgba(0,0,0,0.6)" />
             </linearGradient>
 
-            {/* PE Green Socket Gradient */}
-            <radialGradient id="pe-green-grad" cx="40%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#86efac" />
-              <stop offset="35%" stopColor="#22c55e" />
-              <stop offset="80%" stopColor="#15803d" />
-              <stop offset="100%" stopColor="#14532d" />
+            {/* Turned Steel Washer Gradient */}
+            <radialGradient id="steel-washer-grad" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="25%" stopColor="#f1f5f9" />
+              <stop offset="55%" stopColor="#cbd5e1" />
+              <stop offset="85%" stopColor="#94a3b8" />
+              <stop offset="100%" stopColor="#64748b" />
             </radialGradient>
 
-            {/* Terminal Screw Socket Metallic Gradient */}
-            <radialGradient id="socket-metal-grad" cx="35%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#ffffff" />
-              <stop offset="40%" stopColor="#e2e8f0" />
+            {/* Zinc Pan-Head Screw Gradient */}
+            <radialGradient id="screw-zinc-head" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#f8fafc" />
+              <stop offset="35%" stopColor="#e2e8f0" />
               <stop offset="75%" stopColor="#94a3b8" />
               <stop offset="100%" stopColor="#475569" />
-            </radialGradient>
-
-            {/* Golden Brass Washer Gradient */}
-            <radialGradient id="brass-washer-grad" cx="35%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="#fef08a" />
-              <stop offset="25%" stopColor="#facc15" />
-              <stop offset="70%" stopColor="#ca8a04" />
-              <stop offset="100%" stopColor="#854d0e" />
             </radialGradient>
 
             {/* Silver Steel Threaded Stud Center */}
@@ -387,13 +383,13 @@ export default function Motor6PElement({
               <stop offset="100%" stopColor="#64748b" />
             </radialGradient>
 
-            {/* Zinc Hex Nut Gradient (for PE) */}
-            <linearGradient id="zinc-hex-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            {/* Terminal Screw Socket Metallic Gradient */}
+            <radialGradient id="socket-metal-grad" cx="35%" cy="35%" r="65%">
               <stop offset="0%" stopColor="#ffffff" />
-              <stop offset="30%" stopColor="#e2e8f0" />
-              <stop offset="70%" stopColor="#94a3b8" />
+              <stop offset="40%" stopColor="#e2e8f0" />
+              <stop offset="75%" stopColor="#94a3b8" />
               <stop offset="100%" stopColor="#475569" />
-            </linearGradient>
+            </radialGradient>
 
             {/* Front Motor Stator Blue Gradient */}
             <linearGradient id="motor-front-blue-grad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -433,341 +429,176 @@ export default function Motor6PElement({
 
           {/* ========================================================
               TOP SECTION: TERMINAL BOX (CAIXA DE LIGAÇÃO INDUSTRIAL)
-              Featuring the 6-Terminal Bakelite Block from Six-Terminal Motor Block Diagram
+              Identical to Gemini_Generated_Image_qbwx2kqbwx2kqbwx.jpeg
               ======================================================== */}
           <g className="motor-terminal-box-group" filter="url(#box-shadow)">
-            {/* Cast Blue Outer Enclosure */}
+            {/* 1. 3 TOP THREADED CONDUIT HUBS (PROTRUDING FROM TOP EDGE) */}
+            {[76, 130, 184].map((hubX, idx) => (
+              <g key={`conduit-hub-${idx}`} className="motor-conduit-hub">
+                {/* Outer Flange */}
+                <rect
+                  x={hubX - 15}
+                  y="1"
+                  width="30"
+                  height="12"
+                  rx="3"
+                  fill="url(#hub-blue-grad)"
+                  stroke="#172554"
+                  strokeWidth="1.8"
+                />
+                {/* Threaded horizontal ribs */}
+                <line x1={hubX - 13} y1="4" x2={hubX + 13} y2="4" stroke="#60a5fa" strokeWidth="1" opacity="0.8" />
+                <line x1={hubX - 14} y1="7" x2={hubX + 14} y2="7" stroke="#172554" strokeWidth="1.2" />
+                <line x1={hubX - 13} y1="9" x2={hubX + 13} y2="9" stroke="#60a5fa" strokeWidth="1" opacity="0.8" />
+                {/* Top collar lip */}
+                <ellipse cx={hubX} cy="2.5" rx="14" ry="2.5" fill="#3b82f6" stroke="#172554" strokeWidth="1.2" />
+                {/* Inner dark bore hole / conduit entrance */}
+                <ellipse cx={hubX} cy="2.5" rx="9" ry="2" fill="#030712" stroke="#0f172a" strokeWidth="1" />
+              </g>
+            ))}
+
+            {/* 2. CAST BLUE OUTER ENCLOSURE */}
             <rect
               x="10"
-              y="6"
+              y="10"
               width="240"
-              height="118"
+              height="124"
               rx="14"
               fill="url(#tbox-blue-grad)"
               stroke="#1e3a8a"
               strokeWidth="2.5"
             />
-            {/* Outer Bevel Highlight */}
+            {/* Outer Chamfer / Bevel Highlight */}
             <rect
               x="11.5"
-              y="7.5"
+              y="11.5"
               width="237"
-              height="115"
+              height="121"
               rx="12.5"
               fill="none"
-              stroke="rgba(255,255,255,0.25)"
+              stroke="rgba(255,255,255,0.28)"
               strokeWidth="1.2"
             />
 
-            {/* 4 Lid Mounting Screw Bosses */}
+            {/* 3. 4 DEEP LID BOLT HOLES IN THE CORNERS */}
             {[
-              { cx: 22, cy: 18 },
-              { cx: 238, cy: 18 },
-              { cx: 22, cy: 112 },
-              { cx: 238, cy: 112 },
+              { cx: 22, cy: 22 },
+              { cx: 238, cy: 22 },
+              { cx: 22, cy: 122 },
+              { cx: 238, cy: 122 },
             ].map((boss, idx) => (
               <g key={`lid-boss-${idx}`}>
-                <circle cx={boss.cx} cy={boss.cy} r="6" fill="#172554" stroke="#0f172a" strokeWidth="1" />
-                <circle cx={boss.cx} cy={boss.cy} r="4" fill="#0a0f1d" />
-                <circle cx={boss.cx} cy={boss.cy} r="2.5" fill="#020617" />
-                <circle cx={boss.cx - 1} cy={boss.cy - 1} r="0.8" fill="rgba(255,255,255,0.4)" />
+                <circle cx={boss.cx} cy={boss.cy} r="6.5" fill="#172554" stroke="#0f172a" strokeWidth="1.2" />
+                <circle cx={boss.cx} cy={boss.cy} r="4.5" fill="#080e1a" />
+                <circle cx={boss.cx} cy={boss.cy} r="2.8" fill="#020617" />
+                {/* Thread highlight inside bolt hole */}
+                <circle cx={boss.cx - 1} cy={boss.cy - 1} r="1" fill="rgba(255,255,255,0.5)" />
               </g>
             ))}
 
-            {/* Recessed Inner Cavity */}
+            {/* 4. RECESSED INNER CAVITY OF THE BOX */}
             <rect
-              x="17"
-              y="13"
-              width="226"
-              height="104"
-              rx="9"
+              x="26"
+              y="16"
+              width="208"
+              height="112"
+              rx="8"
               fill="url(#tbox-cavity-grad)"
               stroke="#0f172a"
               strokeWidth="1.5"
             />
+
+            {/* 5. BLACK BAKELITE TERMINAL PLATE */}
             <rect
-              x="18"
-              y="14"
-              width="224"
-              height="102"
-              rx="8"
-              fill="none"
-              stroke="rgba(0,0,0,0.6)"
-              strokeWidth="1.5"
-            />
-
-            {/* Grounding Boss / Pad (PE) in the chassis recess */}
-            <g className="motor-pe-chassis-pad">
-              <rect x="25" y="24" width="26" height="25" rx="4" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-              {/* Metallic Grounding Lug Washer */}
-              <circle cx="38" cy="36" r="11" fill="url(#socket-metal-grad)" stroke="#475569" strokeWidth="1" />
-              {/* Green grounding collar */}
-              <circle cx="38" cy="36" r="8" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="3 2" />
-              {/* Crisp PE Identification */}
-              <text
-                x="38"
-                y="59"
-                fill="#cbd5e1"
-                fontSize="10"
-                fontWeight="900"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                textAnchor="middle"
-                letterSpacing="0.5"
-              >
-                PE
-              </text>
-            </g>
-
-            {/* ========================================================
-                AUTHENTIC SIX-TERMINAL MOTOR BAKELITE BLOCK (PLACA DE BORNES 6P)
-                Exactly matching Six-Terminal Motor Block Diagram.png
-                ======================================================== */}
-            {/* Outer molded silhouette with top/bottom stepped crenellations, chamfered corners & 2 mounting ears */}
-            <path
-              d="
-                M 76 10
-                L 122 10
-                Q 123 10 123 12
-                L 123 16
-                Q 123 18 125 18
-                L 131 18
-                Q 133 18 133 16
-                L 133 12
-                Q 133 10 134 10
-                L 178 10
-                Q 179 10 179 12
-                L 179 16
-                Q 179 18 181 18
-                L 188 18
-                Q 190 18 190 16
-                L 190 12
-                Q 190 10 191 10
-                L 236 10
-                Q 240 10 243 13
-                L 247 17
-                Q 249 20 249 25
-                L 249 47
-                Q 249 50 252 52
-                A 10 10 0 0 1 252 70
-                Q 249 72 249 75
-                L 249 97
-                Q 249 101 247 104
-                L 243 108
-                Q 240 111 236 111
-                L 191 111
-                Q 190 111 190 109
-                L 190 105
-                Q 190 103 188 103
-                L 181 103
-                Q 179 103 179 105
-                L 179 109
-                Q 179 111 178 111
-                L 134 111
-                Q 133 111 133 109
-                L 133 105
-                Q 133 103 131 103
-                L 125 103
-                Q 123 103 123 105
-                L 123 109
-                Q 123 111 122 111
-                L 76 111
-                Q 72 111 69 108
-                L 65 104
-                Q 63 101 63 97
-                L 63 75
-                Q 63 72 60 70
-                A 10 10 0 0 1 60 52
-                Q 63 50 63 47
-                L 63 25
-                Q 63 20 65 17
-                L 69 13
-                Q 72 10 76 10
-                Z
-              "
-              fill="url(#bakelite-block-grad)"
-              stroke="#07080a"
+              x="34"
+              y="20"
+              width="192"
+              height="104"
+              rx="9"
+              fill="url(#bakelite-plate-grad)"
+              stroke="#090a0d"
               strokeWidth="2"
             />
-
-            {/* Inner rim highlight on the molded perimeter */}
-            <path
-              d="
-                M 77 11.5
-                L 121 11.5
-                L 121 17.5
-                L 134 17.5
-                L 134 11.5
-                L 177 11.5
-                L 177 17.5
-                L 191 17.5
-                L 191 11.5
-                L 235 11.5
-                L 247.5 24
-                L 247.5 97
-                L 235 109.5
-                L 191 109.5
-                L 191 103.5
-                L 177 103.5
-                L 177 109.5
-                L 134 109.5
-                L 134 103.5
-                L 121 103.5
-                L 121 109.5
-                L 77 109.5
-                L 64.5 97
-                L 64.5 24
-                Z
-              "
+            {/* Inner rim specular line */}
+            <rect
+              x="35.5"
+              y="21.5"
+              width="189"
+              height="101"
+              rx="7.5"
               fill="none"
               stroke="url(#bakelite-rim-grad)"
               strokeWidth="1"
             />
 
-            {/* Molded Partition Dividers between Columns (conforme Six-Terminal Motor Block Diagram) */}
-            <path
-              d="
-                M 127 18 L 127 48
-                M 184.5 18 L 184.5 48
-                M 127 74 L 127 104
-                M 184.5 74 L 184.5 104
-              "
-              fill="none"
-              stroke="#0a0b0e"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="
-                M 127 18 L 127 48
-                M 184.5 18 L 184.5 48
-                M 127 74 L 127 104
-                M 184.5 74 L 184.5 104
-              "
-              fill="none"
-              stroke="#242732"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-            />
-
-            {/* Two Sunken Square Compartments in Central Bakelite area */}
-            <g className="motor-block-center-cavities">
-              {/* Left Cavity */}
-              <rect x="116" y="50" width="22" height="22" rx="4.5" fill="#090a0d" stroke="#252934" strokeWidth="1.3" />
-              <rect x="117.5" y="51.5" width="19" height="19" rx="3.5" fill="#0f1116" />
-              {/* Right Cavity */}
-              <rect x="173.5" y="50" width="22" height="22" rx="4.5" fill="#090a0d" stroke="#252934" strokeWidth="1.3" />
-              <rect x="175" y="51.5" width="19" height="19" rx="3.5" fill="#0f1116" />
-            </g>
-
-            {/* Left and Right Mounting Ear Holes with Metallic Bushings */}
-            {/* Left Ear Mounting Hole */}
-            <circle cx="62" cy="61" r="7.5" fill="#12141a" stroke="#262934" strokeWidth="1" />
-            <circle cx="62" cy="61" r="5" fill="#ffffff" stroke="#64748b" strokeWidth="1.2" />
-            <circle cx="62" cy="61" r="4" fill="#0f172a" />
-            {/* Right Ear Mounting Hole */}
-            <circle cx="250" cy="61" r="7.5" fill="#12141a" stroke="#262934" strokeWidth="1" />
-            <circle cx="250" cy="61" r="5" fill="#ffffff" stroke="#64748b" strokeWidth="1.2" />
-            <circle cx="250" cy="61" r="4" fill="#0f172a" />
-
-            {/* 6 Circular Recesses / Sockets in Bakelite for the Stud Terminals */}
+            {/* 6. 4 CORNER PHILLIPS SCREWS HOLDING THE BAKELITE PLATE */}
             {[
-              { id: 'W2', x: 99, y: 36 },
-              { id: 'U2', x: 156, y: 36 },
-              { id: 'V2', x: 213, y: 36 },
-              { id: 'U1', x: 99, y: 86 },
-              { id: 'V1', x: 156, y: 86 },
-              { id: 'W1', x: 213, y: 86 },
-            ].map((t) => (
-              <g key={`t-socket-${t.id}`}>
-                {/* Outer socket recess rim */}
-                <circle cx={t.x} cy={t.y} r="18" fill="#0c0d11" stroke="#262a34" strokeWidth="1.2" />
-                {/* Inner stepped shadow */}
-                <circle cx={t.x} cy={t.y} r="15.5" fill="#121419" stroke="#08090b" strokeWidth="0.8" />
+              { cx: 46, cy: 31 },
+              { cx: 214, cy: 31 },
+              { cx: 46, cy: 113 },
+              { cx: 214, cy: 113 },
+            ].map((screw, idx) => (
+              <g key={`plate-screw-${idx}`}>
+                {/* Washer / screw well */}
+                <circle cx={screw.cx} cy={screw.cy} r="5.5" fill="url(#screw-zinc-head)" stroke="#000000" strokeWidth="1.2" />
+                <circle cx={screw.cx} cy={screw.cy} r="4.2" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="0.6" />
+                {/* Phillips cross slot */}
+                <line x1={screw.cx - 2.8} y1={screw.cy} x2={screw.cx + 2.8} y2={screw.cy} stroke="#0f172a" strokeWidth="1.4" strokeLinecap="round" />
+                <line x1={screw.cx} y1={screw.cy - 2.8} x2={screw.cx} y2={screw.cy + 2.8} stroke="#0f172a" strokeWidth="1.4" strokeLinecap="round" />
+                <line x1={screw.cx - 2.5} y1={screw.cy} x2={screw.cx + 2.5} y2={screw.cy} stroke="#334155" strokeWidth="0.8" />
+                <line x1={screw.cx} y1={screw.cy - 2.5} x2={screw.cx} y2={screw.cy + 2.5} stroke="#334155" strokeWidth="0.8" />
               </g>
             ))}
 
-            {/* ========================================================
-                CRISP WHITE TECHNICAL MARKINGS (EXACT LAYOUT FROM DIAGRAM):
-                Top Row: W2, U2, V2
-                Bottom Row: U1, V1, W1
-                ======================================================== */}
-            {/* Top Row Labels on Upper Stepped Tabs */}
-            <text
-              x="99"
-              y="23"
-              fill="#ffffff"
-              fontSize="14.5"
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              letterSpacing="0.3"
-            >
+            {/* 7. TWO SUNKEN CENTER ROUNDED-SQUARE COMPARTMENTS */}
+            <g className="motor-block-center-cavities">
+              {/* Left Cavity */}
+              <rect x="92" y="62" width="22" height="22" rx="4.5" fill="#07080a" stroke="#252934" strokeWidth="1.4" />
+              <rect x="93.5" y="63.5" width="19" height="19" rx="3.5" fill="#0d0e12" stroke="#050608" strokeWidth="0.8" />
+              {/* Right Cavity */}
+              <rect x="146" y="62" width="22" height="22" rx="4.5" fill="#07080a" stroke="#252934" strokeWidth="1.4" />
+              <rect x="147.5" y="63.5" width="19" height="19" rx="3.5" fill="#0d0e12" stroke="#050608" strokeWidth="0.8" />
+            </g>
+
+            {/* 8. 6 CIRCULAR RECESS SOCKETS IN BAKELITE UNDER THE STUDS */}
+            {[
+              { id: 'W2', x: 76, y: 50 },
+              { id: 'U2', x: 130, y: 50 },
+              { id: 'V2', x: 184, y: 50 },
+              { id: 'U1', x: 76, y: 96 },
+              { id: 'V1', x: 130, y: 96 },
+              { id: 'W1', x: 184, y: 96 },
+            ].map((t) => (
+              <g key={`t-socket-${t.id}`}>
+                <circle cx={t.x} cy={t.y} r="18" fill="#0b0c10" stroke="#262a34" strokeWidth="1.2" />
+                <circle cx={t.x} cy={t.y} r="15.5" fill="#111318" stroke="#060709" strokeWidth="0.8" />
+              </g>
+            ))}
+
+            {/* 9. CRISP TECHNICAL MARKINGS */}
+            {/* Top Row: W2, U2, V2 */}
+            <text x="76" y="32" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" textAnchor="middle" letterSpacing="0.4">
               W2
             </text>
-            <text
-              x="156"
-              y="23"
-              fill="#ffffff"
-              fontSize="14.5"
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              letterSpacing="0.3"
-            >
+            <text x="130" y="32" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" textAnchor="middle" letterSpacing="0.4">
               U2
             </text>
-            <text
-              x="213"
-              y="23"
-              fill="#ffffff"
-              fontSize="14.5"
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              letterSpacing="0.3"
-            >
+            <text x="184" y="32" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" textAnchor="middle" letterSpacing="0.4">
               V2
             </text>
 
-            {/* Bottom Row Labels on Lower Stepped Tabs */}
-            <text
-              x="99"
-              y="105"
-              fill="#ffffff"
-              fontSize="14.5"
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              letterSpacing="0.3"
-            >
+            {/* Bottom Row: U1, V1, W1 */}
+            <text x="76" y="118" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" textAnchor="middle" letterSpacing="0.4">
               U1
             </text>
-            <text
-              x="156"
-              y="105"
-              fill="#ffffff"
-              fontSize="14.5"
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              letterSpacing="0.3"
-            >
+            <text x="130" y="118" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" textAnchor="middle" letterSpacing="0.4">
               V1
             </text>
-            <text
-              x="213"
-              y="105"
-              fill="#ffffff"
-              fontSize="14.5"
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              textAnchor="middle"
-              letterSpacing="0.3"
-            >
+            <text x="184" y="118" fill="#ffffff" fontSize="13" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" textAnchor="middle" letterSpacing="0.4">
               W1
             </text>
 
-            {/* Interactive Vector Brass Stud Terminals inside SVG for 100% razor-sharp vector rendering */}
+            {/* 10. INTERACTIVE VECTOR STEEL STUD TERMINALS (AND PE) */}
             {renderTerminal(tPE, true)}
             {renderTerminal(tW2, false)}
             {renderTerminal(tU2, false)}

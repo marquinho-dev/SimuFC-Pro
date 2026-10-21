@@ -78,10 +78,10 @@ export function getTerminalExitVector(term, comp) {
     return term.y < 85 ? { dx: 0, dy: -1 } : { dx: 0, dy: 1 };
   }
 
-  // Motor terminals: top row exits up, bottom row exits down, PE exits left
+  // Motor terminals: top row exits up, bottom row exits down, PE exits right
   if (comp.type === 'motor_6p') {
-    if (term.id === 'PE') return { dx: -1, dy: 0 };
-    return term.y < 70 ? { dx: 0, dy: -1 } : { dx: 0, dy: 1 };
+    if (term.id === 'PE') return { dx: 1, dy: 0 };
+    return term.y < 73 ? { dx: 0, dy: -1 } : { dx: 0, dy: 1 };
   }
 
   // Circuit breakers: top exits up, bottom exits down

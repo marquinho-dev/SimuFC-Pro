@@ -437,16 +437,16 @@ export const INITIAL_COMPONENTS = [
       connectionType: 'NONE', // Aberto (não vem pré-fechado em estrela)
     },
     terminals: [
-      // Top row: U1, V1, W1
-      { id: 'U1', label: 'U1', x: 99, y: 36, type: 'motor_coil' },
-      { id: 'V1', label: 'V1', x: 156, y: 36, type: 'motor_coil' },
-      { id: 'W1', label: 'W1', x: 213, y: 36, type: 'motor_coil' },
-      // Bottom row: W2, U2, V2
-      { id: 'W2', label: 'W2', x: 99, y: 86, type: 'motor_coil' },
-      { id: 'U2', label: 'U2', x: 156, y: 86, type: 'motor_coil' },
-      { id: 'V2', label: 'V2', x: 213, y: 86, type: 'motor_coil' },
+      // Top row: W2, U2, V2
+      { id: 'W2', label: 'W2', x: 76, y: 50, type: 'motor_coil' },
+      { id: 'U2', label: 'U2', x: 130, y: 50, type: 'motor_coil' },
+      { id: 'V2', label: 'V2', x: 184, y: 50, type: 'motor_coil' },
+      // Bottom row: U1, V1, W1
+      { id: 'U1', label: 'U1', x: 76, y: 96, type: 'motor_coil' },
+      { id: 'V1', label: 'V1', x: 130, y: 96, type: 'motor_coil' },
+      { id: 'W1', label: 'W1', x: 184, y: 96, type: 'motor_coil' },
       // Frame Ground PE
-      { id: 'PE', label: 'PE', x: 38, y: 36, type: 'motor_ground' },
+      { id: 'PE', label: 'PE', x: 208, y: 73, type: 'motor_ground' },
     ],
   },
   {
