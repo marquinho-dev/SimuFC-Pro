@@ -283,49 +283,8 @@ function SchematicBreaker({
     <div
       className={`schematic-device-card schematic-breaker ${isClosed ? 'state-closed' : 'state-open'}`}
       style={{ width: `${cardWidth}px`, height: '200px', background: 'transparent', border: 'none', position: 'relative' }}
-      title={`Disjuntor ${displayTag}: ${isClosed ? 'FECHADO / LIGADO (Conduzindo)' : 'ABERTO / DESARMADO'}. Clique para alternar.`}
+      title={`Disjuntor ${displayTag}: ${isClosed ? 'FECHADO (Conduzindo)' : 'ABERTO / DESARMADO'}. Clique para alternar.`}
     >
-      {/* Interactive Toggle Switch Handle Pill */}
-      <div
-        className="breaker-interactive-handle schematic-breaker-handle"
-        onClick={handleToggle}
-        onPointerDown={(e) => e.stopPropagation()}
-        title={`Disjuntor ${displayTag}: ${isClosed ? 'LIGADO (I) - Clique para desligar' : 'DESLIGADO (0) - Clique para ligar'}`}
-        style={{
-          position: 'absolute',
-          top: '14px',
-          right: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '3px 8px',
-          borderRadius: '6px',
-          background: isClosed ? 'rgba(0, 230, 118, 0.18)' : 'rgba(239, 68, 68, 0.14)',
-          border: `1.5px solid ${isClosed ? '#00e676' : '#ef4444'}`,
-          color: isClosed ? '#00e676' : '#f87171',
-          fontSize: '11px',
-          fontWeight: '700',
-          letterSpacing: '0.5px',
-          cursor: 'pointer',
-          zIndex: 22,
-          userSelect: 'none',
-          boxShadow: isClosed ? '0 0 10px rgba(0, 230, 118, 0.4)' : 'none',
-          transition: 'all 0.18s ease',
-        }}
-      >
-        <span
-          style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: isClosed ? '#00e676' : '#ef4444',
-            boxShadow: isClosed ? '0 0 6px #00e676' : 'none',
-            display: 'inline-block',
-          }}
-        />
-        <span>{isClosed ? 'LIGADO (I)' : 'DESLIGADO (0)'}</span>
-      </div>
-
       <svg className="schematic-svg-canvas" viewBox="0 0 240 200" style={{ width: '100%', height: '100%', display: 'block', background: 'transparent' }}>
         {/* Clickable Area Over Breaker Mechanism */}
         <rect

@@ -5659,15 +5659,6 @@
   cursor: pointer;
 }
 
-.schematic-breaker-handle:hover {
-  transform: scale(1.05);
-  filter: brightness(1.2);
-}
-
-.schematic-breaker-handle:active {
-  transform: scale(0.96);
-}
-
 .schematic-breaker .schematic-breaker-power-terminal .schematic-terminal-node {
   background: transparent;
   border: 2px solid transparent;
