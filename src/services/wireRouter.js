@@ -12,7 +12,7 @@ export const COMP_DIMENSIONS = {
   button_start: { w: 136, h: 170 },
   button_emergency: { w: 136, h: 170 },
   pilot_lamp: { w: 80, h: 120 },
-  motor_6p: { w: 260, h: 530 },
+  motor_6p: { w: 260, h: 551 },
 };
 
 export function getComponentBounds(c) {

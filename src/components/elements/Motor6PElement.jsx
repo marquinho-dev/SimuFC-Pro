@@ -404,46 +404,41 @@ export default function Motor6PElement({
             {renderTerminal(tPE, true)}
           </g>
 
-          {/* Cast Metal Neck / Riser connecting box base to motor stator */}
-          <rect x="215" y="585" width="70" height="70" rx="4" fill="#225bb5" stroke="#0f2652" strokeWidth="2.5" />
-          <line x1="228" y1="595" x2="228" y2="645" stroke="#0f2652" strokeWidth="2" />
-          <line x1="272" y1="595" x2="272" y2="645" stroke="#0f2652" strokeWidth="2" />
-
           {/* ========================================================
               BOTTOM SECTION: MOTOR FRONTAL VIEW (CORPO DO MOTOR)
-              Azul brilhante idêntico à imagem de referência
+              Afastado sem pescoço intermediário, proporções refinadas
               ======================================================== */}
           <g className="motor-frontal-unit-group" filter="url(#box-shadow)">
             {/* Mounting Feet at bottom */}
-            <rect x="50" y="980" width="90" height="28" rx="6" fill="#143c7e" stroke="#0f2652" strokeWidth="2.5" />
-            <circle cx="70" cy="994" r="6.5" fill="#0f2652" stroke="#64748b" strokeWidth="1.5" />
+            <rect x="45" y="1018" width="85" height="26" rx="6" fill="#143c7e" stroke="#0b1e42" strokeWidth="2.5" />
+            <circle cx="65" cy="1031" r="6" fill="#0b1e42" stroke="#64748b" strokeWidth="1.5" />
 
-            <rect x="360" y="980" width="90" height="28" rx="6" fill="#143c7e" stroke="#0f2652" strokeWidth="2.5" />
-            <circle cx="430" cy="994" r="6.5" fill="#0f2652" stroke="#64748b" strokeWidth="1.5" />
+            <rect x="370" y="1018" width="85" height="26" rx="6" fill="#143c7e" stroke="#0b1e42" strokeWidth="2.5" />
+            <circle cx="435" cy="1031" r="6" fill="#0b1e42" stroke="#64748b" strokeWidth="1.5" />
 
             {/* Main Rounded Stator Body in Vibrant Glossy Royal Blue */}
             <rect
-              x="50"
-              y="650"
-              width="400"
-              height="335"
-              rx="42"
+              x="20"
+              y="620"
+              width="460"
+              height="400"
+              rx="48"
               fill="url(#motor-front-blue-grad)"
-              stroke="#0f2652"
+              stroke="#0b1e42"
               strokeWidth="4"
             />
 
             {/* Glossy Top-Left Specular Curved Reflection (Glass/Enamel Shine from reference image) */}
             <path
-              d="M 68 660 Q 210 658 375 675 Q 230 735 65 725 Z"
+              d="M 38 635 Q 220 625 440 645 Q 260 705 35 695 Z"
               fill="url(#motorGlossShine)"
               pointerEvents="none"
             />
             {/* Soft secondary rim reflection along top edge */}
             <rect
-              x="65"
-              y="654"
-              width="370"
+              x="45"
+              y="626"
+              width="410"
               height="6"
               rx="3"
               fill="rgba(255, 255, 255, 0.45)"
@@ -452,59 +447,59 @@ export default function Motor6PElement({
 
             {/* Embossed Horizontal Cooling Slots on Front Face (exact from reference image) */}
             {/* Left slots */}
-            <rect x="70" y="700" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
-            <rect x="70" y="760" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
-            <rect x="70" y="820" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
-            <rect x="70" y="880" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="42" y="700" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="42" y="765" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="42" y="830" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="42" y="895" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
             {/* Top-left corner slot */}
-            <rect x="70" y="666" width="24" height="8" rx="4" fill="#102959" stroke="#487fda" strokeWidth="1" />
+            <rect x="52" y="645" width="26" height="9" rx="4.5" fill="#0d244f" stroke="#487fda" strokeWidth="1" />
 
             {/* Right slots */}
-            <rect x="400" y="700" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
-            <rect x="400" y="760" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
-            <rect x="400" y="820" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
-            <rect x="400" y="880" width="30" height="10" rx="5" fill="#102959" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="426" y="700" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="426" y="765" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="426" y="830" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
+            <rect x="426" y="895" width="32" height="11" rx="5.5" fill="#0d244f" stroke="#487fda" strokeWidth="1.2" />
             {/* Top-right corner slot */}
-            <rect x="406" y="666" width="24" height="8" rx="4" fill="#102959" stroke="#487fda" strokeWidth="1" />
+            <rect x="422" y="645" width="26" height="9" rx="4.5" fill="#0d244f" stroke="#487fda" strokeWidth="1" />
 
             {/* Large Circular Bearing Flange Shield */}
             {/* Outer dark groove ring */}
-            <circle cx="250" cy="810" r="132" fill="#102652" />
+            <circle cx="250" cy="820" r="150" fill="#0d244f" />
             {/* Main outer flange ring in vibrant bright royal blue */}
             <circle
               cx="250"
-              cy="810"
-              r="128"
+              cy="820"
+              r="146"
               fill="url(#flange-outer-blue)"
-              stroke="#0f2652"
+              stroke="#0b1e42"
               strokeWidth="3.5"
             />
             {/* Inner beveled ring in deep blue */}
             <circle
               cx="250"
-              cy="810"
-              r="100"
+              cy="820"
+              r="110"
               fill="url(#flange-inner-blue)"
-              stroke="#14346e"
+              stroke="#163e80"
               strokeWidth="3"
             />
             {/* Inner highlight rim */}
             <circle
               cx="250"
-              cy="810"
-              r="98"
+              cy="820"
+              r="107"
               fill="none"
-              stroke="rgba(255,255,255,0.15)"
+              stroke="rgba(255,255,255,0.2)"
               strokeWidth="1.5"
             />
 
             {/* 8 Radial Embossed Tick Marks around Flange (0, 45, 90, 135, 180, 225, 270, 315 deg) */}
             {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
               const radVal = (deg * Math.PI) / 180;
-              const x1 = 250 + 104 * Math.cos(radVal);
-              const y1 = 810 + 104 * Math.sin(radVal);
-              const x2 = 250 + 124 * Math.cos(radVal);
-              const y2 = 810 + 124 * Math.sin(radVal);
+              const x1 = 250 + 116 * Math.cos(radVal);
+              const y1 = 820 + 116 * Math.sin(radVal);
+              const x2 = 250 + 142 * Math.cos(radVal);
+              const y2 = 820 + 142 * Math.sin(radVal);
               return (
                 <g key={`radial-slot-${deg}`}>
                   <line
@@ -512,8 +507,8 @@ export default function Motor6PElement({
                     y1={y1}
                     x2={x2}
                     y2={y2}
-                    stroke="#102652"
-                    strokeWidth="5"
+                    stroke="#0d244f"
+                    strokeWidth="5.5"
                     strokeLinecap="round"
                   />
                   <line
@@ -521,8 +516,8 @@ export default function Motor6PElement({
                     y1={y1}
                     x2={x2}
                     y2={y2}
-                    stroke="#487fda"
-                    strokeWidth="2"
+                    stroke="#4886e8"
+                    strokeWidth="2.2"
                     strokeLinecap="round"
                   />
                 </g>
@@ -531,113 +526,101 @@ export default function Motor6PElement({
 
             {/* 4 Round Slotted Screws with Horizontal Slot (-) */}
             {[
-              { x: 250 - 64, y: 810 - 64 },
-              { x: 250 + 64, y: 810 - 64 },
-              { x: 250 - 64, y: 810 + 64 },
-              { x: 250 + 64, y: 810 + 64 },
+              { x: 250 - 62, y: 820 - 62 },
+              { x: 250 + 62, y: 820 - 62 },
+              { x: 250 - 62, y: 820 + 62 },
+              { x: 250 + 62, y: 820 + 62 },
             ].map((pos, idx) => (
               <g key={`flange-screw-${idx}`}>
-                <circle cx={pos.x} cy={pos.y} r="16" fill="#102652" />
-                <circle cx={pos.x} cy={pos.y} r="14.5" fill="url(#silverNut)" stroke="#475569" strokeWidth="1" />
-                <circle cx={pos.x} cy={pos.y} r="11" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="0.8" />
+                <circle cx={pos.x} cy={pos.y} r="18" fill="#0d244f" />
+                <circle cx={pos.x} cy={pos.y} r="16" fill="url(#silverNut)" stroke="#334155" strokeWidth="1.2" />
+                <circle cx={pos.x} cy={pos.y} r="12" fill="#cbd5e1" stroke="#64748b" strokeWidth="0.8" />
                 {/* Horizontal screw slot */}
-                <rect x={pos.x - 9} y={pos.y - 2} width="18" height="4" rx="1.5" fill="#1e293b" />
+                <rect x={pos.x - 7.5} y={pos.y - 2} width="15" height="4" rx="1.5" fill="#1e293b" />
               </g>
             ))}
 
             {/* Inner Collar Ring */}
-            <circle cx="250" cy="810" r="66" fill="#102652" />
+            <circle cx="250" cy="820" r="75" fill="#0d244f" />
+            <circle cx="250" cy="820" r="71" fill="#163e80" stroke="#0b1e42" strokeWidth="2" />
 
             {/* Rotating Rotor / Turned Steel Shaft Assembly */}
             <circle
               cx="250"
-              cy="810"
-              r="62"
+              cy="820"
+              r="60"
               fill="url(#shaft-turn-grad)"
               stroke="#334155"
-              strokeWidth="3"
+              strokeWidth="2.5"
             />
             {/* Crisp white specular shine dot */}
-            <circle cx="278" cy="798" r="7" fill="#ffffff" />
+            <circle cx="280" cy="808" r="6" fill="#ffffff" />
 
             {/* Central Dark Shaft Hub */}
-            <circle cx="250" cy="810" r="20" fill="#475569" stroke="#1e293b" strokeWidth="2" />
+            <circle cx="250" cy="820" r="22" fill="#475569" stroke="#1e293b" strokeWidth="2" />
 
             {/* Rotating Yellow Keyway Arrow / Indicator with Inner Dark Keyway Slot */}
-            <g transform={`rotate(${rotationAngle}, 250, 810)`}>
+            <g transform={`rotate(${rotationAngle}, 250, 820)`}>
               <polygon
-                points="240,810 243,755 250,740 257,755 260,810"
+                points="238,820 242,760 250,742 258,760 262,820"
                 fill="#f59e0b"
                 stroke="#1e293b"
                 strokeWidth="2.5"
+                strokeLinejoin="round"
               />
-              <rect x="246" y="756" width="8" height="16" rx="3" fill="#334155" stroke="#1e293b" strokeWidth="1.2" />
+              <rect x="246" y="758" width="8" height="18" rx="3.5" fill="#374151" stroke="#1e293b" strokeWidth="1.2" />
             </g>
 
             {/* Center Cap Pin */}
-            <circle cx="250" cy="810" r="8" fill="#374151" stroke="#1e293b" strokeWidth="1.5" />
+            <circle cx="250" cy="820" r="9" fill="#374151" stroke="#1e293b" strokeWidth="1.5" />
 
-            {/* OVERLAID BADGES */}
-            {/* 1. Badge Fechamento Estrela / Triângulo */}
-            <g
-              className="motor-overlay-badge-fechamento"
-              transform="translate(68, 665)"
-              filter="url(#box-shadow)"
-              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-            >
-              <title>{connectionLabel}</title>
-              <circle
-                cx="26"
-                cy="26"
-                r="24"
-                fill="#0b1329"
-                stroke={detectedConnection === 'DELTA' ? '#f59e0b' : detectedConnection === 'Y' ? '#38bdf8' : '#475569'}
-                strokeWidth="2.5"
-                opacity={detectedConnection !== 'NONE' ? 0.95 : 0.4}
-              />
-              {detectedConnection === 'DELTA' ? (
-                <polygon
-                  points="26,14 38,36 14,36"
-                  stroke="#f59e0b"
-                  strokeWidth="3"
-                  strokeLinejoin="round"
-                  fill="rgba(245, 158, 11, 0.2)"
+            {/* OVERLAID BADGES - Posicionados com elegância sem cobrir a face do motor */}
+            {/* 1. Badge Fechamento Estrela / Triângulo - Exibido apenas se houver fechamento ativo */}
+            {detectedConnection !== 'NONE' && (
+              <g
+                className="motor-overlay-badge-fechamento"
+                transform="translate(250, 1031)"
+                filter="url(#box-shadow)"
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+              >
+                <title>{connectionLabel}</title>
+                <rect
+                  x="-65"
+                  y="-13"
+                  width="130"
+                  height="26"
+                  rx="13"
+                  fill="#0b1329"
+                  stroke={detectedConnection === 'DELTA' ? '#f59e0b' : '#38bdf8'}
+                  strokeWidth="2"
                 />
-              ) : detectedConnection === 'Y' ? (
-                <path
-                  d="M 18 16 L 26 26 L 34 16 M 26 26 L 26 37"
-                  stroke="#38bdf8"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-              ) : (
-                <line
-                  x1="18"
-                  y1="26"
-                  x2="34"
-                  y2="26"
-                  stroke="#64748b"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              )}
-            </g>
+                {detectedConnection === 'DELTA' ? (
+                  <>
+                    <polygon points="-46,-5 -37,7 -55,7" stroke="#f59e0b" strokeWidth="2" fill="rgba(245, 158, 11, 0.3)" />
+                    <text x="5" y="4.5" fill="#f59e0b" fontSize="12" fontWeight="bold" fontFamily="sans-serif" textAnchor="middle">Δ TRIÂNGULO</text>
+                  </>
+                ) : (
+                  <>
+                    <path d="M -50 -5 L -46 0 L -42 -5 M -46 0 L -46 6" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
+                    <text x="5" y="4.5" fill="#38bdf8" fontSize="12" fontWeight="bold" fontFamily="sans-serif" textAnchor="middle">Y ESTRELA</text>
+                  </>
+                )}
+              </g>
+            )}
 
-            {/* 2. Badge Estático de Sentido de Rotação */}
+            {/* 2. Badge Estático de Sentido de Rotação - No canto superior direito fora do mancal */}
             {isRunning && (
               <g
                 className="motor-badge-rotacao-topright"
-                transform="translate(432, 690)"
+                transform="translate(438, 642)"
                 filter="url(#box-shadow)"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <title>{directionLabel}</title>
-                <circle cx="0" cy="0" r="24" fill="#15803d" stroke="#22c55e" strokeWidth="3.5" />
+                <circle cx="0" cy="0" r="18" fill="#15803d" stroke="#22c55e" strokeWidth="2.5" />
                 {effectiveDirection === 'CW' ? (
                   <g
-                    transform="translate(-18, -18) scale(1.5)"
+                    transform="translate(-14, -14) scale(1.16)"
                     fill="none"
                     stroke="#ffffff"
                     strokeWidth="2.4"
@@ -649,7 +632,7 @@ export default function Motor6PElement({
                   </g>
                 ) : (
                   <g
-                    transform="translate(-18, -18) scale(1.5)"
+                    transform="translate(-14, -14) scale(1.16)"
                     fill="none"
                     stroke="#ffffff"
                     strokeWidth="2.4"
