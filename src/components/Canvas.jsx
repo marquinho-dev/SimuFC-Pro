@@ -164,68 +164,6 @@ function WireTerminalCageEntry({ pt, nextPt, wireColor }) {
       />
     </g>
   );
-}function WireTerminalScrewCap({ pt, voltage, isEnergized, isShorted }) {
-  if (!pt) return null;
-  const badgeColor =
-    voltage === 'L1'
-      ? '#a855f7'
-      : voltage === 'L2'
-      ? '#ffffff'
-      : voltage === 'L3'
-      ? '#ef4444'
-      : voltage === 'N'
-      ? '#2563eb'
-      : voltage === 'PE'
-      ? '#16a34a'
-      : null;
-
-  return (
-    <g className="wire-terminal-screw-cap" transform={`translate(${pt.x}, ${pt.y})`} pointerEvents="none">
-      {/* Sombra de oclusão e profundidade sob a arruela prensando o fio */}
-      <circle cx="0" cy="0" r="11" fill="rgba(0,0,0,0.65)" transform="translate(0, 1.2)" />
-
-      {/* Arruela de aperto lisa do borne que prensa o condutor */}
-      <circle
-        cx="0"
-        cy="0"
-        r="10"
-        fill="#0f172a"
-        stroke={badgeColor && isEnergized ? badgeColor : '#334155'}
-        strokeWidth="1.4"
-        style={{
-          filter: isShorted
-            ? 'drop-shadow(0 0 6px #ef4444)'
-            : isEnergized && badgeColor
-            ? `drop-shadow(0 0 5px ${badgeColor})`
-            : undefined,
-        }}
-      />
-      <circle cx="0" cy="0" r="8.8" fill="#1e293b" stroke="rgba(255,255,255,0.2)" strokeWidth="0.6" />
-
-      {/* Cabeça do Parafuso de Fenda Cruzada (Phillips) sobreposta ao cabo */}
-      <circle
-        cx="0"
-        cy="0"
-        r="7.5"
-        fill="url(#screwCapMetalGrad)"
-        stroke="#1e293b"
-        strokeWidth="0.8"
-      />
-
-      {/* Ranhura em cruz Phillips usinada na cabeça do parafuso */}
-      <line x1="-4.2" y1="0" x2="4.2" y2="0" stroke="#1e293b" strokeWidth="1.6" strokeLinecap="round" />
-      <line x1="0" y1="-4.2" x2="0" y2="4.2" stroke="#1e293b" strokeWidth="1.6" strokeLinecap="round" />
-      <line x1="-3.8" y1="0" x2="3.8" y2="0" stroke="#0f172a" strokeWidth="0.9" strokeLinecap="round" />
-      <line x1="0" y1="-3.8" x2="0" y2="3.8" stroke="#0f172a" strokeWidth="0.9" strokeLinecap="round" />
-
-      {/* Rebaixo central e indicador de fase/tensão */}
-      {isEnergized && badgeColor ? (
-        <circle cx="0" cy="0" r="2.2" fill={badgeColor} stroke="#0f172a" strokeWidth="0.6" />
-      ) : (
-        <circle cx="0" cy="0" r="1.4" fill="#0f172a" />
-      )}
-    </g>
-  );
 }
 
 export default function Canvas({
@@ -525,6 +463,43 @@ export default function Canvas({
         if (termId === '1' || termId === '11' || termId === '11_bot') { tx = 68; ty = 18; }
         else if (termId === '2' || termId === '12' || termId === '12_bot') { tx = 68; ty = 150; }
         else { tx = term.x ?? 68; ty = term.y ?? 18; }
+      } else if (comp.type === 'contactor' && !isCompSchematic) {
+        // Entradas nos bornes (notches) do contator em vista real:
+        // Bornes de força superiores (1, 3, 5): entram pelos recortes superiores (y = 0)
+        // Bornes de força inferiores (2, 4, 6): entram pelos recortes inferiores (y = 355)
+        // Bornes auxiliares superiores (13, 21, A1): entram pela canaleta superior (y = 72)
+        // Bornes auxiliares inferiores (14, 22, A2): entram pela canaleta inferior (y = 278)
+        if (['1', '3', '5'].includes(termId)) {
+          ty = 0;
+        } else if (['13', '21', 'A1'].includes(termId)) {
+          ty = 72;
+        } else if (['14', '22', 'A2'].includes(termId)) {
+          ty = 278;
+        } else if (['2', '4', '6'].includes(termId)) {
+          ty = 355;
+        }
+      } else if ((comp.type === 'circuit_breaker' || comp.type === 'breaker_3p' || comp.type === 'breaker_1p') && !isCompSchematic) {
+        // Entradas nas aberturas dos bornes de gaiola do disjuntor em vista real:
+        // Entradas superiores (1, 3, 5): y = 0
+        // Saídas inferiores (2, 4, 6): y = 218
+        const pNum = parseInt(termId, 10);
+        if (pNum % 2 === 1) {
+          ty = 0;
+        } else {
+          ty = 218;
+        }
+      } else if (comp.type === 'thermal_relay' && !isCompSchematic) {
+        // Entradas nos bornes do relé térmico em vista real:
+        // Contatos de comando (98, 97, 96, 95): entram pelo rebaixo inferior (y = 280), como na imagem do borne 95
+        // Saídas de força para o motor (2, 4, 6): entram pela abertura inferior (y = 355)
+        // Pinos de entrada de força (1, 3, 5) quando desacoplado: y = 0
+        if (['98', '97', '96', '95'].includes(termId)) {
+          ty = 280;
+        } else if (['2', '4', '6'].includes(termId)) {
+          ty = 355;
+        } else if (['1', '3', '5'].includes(termId)) {
+          ty = 0;
+        }
       } else if (comp.type === 'timer_relay') {
         const config = TIMER_RELAY_TERMINALS[termId];
         if (config) {
@@ -533,6 +508,19 @@ export default function Canvas({
         } else {
           const t = comp.terminals?.find((x) => x.id === termId);
           if (t) { tx = t.x; ty = t.y; }
+        }
+        if (!isCompSchematic) {
+          // Entradas nos bornes do relé temporizador em vista real:
+          // Bornes superiores (A1, 15, 25): topo (y = 0)
+          // Bornes intermediários (18, 16): canaleta (y = 286)
+          // Bornes inferiores (28, 26, A2): base (y = 355)
+          if (['A1', '15', '25'].includes(termId)) {
+            ty = 0;
+          } else if (['18', '16'].includes(termId)) {
+            ty = 286;
+          } else if (['28', '26', 'A2'].includes(termId)) {
+            ty = 355;
+          }
         }
       } else if (comp.type === 'motor_6p') {
         if (termId === 'U1') { tx = 99; ty = 36; }
@@ -2163,13 +2151,6 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
-                ) : viewMode === 'real' && compFrom?.displayMode !== 'schematic' ? (
-                  <WireTerminalScrewCap
-                    pt={p1}
-                    voltage={potential || vFrom}
-                    isEnergized={isEnergized}
-                    isShorted={isShorted}
-                  />
                 ) : null}
 
                 {/* Terminal tipo ilhós / ferrule plug, borne gaiola ou parafuso sextavado no P2 */}
@@ -2214,13 +2195,6 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
-                ) : viewMode === 'real' && compTo?.displayMode !== 'schematic' ? (
-                  <WireTerminalScrewCap
-                    pt={p2}
-                    voltage={potential || vTo}
-                    isEnergized={isEnergized}
-                    isShorted={isShorted}
-                  />
                 ) : null}
 
                 {/* Segment drag handles on selected wire (hidden during simulation) */}
