@@ -248,6 +248,8 @@ export default function Motor6PElement({
         : 'ANTI-HOR. (CCW ↺)';
 
   const calculatedSlip = (((1800 - targetRotorSetting) / 1800) * 100).toFixed(1);
+  const rotorPct = Math.max(0, Math.min(100, (targetRotorSetting / 1800) * 100));
+  const lentoPct = Math.max(0, Math.min(100, ((lentoSetting - 1) / (200 - 1)) * 100));
 
   // Rotational physics animation loop (conforme motor_ac_painel_v2_demo.html com inércia e câmera lenta)
   useEffect(() => {
@@ -848,42 +850,32 @@ export default function Motor6PElement({
       </div>
 
       {/* ========================================================
-          PAINEL DE CONTROLES E INDICAÇÃO DE ROTAÇÃO LOGO ABAIXO DA PEÇA
-          (Conforme modelos/motor_ac_painel_v2_demo.html)
+          PAINEL DE CONTROLES ORGANIZADO CONFORME A IMAGEM / DEMO
           ======================================================== */}
       <div
-        className="motor-controls-panel w-[94%] mt-1 px-3 py-2.5 rounded-xl bg-slate-900/90 border border-blue-900/40 shadow-xl backdrop-blur-md flex flex-col gap-2 select-none"
-        style={{ pointerEvents: 'auto' }}
+        className="motor-controls-panel flex flex-col items-center select-none w-full"
+        style={{
+          marginTop: '14px',
+          gap: '8px',
+          pointerEvents: 'auto',
+          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        }}
         onPointerDown={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
       >
-        {/* Indicação de rotação logo abaixo */}
         <div
-          className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-            isRunning
-              ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(34,197,94,0.25)]'
-              : 'bg-slate-800/80 border-slate-700/60 text-slate-400'
-          }`}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'auto 1fr auto',
+            gap: '8px 12px',
+            alignItems: 'center',
+            width: '100%',
+            fontSize: '14px',
+            color: '#e6e9ef',
+          }}
         >
-          <div className="flex items-center gap-1.5">
-            <span className="text-base leading-none">
-              {isRunning ? (effectiveDirection === 'CW' ? '↻' : '↺') : '⚪'}
-            </span>
-            <span>
-              {isRunning
-                ? `ROTAÇÃO: ${effectiveDirection === 'CW' ? 'HORÁRIA (CW)' : 'ANTI-HORÁRIA (CCW)'}`
-                : 'MOTOR DESLIGADO (PARADO)'}
-            </span>
-          </div>
-          <span className="font-mono text-sm font-bold text-sky-400">
-            {isRunning ? `${Math.round(currentRpm)} RPM` : '0 RPM'}
-          </span>
-        </div>
-
-        {/* Sliders de Controle conforme demonstrado em motor_ac_painel_v2_demo.html */}
-        <div className="grid grid-cols-[auto_1fr_auto] gap-x-2.5 gap-y-1.5 items-center text-xs text-slate-300">
-          <label htmlFor={`nRotor-${component.id}`} className="font-medium cursor-pointer">
+          <label htmlFor={`nRotor-${component.id}`} style={{ cursor: 'pointer', color: '#e6e9ef', fontWeight: 400 }}>
             Rotor
           </label>
           <input
@@ -894,13 +886,32 @@ export default function Motor6PElement({
             step="1"
             value={targetRotorSetting}
             onChange={(e) => handleRotorChange(Number(e.target.value))}
-            className="w-full accent-blue-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+            style={{
+              width: '100%',
+              height: '6px',
+              borderRadius: '9999px',
+              outline: 'none',
+              cursor: 'pointer',
+              accentColor: '#1d6ff2',
+              background: `linear-gradient(to right, #1d6ff2 0%, #1d6ff2 ${rotorPct}%, #e2e8f0 ${rotorPct}%, #e2e8f0 100%)`,
+            }}
           />
-          <output className="min-w-[65px] text-right font-mono text-sky-400 font-semibold tabular-nums">
+          <output
+            style={{
+              minWidth: '80px',
+              textAlign: 'right',
+              fontVariantNumeric: 'tabular-nums',
+              color: '#e6e9ef',
+              fontWeight: 400,
+            }}
+          >
             {targetRotorSetting} rpm
           </output>
 
-          <label htmlFor={`lento-${component.id}`} className="font-medium whitespace-nowrap cursor-pointer">
+          <label
+            htmlFor={`lento-${component.id}`}
+            style={{ cursor: 'pointer', color: '#e6e9ef', whiteSpace: 'nowrap', fontWeight: 400 }}
+          >
             Câmera lenta
           </label>
           <input
@@ -911,16 +922,31 @@ export default function Motor6PElement({
             step="1"
             value={lentoSetting}
             onChange={(e) => handleLentoChange(Number(e.target.value))}
-            className="w-full accent-blue-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+            style={{
+              width: '100%',
+              height: '6px',
+              borderRadius: '9999px',
+              outline: 'none',
+              cursor: 'pointer',
+              accentColor: '#1d6ff2',
+              background: `linear-gradient(to right, #1d6ff2 0%, #1d6ff2 ${lentoPct}%, #e2e8f0 ${lentoPct}%, #e2e8f0 100%)`,
+            }}
           />
-          <output className="min-w-[65px] text-right font-mono text-sky-400 font-semibold tabular-nums">
+          <output
+            style={{
+              minWidth: '80px',
+              textAlign: 'right',
+              fontVariantNumeric: 'tabular-nums',
+              color: '#e6e9ef',
+              fontWeight: 400,
+            }}
+          >
             1/{lentoSetting}
           </output>
         </div>
 
-        {/* Informações de Campo Síncrono e Escorregamento */}
-        <div className="text-[11px] text-slate-400 text-center font-mono pt-1.5 border-t border-slate-800/80">
-          Campo: 1800 rpm | escorregamento: {calculatedSlip}%
+        <div style={{ fontSize: '14px', color: '#aab2c0', textAlign: 'center', marginTop: '4px' }}>
+          Campo: 1800 rpm | escorregamento: {calculatedSlip} %
         </div>
       </div>
     </div>

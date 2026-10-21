@@ -3315,7 +3315,7 @@
    ========================================================== */
 .motor-frontal-device {
   width: 260px;
-  height: 340px;
+  height: auto;
   position: relative;
   background: transparent !important;
   border: none !important;
@@ -3323,6 +3323,7 @@
   box-shadow: none !important;
   display: flex;
   flex-direction: column;
+  align-items: center;
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
