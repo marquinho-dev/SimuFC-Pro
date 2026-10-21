@@ -12,7 +12,7 @@ export const COMP_DIMENSIONS = {
   button_start: { w: 136, h: 170 },
   button_emergency: { w: 136, h: 170 },
   pilot_lamp: { w: 80, h: 120 },
-  motor_6p: { w: 260, h: 340 },
+  motor_6p: { w: 260, h: 494 },
 };
 
 export function getComponentBounds(c) {
@@ -81,7 +81,7 @@ export function getTerminalExitVector(term, comp) {
   // Motor terminals: top row exits up, bottom row exits down, PE exits right
   if (comp.type === 'motor_6p') {
     if (term.id === 'PE') return { dx: 1, dy: 0 };
-    return term.y < 73 ? { dx: 0, dy: -1 } : { dx: 0, dy: 1 };
+    return term.y < 180 ? { dx: 0, dy: -1 } : { dx: 0, dy: 1 };
   }
 
   // Circuit breakers: top exits up, bottom exits down

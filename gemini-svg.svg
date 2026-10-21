@@ -1,0 +1,118 @@
+<svg viewBox="0 0 500 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients for realistic metallic effects -->
+    <linearGradient id="blueBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5a9bd4" />
+      <stop offset="50%" stop-color="#4682b4" />
+      <stop offset="100%" stop-color="#2c5e86" />
+    </linearGradient>
+    
+    <linearGradient id="innerBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2b557a" />
+      <stop offset="100%" stop-color="#1e405e" />
+    </linearGradient>
+
+    <linearGradient id="blackPanelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#333333" />
+      <stop offset="100%" stop-color="#1a1a1a" />
+    </linearGradient>
+
+    <!-- Base silver gradient for the nut -->
+    <linearGradient id="silverNut" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6e9ec" />
+      <stop offset="50%" stop-color="#b0b7bd" />
+      <stop offset="100%" stop-color="#7a8289" />
+    </linearGradient>
+
+    <!-- Inverted silver gradient for inner bevel depth -->
+    <linearGradient id="nutBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a8289" />
+      <stop offset="50%" stop-color="#b0b7bd" />
+      <stop offset="100%" stop-color="#e6e9ec" />
+    </linearGradient>
+
+    <!-- Reusable Terminal Component (Improved Nut Design) -->
+    <g id="terminal">
+      <!-- Hexagonal Nut with rounded corners (using stroke-linejoin="round") -->
+      <polygon points="0,-24 20.78,-12 20.78,12 0,24 -20.78,12 -20.78,-12" fill="url(#silverNut)" stroke="#4a5259" stroke-width="3" stroke-linejoin="round" />
+      
+      <!-- Inner circular beveling / indentation -->
+      <circle r="19" fill="url(#nutBevel)" />
+      <circle r="18" fill="none" stroke="#5a6570" stroke-width="0.5" />
+      
+      <!-- Inner threaded ring area -->
+      <circle r="13" fill="url(#silverNut)" stroke="#3a4249" stroke-width="1.5" />
+      <circle r="10" fill="none" stroke="#9ba4ad" stroke-width="1" />
+      
+      <!-- Center Bolt -->
+      <circle r="8" fill="#dadddf" stroke="#68737d" stroke-width="1" />
+    </g>
+
+    <!-- Reusable Screw Component -->
+    <g id="screw">
+      <circle r="10" fill="url(#silverNut)" stroke="#555" stroke-width="1" />
+      <path d="M -5,0 L 5,0 M 0,-5 L 0,5" stroke="#444" stroke-width="2" />
+    </g>
+    
+    <!-- Outer Box Screw -->
+    <g id="box-screw">
+      <circle r="12" fill="#1b3955" />
+      <circle r="6" fill="#112538" />
+    </g>
+  </defs>
+
+  <!-- Outer Blue Enclosure -->
+  <rect x="10" y="30" width="480" height="560" rx="25" fill="url(#blueBoxGrad)" stroke="#306896" stroke-width="3" />
+  <rect x="30" y="50" width="440" height="520" rx="20" fill="url(#blueBoxGrad)" />
+  
+  <!-- Outer Box Corner Screws -->
+  <use href="#box-screw" x="35" y="55" />
+  <use href="#box-screw" x="465" y="55" />
+  <use href="#box-screw" x="35" y="565" />
+  <use href="#box-screw" x="465" y="565" />
+
+  <!-- Inner Blue Rim Cutout -->
+  <rect x="45" y="65" width="410" height="490" rx="15" fill="url(#innerBlueGrad)" stroke="#1a364f" stroke-width="2" />
+
+  <!-- Main Black Terminal Panel -->
+  <rect x="60" y="120" width="380" height="410" rx="12" fill="url(#blackPanelGrad)" stroke="#111" stroke-width="3" />
+  
+  <!-- Central Blank Indentations -->
+  <rect x="165" y="315" width="55" height="55" rx="10" fill="#222" stroke="#181818" stroke-width="2" />
+  <rect x="270" y="315" width="55" height="55" rx="10" fill="#222" stroke="#181818" stroke-width="2" />
+
+  <!-- Inner Panel Screws -->
+  <use href="#screw" x="85" y="145" />
+  <use href="#screw" x="415" y="145" />
+  <use href="#screw" x="85" y="505" />
+  <use href="#screw" x="415" y="505" />
+
+  <!-- Terminal Markings (Top Row) -->
+  <text x="140" y="210" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#e0e0e0" text-anchor="middle">W2</text>
+  <text x="245" y="210" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#e0e0e0" text-anchor="middle">U2</text>
+  <text x="350" y="210" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#e0e0e0" text-anchor="middle">V2</text>
+
+  <!-- Terminals (Top Row) -->
+  <use href="#terminal" x="140" y="260" />
+  <use href="#terminal" x="245" y="260" />
+  <use href="#terminal" x="350" y="260" />
+
+  <!-- Terminal Markings (Bottom Row) -->
+  <text x="140" y="490" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#e0e0e0" text-anchor="middle">U1</text>
+  <text x="245" y="490" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#e0e0e0" text-anchor="middle">V1</text>
+  <text x="350" y="490" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#e0e0e0" text-anchor="middle">W1</text>
+
+  <!-- Terminals (Bottom Row) -->
+  <use href="#terminal" x="140" y="430" />
+  <use href="#terminal" x="245" y="430" />
+  <use href="#terminal" x="350" y="430" />
+
+  <!-- Earth / Ground Symbol (Right side) -->
+  <g transform="translate(405, 345)">
+    <circle cx="0" cy="0" r="16" fill="none" stroke="#777" stroke-width="2" />
+    <line x1="0" y1="-8" x2="0" y2="4" stroke="#777" stroke-width="2" />
+    <line x1="-8" y1="4" x2="8" y2="4" stroke="#777" stroke-width="2" />
+    <line x1="-5" y1="8" x2="5" y2="8" stroke="#777" stroke-width="2" />
+    <line x1="-2" y1="12" x2="2" y2="12" stroke="#777" stroke-width="2" />
+  </g>
+</svg>

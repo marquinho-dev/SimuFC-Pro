@@ -213,32 +213,24 @@ function WireMotorRingLug({ pt, nextPt, wireColor }) {
         />
       </g>
 
-      {/* 2. Porca Sextavada de Aço Usinado prensando o olhal por cima (100% Vector SVG, idêntica aos bornes de aço) */}
+      {/* 2. Porca Sextavada de Aço Usinado prensando o olhal por cima (idêntica ao design do gemini-svg.svg) */}
       <g transform={`translate(${pt.x}, ${pt.y})`}>
-        {/* 6 Facetas da Porca Sextavada em Aço com chanfro 3D e contorno preto nítido */}
-        <polygon points="-5.25,-9.09 5.25,-9.09 2.75,-4.76 -2.75,-4.76" fill="#ffffff" stroke="#000000" strokeWidth="1.2" />
-        <polygon points="5.25,-9.09 10.5,0 5.5,0 2.75,-4.76" fill="#e2e8f0" stroke="#000000" strokeWidth="1.2" />
-        <polygon points="10.5,0 5.25,9.09 2.75,4.76 5.5,0" fill="#94a3b8" stroke="#000000" strokeWidth="1.2" />
-        <polygon points="5.25,9.09 -5.25,9.09 -2.75,4.76 2.75,4.76" fill="#64748b" stroke="#000000" strokeWidth="1.2" />
-        <polygon points="-5.25,9.09 -10.5,0 -5.5,0 -2.75,4.76" fill="#94a3b8" stroke="#000000" strokeWidth="1.2" />
-        <polygon points="-10.5,0 -5.25,-9.09 -2.75,-4.76 -5.5,0" fill="#f1f5f9" stroke="#000000" strokeWidth="1.2" />
-
-        {/* Contorno externo preto nítido da porca */}
+        {/* Hexagonal Nut with rounded corners */}
         <polygon
-          points="5.25,-9.09 -5.25,-9.09 -10.5,0 -5.25,9.09 5.25,9.09 10.5,0"
-          fill="none"
-          stroke="#000000"
-          strokeWidth="2.2"
+          points="0,-12.5 10.82,-6.25 10.82,6.25 0,12.5 -10.82,6.25 -10.82,-6.25"
+          fill="url(#silverNut)"
+          stroke="#4a5259"
+          strokeWidth="1.8"
           strokeLinejoin="round"
         />
-
-        {/* Rebaixo central circular da porca */}
-        <circle cx="0" cy="0" r="5.6" fill="#cbd5e1" stroke="#000000" strokeWidth="1.4" />
-
-        {/* Pino Central de Aço Usinado com reflexo especular */}
-        <circle cx="0" cy="0" r="4.6" fill="#cbd5e1" stroke="#000000" strokeWidth="1.2" />
-        <ellipse cx="1" cy="-1.2" rx="2" ry="1.2" fill="#ffffff" opacity="0.95" />
-        <path d="M -3.2 -3.2 A 4.6 4.6 0 0 0 -3.2 3.2" fill="none" stroke="#475569" strokeWidth="1" opacity="0.75" />
+        {/* Inner circular beveling / indentation */}
+        <circle r="9.8" fill="url(#nutBevel)" />
+        <circle r="9.3" fill="none" stroke="#5a6570" strokeWidth="0.5" />
+        {/* Inner threaded ring area */}
+        <circle r="6.8" fill="url(#silverNut)" stroke="#3a4249" strokeWidth="1" />
+        <circle r="5.2" fill="none" stroke="#9ba4ad" strokeWidth="0.6" />
+        {/* Center Bolt */}
+        <circle r="4.2" fill="#dadddf" stroke="#68737d" strokeWidth="0.8" />
       </g>
     </g>
   );
@@ -579,13 +571,13 @@ export default function Canvas({
           if (t) { tx = t.x; ty = t.y; }
         }
       } else if (comp.type === 'motor_6p') {
-        if (termId === 'W2') { tx = 76; ty = 50; }
-        else if (termId === 'U2') { tx = 130; ty = 50; }
-        else if (termId === 'V2') { tx = 184; ty = 50; }
-        else if (termId === 'U1') { tx = 76; ty = 96; }
-        else if (termId === 'V1') { tx = 130; ty = 96; }
-        else if (termId === 'W1') { tx = 184; ty = 96; }
-        else if (termId === 'PE') { tx = 208; ty = 73; }
+        if (termId === 'W2') { tx = 73; ty = 135; }
+        else if (termId === 'U2') { tx = 127; ty = 135; }
+        else if (termId === 'V2') { tx = 182; ty = 135; }
+        else if (termId === 'U1') { tx = 73; ty = 224; }
+        else if (termId === 'V1') { tx = 127; ty = 224; }
+        else if (termId === 'W1') { tx = 182; ty = 224; }
+        else if (termId === 'PE') { tx = 211; ty = 179; }
       }
 
       return {
@@ -2007,6 +1999,16 @@ export default function Canvas({
               <stop offset="30%" stopColor="#cbd5e1" />
               <stop offset="70%" stopColor="#64748b" />
               <stop offset="100%" stopColor="#1e293b" />
+            </linearGradient>
+            <linearGradient id="silverNut" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#e6e9ec" />
+              <stop offset="50%" stopColor="#b0b7bd" />
+              <stop offset="100%" stopColor="#7a8289" />
+            </linearGradient>
+            <linearGradient id="nutBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#7a8289" />
+              <stop offset="50%" stopColor="#b0b7bd" />
+              <stop offset="100%" stopColor="#e6e9ec" />
             </linearGradient>
           </defs>
 

@@ -438,15 +438,15 @@ export const INITIAL_COMPONENTS = [
     },
     terminals: [
       // Top row: W2, U2, V2
-      { id: 'W2', label: 'W2', x: 76, y: 50, type: 'motor_coil' },
-      { id: 'U2', label: 'U2', x: 130, y: 50, type: 'motor_coil' },
-      { id: 'V2', label: 'V2', x: 184, y: 50, type: 'motor_coil' },
+      { id: 'W2', label: 'W2', x: 73, y: 135, type: 'motor_coil' },
+      { id: 'U2', label: 'U2', x: 127, y: 135, type: 'motor_coil' },
+      { id: 'V2', label: 'V2', x: 182, y: 135, type: 'motor_coil' },
       // Bottom row: U1, V1, W1
-      { id: 'U1', label: 'U1', x: 76, y: 96, type: 'motor_coil' },
-      { id: 'V1', label: 'V1', x: 130, y: 96, type: 'motor_coil' },
-      { id: 'W1', label: 'W1', x: 184, y: 96, type: 'motor_coil' },
+      { id: 'U1', label: 'U1', x: 73, y: 224, type: 'motor_coil' },
+      { id: 'V1', label: 'V1', x: 127, y: 224, type: 'motor_coil' },
+      { id: 'W1', label: 'W1', x: 182, y: 224, type: 'motor_coil' },
       // Frame Ground PE
-      { id: 'PE', label: 'PE', x: 208, y: 73, type: 'motor_ground' },
+      { id: 'PE', label: 'PE', x: 211, y: 179, type: 'motor_ground' },
     ],
   },
   {

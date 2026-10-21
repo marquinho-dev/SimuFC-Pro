@@ -708,19 +708,24 @@ export function Motor6PThumbnail() {
     <svg viewBox="0 0 88 100" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="m6pTBoxBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="40%" stopColor="#2563eb" />
-          <stop offset="100%" stopColor="#1e3a8a" />
+          <stop offset="0%" stopColor="#203c56" />
+          <stop offset="50%" stopColor="#152e47" />
+          <stop offset="100%" stopColor="#0d2338" />
         </linearGradient>
         <linearGradient id="m6pPlateBlack" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#242730" />
-          <stop offset="100%" stopColor="#0b0c0e" />
+          <stop offset="0%" stopColor="#1e2328" />
+          <stop offset="100%" stopColor="#080a0c" />
+        </linearGradient>
+        <linearGradient id="m6pSilverNut" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f8fafc" />
+          <stop offset="35%" stopColor="#cbd5e1" />
+          <stop offset="70%" stopColor="#94a3b8" />
+          <stop offset="100%" stopColor="#475569" />
         </linearGradient>
         <linearGradient id="m6pStatorBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#2563eb" />
-          <stop offset="30%" stopColor="#1d4ed8" />
-          <stop offset="80%" stopColor="#1e40af" />
-          <stop offset="100%" stopColor="#172554" />
+          <stop offset="0%" stopColor="#1f4263" />
+          <stop offset="40%" stopColor="#152e47" />
+          <stop offset="100%" stopColor="#0b1a29" />
         </linearGradient>
         <radialGradient id="m6pShaftSteel" cx="40%" cy="35%" r="65%">
           <stop offset="0%" stopColor="#f8fafc" />
@@ -730,15 +735,16 @@ export function Motor6PThumbnail() {
       </defs>
 
       {/* ======================================================
-          TOP: TERMINAL BOX (CAIXA DE BORNES INDUSTRIAL)
+          TOP: TERMINAL BOX (CAIXA DE BORNES INDUSTRIAL GEMINI-SVG)
           ====================================================== */}
       {/* 3 Top Conduit Hubs */}
       {[25, 44, 63].map((hx, i) => (
-        <rect key={`hub-${i}`} x={hx - 4.5} y="1" width="9" height="4" rx="1" fill="#1d4ed8" stroke="#172554" strokeWidth="0.6" />
+        <rect key={`hub-${i}`} x={hx - 4.5} y="1" width="9" height="4" rx="1" fill="#152e47" stroke="#081018" strokeWidth="0.6" />
       ))}
 
       {/* Outer Blue Cast Enclosure Box */}
-      <rect x="7" y="3.5" width="74" height="35" rx="4" fill="url(#m6pTBoxBlue)" stroke="#1e3a8a" strokeWidth="1" />
+      <rect x="7" y="3.5" width="74" height="35" rx="4" fill="url(#m6pTBoxBlue)" stroke="#09131d" strokeWidth="1" />
+      <rect x="9" y="5" width="70" height="32" rx="3" fill="none" stroke="#2c5070" strokeWidth="0.6" opacity="0.6" />
 
       {/* 4 Corner Lid Bolts */}
       {[
@@ -747,23 +753,23 @@ export function Motor6PThumbnail() {
         { cx: 10.5, cy: 35 },
         { cx: 77.5, cy: 35 },
       ].map((b, idx) => (
-        <circle key={`t-bolt-${idx}`} cx={b.cx} cy={b.cy} r="1.5" fill="#0f172a" stroke="#1e3a8a" strokeWidth="0.5" />
+        <circle key={`t-bolt-${idx}`} cx={b.cx} cy={b.cy} r="1.5" fill="#475569" stroke="#0f172a" strokeWidth="0.4" />
       ))}
 
       {/* Black Bakelite Terminal Plate */}
-      <rect x="14" y="6" width="60" height="30" rx="3" fill="url(#m6pPlateBlack)" stroke="#090a0d" strokeWidth="0.8" />
+      <rect x="14" y="6.5" width="60" height="29" rx="3" fill="url(#m6pPlateBlack)" stroke="#050708" strokeWidth="0.8" />
 
       {/* Row 1: W2, U2, V2 */}
       {[25, 42, 59].map((cx, idx) => {
         const names = ['W2', 'U2', 'V2'];
         return (
           <g key={`m6p-top-${names[idx]}`}>
-            <text x={cx} y="11" fill="#ffffff" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+            <text x={cx} y="11" fill="#cbd5e1" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
               {names[idx]}
             </text>
-            <circle cx={cx} cy="15.5" r="3.2" fill="#090a0e" />
-            <circle cx={cx} cy="15.5" r="2.5" fill="#cbd5e1" stroke="#000000" strokeWidth="0.6" />
-            <circle cx={cx} cy="15.5" r="1.2" fill="#ffffff" />
+            <circle cx={cx} cy="15.5" r="3.2" fill="url(#m6pSilverNut)" stroke="#334155" strokeWidth="0.5" />
+            <circle cx={cx} cy="15.5" r="2.2" fill="#e2e8f0" stroke="#475569" strokeWidth="0.4" />
+            <circle cx={cx} cy="15.5" r="1.1" fill="#0f172a" />
           </g>
         );
       })}
@@ -773,10 +779,10 @@ export function Motor6PThumbnail() {
         const names = ['U1', 'V1', 'W1'];
         return (
           <g key={`m6p-bot-${names[idx]}`}>
-            <circle cx={cx} cy="25" r="3.2" fill="#090a0e" />
-            <circle cx={cx} cy="25" r="2.5" fill="#cbd5e1" stroke="#000000" strokeWidth="0.6" />
-            <circle cx={cx} cy="25" r="1.2" fill="#ffffff" />
-            <text x={cx} y="32" fill="#ffffff" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+            <circle cx={cx} cy="24.5" r="3.2" fill="url(#m6pSilverNut)" stroke="#334155" strokeWidth="0.5" />
+            <circle cx={cx} cy="24.5" r="2.2" fill="#e2e8f0" stroke="#475569" strokeWidth="0.4" />
+            <circle cx={cx} cy="24.5" r="1.1" fill="#0f172a" />
+            <text x={cx} y="32" fill="#cbd5e1" fontSize="2.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
               {names[idx]}
             </text>
           </g>
@@ -785,10 +791,11 @@ export function Motor6PThumbnail() {
 
       {/* Ground PE on Right */}
       <g>
-        <circle cx="69.5" cy="20" r="3" fill="#15803d" stroke="#000000" strokeWidth="0.6" />
-        <line x1="69.5" y1="18.5" x2="69.5" y2="20" stroke="#ffffff" strokeWidth="0.6" />
-        <line x1="68" y1="20" x2="71" y2="20" stroke="#ffffff" strokeWidth="0.6" />
-        <line x1="68.6" y1="20.8" x2="70.4" y2="20.8" stroke="#ffffff" strokeWidth="0.6" />
+        <circle cx="69.5" cy="20" r="3.2" fill="url(#m6pSilverNut)" stroke="#334155" strokeWidth="0.5" />
+        <circle cx="69.5" cy="20" r="2.2" fill="#22c55e" stroke="#15803d" strokeWidth="0.4" />
+        <line x1="69.5" y1="18.5" x2="69.5" y2="20" stroke="#ffffff" strokeWidth="0.5" />
+        <line x1="68" y1="20" x2="71" y2="20" stroke="#ffffff" strokeWidth="0.5" />
+        <line x1="68.6" y1="20.8" x2="70.4" y2="20.8" stroke="#ffffff" strokeWidth="0.5" />
       </g>
 
       {/* ======================================================
