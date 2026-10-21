@@ -169,6 +169,85 @@ function WireTerminalCageEntry({ pt, nextPt, wireColor }) {
   );
 }
 
+function WireMotorRingLug({ pt, nextPt, wireColor }) {
+  if (!pt || !nextPt) return null;
+  const dx = nextPt.x - pt.x;
+  const dy = nextPt.y - pt.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 0.5) return null;
+  const ux = dx / len;
+  const uy = dy / len;
+  const angleDeg = Math.atan2(uy, ux) * (180 / Math.PI) - 90;
+
+  return (
+    <g
+      className="wire-motor-ring-lug"
+      transform={`translate(${pt.x}, ${pt.y}) rotate(${angleDeg})`}
+      pointerEvents="none"
+    >
+      {/* Sombra de projeção do terminal olhal sob o prisioneiro */}
+      <circle cx="0" cy="0" r="10.5" fill="rgba(0,0,0,0.4)" transform="translate(1, 1.5)" />
+      <rect x="-4.5" y="4" width="9" height="15" rx="2" fill="rgba(0,0,0,0.3)" transform="translate(1, 1.5)" />
+
+      {/* Olhal Metálico Estanhado (Tinned copper eyelet disc) preso sob a porca de latão */}
+      <circle
+        cx="0"
+        cy="0"
+        r="10"
+        fill="#e2e8f0"
+        stroke="#94a3b8"
+        strokeWidth="1"
+      />
+      <circle
+        cx="0"
+        cy="0"
+        r="8.5"
+        fill="none"
+        stroke="#f8fafc"
+        strokeWidth="0.8"
+      />
+      {/* Centro do olhal vazado */}
+      <circle cx="0" cy="0" r="5" fill="#475569" opacity="0.3" />
+
+      {/* Haste de transição estampada */}
+      <polygon
+        points="-4,4 4,4 5.2,11 -5.2,11"
+        fill="#cbd5e1"
+        stroke="#94a3b8"
+        strokeWidth="0.8"
+      />
+
+      {/* Luva metálica tubular de compressão (crimp barrel sleeve) */}
+      <rect
+        x="-4.5"
+        y="9"
+        width="9"
+        height="10"
+        rx="2"
+        fill="#cbd5e1"
+        stroke="#64748b"
+        strokeWidth="0.8"
+      />
+      {/* Ranhura e reflexo metálico na luva */}
+      <line x1="-3.5" y1="12" x2="3.5" y2="12" stroke="#475569" strokeWidth="1" />
+      <line x1="-3.5" y1="15" x2="3.5" y2="15" stroke="#475569" strokeWidth="1" />
+      <line x1="-2" y1="9.5" x2="-2" y2="18.5" stroke="#ffffff" strokeWidth="0.8" opacity="0.6" />
+
+      {/* Cabo entrando na luva com isolamento visível */}
+      <rect
+        x="-3.6"
+        y="17"
+        width="7.2"
+        height="6"
+        rx="1.5"
+        fill={wireColor || '#38bdf8'}
+        stroke="rgba(0,0,0,0.4)"
+        strokeWidth="0.6"
+      />
+    </g>
+  );
+}
+
 function findCompTerminal(comp, termId) {
   if (!comp) return null;
   let t = comp.terminals?.find((x) => x.id === termId);
@@ -1066,6 +1145,8 @@ export default function Canvas({
       e.target.closest('.terminal-screw-container') ||
       e.target.closest('.banana-socket-container') ||
       e.target.closest('.contactor-screw-container') ||
+      e.target.closest('.motor-brass-terminal-container') ||
+      e.target.closest('.motor-overlay-badge-fechamento') ||
       e.target.closest('.btn-toggle-switch') ||
       e.target.closest('.btn-push-action') ||
       e.target.closest('.btn-remove-comp') ||
@@ -1972,6 +2053,18 @@ export default function Canvas({
               compTo.displayMode !== 'schematic' &&
               viewMode === 'real'
             );
+            const isFromMotor = Boolean(
+              compFrom &&
+              compFrom.type === 'motor_6p' &&
+              compFrom.displayMode !== 'schematic' &&
+              viewMode === 'real'
+            );
+            const isToMotor = Boolean(
+              compTo &&
+              compTo.type === 'motor_6p' &&
+              compTo.displayMode !== 'schematic' &&
+              viewMode === 'real'
+            );
 
             const isSelected = selectedWireId === wire.id;
             const vFrom = wire.fromComponent
@@ -2238,6 +2331,8 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
+                ) : isFromMotor ? (
+                  <WireMotorRingLug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 ) : isFromCageTerminal ? (
                   <WireTerminalCageEntry pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 ) : (
@@ -2292,6 +2387,8 @@ export default function Canvas({
                       strokeWidth="0.8"
                     />
                   </g>
+                ) : isToMotor ? (
+                  <WireMotorRingLug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 ) : isToCageTerminal ? (
                   <WireTerminalCageEntry pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 ) : (

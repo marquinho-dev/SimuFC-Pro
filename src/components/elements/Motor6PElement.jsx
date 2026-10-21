@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import ContactorScrew from './ContactorScrew';
 import { sounds } from '../../services/soundEffects';
 
 export const MOTOR_TERMINAL_POS = {
@@ -11,6 +10,71 @@ export const MOTOR_TERMINAL_POS = {
   U2: { x: 156, y: 86 },
   V2: { x: 213, y: 86 },
 };
+
+function MotorBrassTerminal({
+  componentId,
+  terminal,
+  voltage,
+  isSelected,
+  isConnecting,
+  onTerminalClick,
+  isPE = false,
+}) {
+  const isPowered = Boolean(voltage);
+  const voltColor =
+    voltage === 'L1' ? '#a855f7' :
+    voltage === 'L2' ? '#ffffff' :
+    voltage === 'L3' ? '#ef4444' :
+    voltage === 'N'  ? '#06b6d4' :
+    voltage === 'PE' ? '#10b981' : '#38bdf8';
+
+  return (
+    <div
+      className={`motor-brass-terminal-container ${isPE ? 'terminal-pe' : ''} ${
+        isSelected ? 'selected' : ''
+      } ${isConnecting ? 'wire-target-ready' : ''} ${isPowered ? 'is-powered' : ''}`}
+      style={{
+        left: `${terminal.x}px`,
+        top: `${terminal.y}px`,
+      }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onTerminalClick(componentId, terminal.id);
+      }}
+      title={`${terminal.label || terminal.id}: ${voltage ? `Energizado (${voltage})` : 'Sem tensão'}`}
+    >
+      <div
+        className="motor-brass-stud"
+        data-terminal-target={`${componentId}:${terminal.id}`}
+      >
+        <div
+          className="motor-stud-glow"
+          style={{
+            borderColor: isPowered ? voltColor : isSelected ? '#00e676' : 'transparent',
+            boxShadow: isPowered
+              ? `0 0 10px ${voltColor}`
+              : isSelected
+              ? '0 0 12px #00e676'
+              : 'none',
+          }}
+        />
+        <div className="motor-brass-washer" />
+        <div className="motor-brass-hex-nut">
+          <div className="motor-brass-center-pin">
+            <div className="motor-brass-drill-point" />
+          </div>
+        </div>
+        {isPowered && (
+          <span
+            className="motor-power-indicator"
+            style={{ backgroundColor: voltColor }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Motor6PElement({
   component,
@@ -108,7 +172,7 @@ export default function Motor6PElement({
     return () => cancelAnimationFrame(animId);
   }, [isRunning, direction, isStalled, component.state?.rpm]);
 
-  const renderScrew = (t, isLarge = false) => {
+  const renderTerminal = (t, isPE = false) => {
     if (!t) return null;
     const vKey = `${component.id}:${t.id}`;
     const volt = terminalVoltages?.get(vKey);
@@ -120,7 +184,7 @@ export default function Motor6PElement({
     const term = fixedPos ? { ...t, x: fixedPos.x, y: fixedPos.y } : t;
 
     return (
-      <ContactorScrew
+      <MotorBrassTerminal
         key={t.id}
         componentId={component.id}
         terminal={term}
@@ -128,9 +192,7 @@ export default function Motor6PElement({
         isSelected={isSelected}
         isConnecting={Boolean(activeTerminal)}
         onTerminalClick={onTerminalClick}
-        labelPosition="none"
-        labelColor="default"
-        isLarge={isLarge}
+        isPE={isPE}
       />
     );
   };
@@ -168,20 +230,28 @@ export default function Motor6PElement({
           height="340"
         >
           <defs>
-            {/* Terminal Box Housing Gray Gradient */}
-            <linearGradient id="tbox-gray-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#94a3b8" />
-              <stop offset="15%" stopColor="#8393a4" />
-              <stop offset="85%" stopColor="#6c7c8d" />
-              <stop offset="100%" stopColor="#5a6878" />
+            {/* Terminal Box Housing Industrial Blue Gradient */}
+            <linearGradient id="tbox-blue-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="12%" stopColor="#2563eb" />
+              <stop offset="50%" stopColor="#1d4ed8" />
+              <stop offset="85%" stopColor="#1e40af" />
+              <stop offset="100%" stopColor="#172554" />
             </linearGradient>
 
-            {/* Orange Terracotta Bakelite Board Gradient */}
-            <linearGradient id="plate-orange-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ea580c" />
-              <stop offset="10%" stopColor="#dc4a20" />
-              <stop offset="85%" stopColor="#c2410c" />
-              <stop offset="100%" stopColor="#9a3412" />
+            {/* Terminal Box Cavity Shadow */}
+            <radialGradient id="tbox-cavity-grad" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stopColor="#131b2e" />
+              <stop offset="70%" stopColor="#0c1220" />
+              <stop offset="100%" stopColor="#060911" />
+            </radialGradient>
+
+            {/* Industrial Bakelite Black Board Gradient */}
+            <linearGradient id="plate-black-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#2c3038" />
+              <stop offset="25%" stopColor="#20232a" />
+              <stop offset="80%" stopColor="#16181d" />
+              <stop offset="100%" stopColor="#0f1115" />
             </linearGradient>
 
             {/* PE Green Socket Gradient */}
@@ -237,168 +307,218 @@ export default function Motor6PElement({
           </defs>
 
           {/* ========================================================
-              TOP SECTION: TERMINAL BOX (CAIXA DE BORNES)
+              TOP SECTION: TERMINAL BOX (CAIXA DE LIGAÇÃO INDUSTRIAL)
               ======================================================== */}
           <g className="motor-terminal-box-group" filter="url(#box-shadow)">
-            {/* Gray Outer Enclosure Box */}
+            {/* Cast Blue Enclosure Box */}
             <rect
               x="10"
               y="6"
               width="240"
               height="118"
               rx="14"
-              fill="url(#tbox-gray-grad)"
-              stroke="#475569"
+              fill="url(#tbox-blue-grad)"
+              stroke="#1e3a8a"
               strokeWidth="2.5"
             />
-            {/* Subtle Inner Bevel */}
+            {/* Outer Bevel Highlight */}
             <rect
-              x="12"
-              y="8"
-              width="236"
-              height="114"
-              rx="12"
+              x="11.5"
+              y="7.5"
+              width="237"
+              height="115"
+              rx="12.5"
               fill="none"
-              stroke="rgba(255,255,255,0.22)"
+              stroke="rgba(255,255,255,0.25)"
               strokeWidth="1.2"
             />
 
-            {/* Grounding Socket PE (Upper Left) */}
-            <circle
-              cx="38"
-              cy="36"
-              r="14"
-              fill="url(#pe-green-grad)"
-              stroke="#15803d"
+            {/* 4 Lid Mounting Screw Bosses (Cantos com rebaixo para parafusos da tampa) */}
+            {[
+              { cx: 22, cy: 18 },
+              { cx: 238, cy: 18 },
+              { cx: 22, cy: 112 },
+              { cx: 238, cy: 112 },
+            ].map((boss, idx) => (
+              <g key={`lid-boss-${idx}`}>
+                <circle cx={boss.cx} cy={boss.cy} r="6" fill="#172554" stroke="#0f172a" strokeWidth="1" />
+                <circle cx={boss.cx} cy={boss.cy} r="4" fill="#0a0f1d" />
+                <circle cx={boss.cx} cy={boss.cy} r="2.5" fill="#020617" />
+                <circle cx={boss.cx - 1} cy={boss.cy - 1} r="0.8" fill="rgba(255,255,255,0.4)" />
+              </g>
+            ))}
+
+            {/* Recessed Inner Cavity */}
+            <rect
+              x="17"
+              y="13"
+              width="226"
+              height="104"
+              rx="9"
+              fill="url(#tbox-cavity-grad)"
+              stroke="#0f172a"
               strokeWidth="1.5"
             />
-            <circle cx="38" cy="36" r="7" fill="#86efac" stroke="#ffffff" strokeWidth="1.5" />
-            <circle cx="38" cy="36" r="3" fill="#ffffff" />
-
-            {/* PE White Label Badge */}
+            {/* Cavity inner drop shadow */}
             <rect
-              x="27"
-              y="52"
-              width="22"
-              height="15"
-              rx="3"
-              fill="#ffffff"
-              stroke="#cbd5e1"
+              x="18"
+              y="14"
+              width="224"
+              height="102"
+              rx="8"
+              fill="none"
+              stroke="rgba(0,0,0,0.6)"
+              strokeWidth="1.5"
+            />
+
+            {/* Grounding Boss / Pad (PE) in the chassis recess */}
+            <g className="motor-pe-chassis-pad">
+              <rect x="26" y="24" width="24" height="24" rx="4" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+              {/* Metallic Grounding Lug Washer */}
+              <circle cx="38" cy="36" r="11" fill="url(#socket-metal-grad)" stroke="#475569" strokeWidth="1" />
+              {/* Green grounding ring collar */}
+              <circle cx="38" cy="36" r="8" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="3 2" />
+              {/* Crisp PE Identification */}
+              <text
+                x="38"
+                y="59"
+                fill="#cbd5e1"
+                fontSize="10"
+                fontWeight="800"
+                fontFamily="system-ui, -apple-system, sans-serif"
+                textAnchor="middle"
+                letterSpacing="0.5"
+              >
+                PE
+              </text>
+            </g>
+
+            {/* Black Industrial Bakelite Terminal Board (Placa de Bornes) */}
+            <rect
+              x="66"
+              y="16"
+              width="168"
+              height="98"
+              rx="7"
+              fill="url(#plate-black-grad)"
+              stroke="#090a0d"
+              strokeWidth="1.8"
+            />
+            {/* Plate top bevel highlight */}
+            <rect
+              x="67"
+              y="17"
+              width="166"
+              height="96"
+              rx="6"
+              fill="none"
+              stroke="rgba(255,255,255,0.08)"
               strokeWidth="1"
             />
+
+            {/* 4 Allen/Hex Corner Screws Holding the Black Plate */}
+            {[
+              { cx: 73, cy: 23 },
+              { cx: 227, cy: 23 },
+              { cx: 73, cy: 107 },
+              { cx: 227, cy: 107 },
+            ].map((scr, idx) => (
+              <g key={`plate-scr-${idx}`}>
+                <circle cx={scr.cx} cy={scr.cy} r="3.2" fill="#1e232a" stroke="#0a0c0f" strokeWidth="0.8" />
+                <polygon
+                  points={`${scr.cx},${scr.cy - 1.4} ${scr.cx + 1.2},${scr.cy - 0.7} ${scr.cx + 1.2},${scr.cy + 0.7} ${scr.cx},${scr.cy + 1.4} ${scr.cx - 1.2},${scr.cy + 0.7} ${scr.cx - 1.2},${scr.cy - 0.7}`}
+                  fill="#090a0d"
+                />
+              </g>
+            ))}
+
+            {/* Socket Recesses for 6 Studs on the Bakelite Board */}
+            {[
+              { id: 'U1', x: 99, y: 36 },
+              { id: 'V1', x: 156, y: 36 },
+              { id: 'W1', x: 213, y: 36 },
+              { id: 'W2', x: 99, y: 86 },
+              { id: 'U2', x: 156, y: 86 },
+              { id: 'V2', x: 213, y: 86 },
+            ].map((t) => (
+              <g key={`t-socket-${t.id}`}>
+                {/* Circular recess in bakelite plate */}
+                <circle cx={t.x} cy={t.y} r="13" fill="#0b0d11" stroke="#1f232b" strokeWidth="1" />
+                {/* Dark inner bevel */}
+                <circle cx={t.x} cy={t.y} r="11" fill="#14171d" />
+              </g>
+            ))}
+
+            {/* Crisp Silk-Screened Terminal Labels (U1, V1, W1, W2, U2, V2) directly on the black board */}
+            {/* Top Row: U1, V1, W1 placed to the left of the studs as in the reference image */}
             <text
-              x="38"
-              y="63.5"
-              fill="#0f172a"
-              fontSize="9.5"
-              fontWeight="900"
+              x="78"
+              y="39.5"
+              fill="#f8fafc"
+              fontSize="11"
+              fontWeight="800"
+              fontFamily="system-ui, -apple-system, sans-serif"
               textAnchor="middle"
             >
-              PE
+              U1
+            </text>
+            <text
+              x="135"
+              y="39.5"
+              fill="#f8fafc"
+              fontSize="11"
+              fontWeight="800"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+            >
+              V1
+            </text>
+            <text
+              x="192"
+              y="39.5"
+              fill="#f8fafc"
+              fontSize="11"
+              fontWeight="800"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+            >
+              W1
             </text>
 
-            {/* Terracotta/Orange Bakelite Terminal Plate */}
-            <rect
-              x="70"
-              y="14"
-              width="172"
-              height="106"
-              rx="10"
-              fill="url(#plate-orange-grad)"
-              stroke="#9a3412"
-              strokeWidth="2"
-            />
-
-            {/* Sockets and White Badges for all 6 Terminals */}
-            {/* Row 1: U1, V1, W1 */}
-            {[
-              { id: 'U1', x: 99, y: 36, labelY: 52 },
-              { id: 'V1', x: 156, y: 36, labelY: 52 },
-              { id: 'W1', x: 213, y: 36, labelY: 52 },
-            ].map((t) => (
-              <g key={`t-top-${t.id}`}>
-                {/* Socket recess shadow */}
-                <circle cx={t.x} cy={t.y} r="13" fill="#7c2d12" />
-                {/* Metallic bezel */}
-                <circle
-                  cx={t.x}
-                  cy={t.y}
-                  r="11"
-                  fill="url(#socket-metal-grad)"
-                  stroke="#475569"
-                  strokeWidth="1"
-                />
-                {/* Center plug socket */}
-                <circle cx={t.x} cy={t.y} r="5" fill="#1e293b" />
-
-                {/* White Label Badge */}
-                <rect
-                  x={t.x - 12}
-                  y={t.labelY}
-                  width="24"
-                  height="15"
-                  rx="3.5"
-                  fill="#ffffff"
-                  stroke="#cbd5e1"
-                  strokeWidth="1"
-                />
-                <text
-                  x={t.x}
-                  y={t.labelY + 11.5}
-                  fill="#0f172a"
-                  fontSize="10"
-                  fontWeight="900"
-                  textAnchor="middle"
-                >
-                  {t.id}
-                </text>
-              </g>
-            ))}
-
-            {/* Row 2: W2, U2, V2 */}
-            {[
-              { id: 'W2', x: 99, y: 86, labelY: 102 },
-              { id: 'U2', x: 156, y: 86, labelY: 102 },
-              { id: 'V2', x: 213, y: 86, labelY: 102 },
-            ].map((t) => (
-              <g key={`t-bot-${t.id}`}>
-                {/* Socket recess shadow */}
-                <circle cx={t.x} cy={t.y} r="13" fill="#7c2d12" />
-                {/* Metallic bezel */}
-                <circle
-                  cx={t.x}
-                  cy={t.y}
-                  r="11"
-                  fill="url(#socket-metal-grad)"
-                  stroke="#475569"
-                  strokeWidth="1"
-                />
-                {/* Center plug socket */}
-                <circle cx={t.x} cy={t.y} r="5" fill="#1e293b" />
-
-                {/* White Label Badge */}
-                <rect
-                  x={t.x - 12}
-                  y={t.labelY}
-                  width="24"
-                  height="15"
-                  rx="3.5"
-                  fill="#ffffff"
-                  stroke="#cbd5e1"
-                  strokeWidth="1"
-                />
-                <text
-                  x={t.x}
-                  y={t.labelY + 11.5}
-                  fill="#0f172a"
-                  fontSize="10"
-                  fontWeight="900"
-                  textAnchor="middle"
-                >
-                  {t.id}
-                </text>
-              </g>
-            ))}
+            {/* Bottom Row: W2, U2, V2 placed directly below the studs as in the reference image */}
+            <text
+              x="99"
+              y="107"
+              fill="#f8fafc"
+              fontSize="11"
+              fontWeight="800"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+            >
+              W2
+            </text>
+            <text
+              x="156"
+              y="107"
+              fill="#f8fafc"
+              fontSize="11"
+              fontWeight="800"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+            >
+              U2
+            </text>
+            <text
+              x="213"
+              y="107"
+              fill="#f8fafc"
+              fontSize="11"
+              fontWeight="800"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              textAnchor="middle"
+            >
+              V2
+            </text>
           </g>
 
           {/* ========================================================
@@ -625,14 +745,14 @@ export default function Motor6PElement({
           </g>
         </svg>
 
-        {/* Interactive Screws for all Terminals (overlaying the sockets) */}
-        {renderScrew(tPE, false)}
-        {renderScrew(tU1, false)}
-        {renderScrew(tV1, false)}
-        {renderScrew(tW1, false)}
-        {renderScrew(tW2, false)}
-        {renderScrew(tU2, false)}
-        {renderScrew(tV2, false)}
+        {/* Interactive Brass Stud Terminals */}
+        {renderTerminal(tPE, true)}
+        {renderTerminal(tU1, false)}
+        {renderTerminal(tV1, false)}
+        {renderTerminal(tW1, false)}
+        {renderTerminal(tW2, false)}
+        {renderTerminal(tU2, false)}
+        {renderTerminal(tV2, false)}
       </div>
     </div>
   );
