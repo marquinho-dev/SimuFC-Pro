@@ -17,15 +17,48 @@ import {
   SCHEMATIC_SOURCE_BUS_X_END,
 } from '../../types/components';
 
-export function getConnectedWireColor(componentId, terminalId, wires, fallbackColor = null) {
-  if (!wires || !wires.length) return fallbackColor;
-  const w = wires.find(
+export function getConnectedWireColor(
+  componentId,
+  terminalId,
+  wires,
+  fallbackColor = null,
+  voltage = null,
+  terminalVoltages = null
+) {
+  // If energized with a phase/neutral/PE potential, adopt the active phase color!
+  const getPhaseColor = (v) => {
+    if (!v) return null;
+    const s = String(v).toUpperCase().trim();
+    if (s === 'L1') return '#a855f7'; // Roxo
+    if (s === 'L2') return '#ffffff'; // Branco
+    if (s === 'L3') return '#ef4444'; // Vermelho
+    if (s === 'N')  return '#06b6d4'; // Cyan
+    if (s === 'PE') return '#16a34a'; // Verde
+    return '#38bdf8';
+  };
+
+  const isPE = String(terminalId).toUpperCase() === 'PE';
+  const w = wires?.find?.(
     (wire) =>
       (wire.fromComponent === componentId && String(wire.fromTerminal) === String(terminalId)) ||
       (wire.toComponent === componentId && String(wire.toTerminal) === String(terminalId))
   );
-  if (!w) return fallbackColor;
-  if (String(terminalId).toUpperCase() === 'PE') return '#16a34a';
+
+  let activeVolt = voltage;
+  if (!activeVolt && terminalVoltages?.get) {
+    activeVolt =
+      terminalVoltages.get(`${componentId}:${terminalId}`) ||
+      (w ? terminalVoltages.get(`wire:${w.id}`) : null);
+  }
+
+  if (activeVolt) {
+    const pc = getPhaseColor(activeVolt);
+    if (pc) return pc;
+  }
+
+  if (!wires || !wires.length) return isPE ? '#16a34a' : fallbackColor;
+  if (!w) return isPE ? '#16a34a' : fallbackColor;
+  if (isPE) return '#16a34a';
   return w.color || '#38bdf8';
 }
 
@@ -57,14 +90,15 @@ export function SchematicTerminalPoint({
       case 'N':
         return '#06b6d4'; // Cyan
       case 'PE':
-        return '#10b981'; // Green
+        return '#16a34a'; // Green
       default:
         return '#38bdf8';
     }
   };
 
   const voltColor = getVoltageColor(voltage);
-  const activeColor = wireColor || (isPowered ? voltColor : null);
+  // When energized, always adopt the active phase color; when de-energized, adopt the wire color
+  const activeColor = (isPowered && voltColor) ? voltColor : (wireColor || null);
 
   return (
     <div
@@ -303,9 +337,10 @@ function SchematicBreaker({
           const xc = Math.round(57.5 + i * 56);
           const topNum = 1 + i * 2;
           const botNum = 2 + i * 2;
-          const poleVolt = terminalVoltages.get(`${component.id}:${topNum}`);
-          const topWireColor = getConnectedWireColor(component.id, String(topNum), wires);
-          const botWireColor = getConnectedWireColor(component.id, String(botNum), wires);
+          const poleVoltTop = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${topNum}`) : undefined;
+          const poleVoltBot = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${botNum}`) : undefined;
+          const topWireColor = getConnectedWireColor(component.id, String(topNum), wires, null, poleVoltTop, terminalVoltages);
+          const botWireColor = getConnectedWireColor(component.id, String(botNum), wires, null, poleVoltBot, terminalVoltages);
           const wireColor = '#ffffff';
 
           return (
@@ -399,14 +434,14 @@ function SchematicBreaker({
       {terminals.map((t) => {
         const poleIndex = Math.floor((parseInt(t.id, 10) - 1) / 2);
         const xc = Math.round(57.5 + poleIndex * 56);
-        const isTop = (parseInt(t.id, 10) % 2) === 1;
-        const poleWireColor = getConnectedWireColor(component.id, String(t.id), wires);
+        const volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+        const poleWireColor = getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages);
         return (
           <SchematicTerminalPoint
             key={t.id}
             componentId={component.id}
             terminal={{ ...t, x: xc, y: isTop ? 60 : 170.5, hideLabel: true }}
-            voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+            voltage={volt}
             wireColor={poleWireColor}
             isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
             isConnecting={Boolean(activeTerminal)}
@@ -463,8 +498,10 @@ function SchematicContactor({
         {poles.map((p, idx) => {
           const wireColor = '#ffffff';
           const xc = Math.round(p.xc);
-          const topWireColor = getConnectedWireColor(component.id, String(p.topId), wires);
-          const botWireColor = getConnectedWireColor(component.id, String(p.botId), wires);
+          const topVolt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${p.topId}`) : undefined;
+          const botVolt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${p.botId}`) : undefined;
+          const topWireColor = getConnectedWireColor(component.id, String(p.topId), wires, null, topVolt, terminalVoltages);
+          const botWireColor = getConnectedWireColor(component.id, String(p.botId), wires, null, botVolt, terminalVoltages);
 
           return (
             <g key={`main-pole-${idx}`}>
@@ -585,13 +622,14 @@ function SchematicContactor({
           const isTop = (parseInt(t.id, 10) % 2) === 1;
           const xc = Math.round(49.5 + poleIdx * 56);
           const yc = isTop ? 60 : 170.5;
-          const poleWireColor = getConnectedWireColor(component.id, String(t.id), wires);
+          const volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+          const poleWireColor = getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages);
           return (
             <SchematicTerminalPoint
               key={t.id}
               componentId={component.id}
               terminal={{ ...t, x: xc, y: yc, hideLabel: true }}
-              voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
+              voltage={volt}
               wireColor={poleWireColor}
               isSelected={
                 activeTerminal?.componentId === component.id &&
@@ -629,9 +667,10 @@ function SchematicContactorCoil({
     ? (component.tag.startsWith('KM') ? component.tag : component.tag.replace(/^K/, 'KM'))
     : 'KM1';
 
-  const wireColor = '#ffffff';
-  const a1WireColor = getConnectedWireColor(component.id, 'A1', wires);
-  const a2WireColor = getConnectedWireColor(component.id, 'A2', wires);
+  const a1Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:A1`) : undefined;
+  const a2Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:A2`) : undefined;
+  const a1WireColor = getConnectedWireColor(component.id, 'A1', wires, null, a1Volt, terminalVoltages);
+  const a2WireColor = getConnectedWireColor(component.id, 'A2', wires, null, a2Volt, terminalVoltages);
 
   return (
     <div
@@ -711,20 +750,23 @@ function SchematicContactorCoil({
         </text>
       </svg>
 
-      {terminals.map((t) => (
-        <SchematicTerminalPoint
-          key={t.id}
-          componentId={component.id}
-          terminal={{ ...t, hideLabel: true }}
-          voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
-          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
-          isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
-          isConnecting={Boolean(activeTerminal)}
-          onTerminalClick={onTerminalClick}
-          labelPosition="right"
-          className="schematic-coil-terminal"
-        />
-      ))}
+      {terminals.map((t) => {
+        const volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={{ ...t, hideLabel: true }}
+            voltage={volt}
+            wireColor={getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages)}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition="right"
+            className="schematic-coil-terminal"
+          />
+        );
+      })}
     </div>
   );
 }
@@ -838,19 +880,22 @@ function SchematicThermalRelay({
         {isTripped ? 'DISPARADO (TRIP)' : 'NORMAL'}
       </div>
 
-      {terminals.map((t) => (
-        <SchematicTerminalPoint
-          key={t.id}
-          componentId={component.id}
-          terminal={t}
-          voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
-          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
-          isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
-          isConnecting={Boolean(activeTerminal)}
-          onTerminalClick={onTerminalClick}
-          labelPosition={t.y < 100 ? 'top' : 'bottom'}
-        />
-      ))}
+      {terminals.map((t) => {
+        const volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={t}
+            voltage={volt}
+            wireColor={getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages)}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition={t.y < 100 ? 'top' : 'bottom'}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -944,19 +989,22 @@ function SchematicTimerRelay({
         {isCoilEnergized ? (isTimedOut ? 'TEMPORIZADO' : 'CONTAGEM') : 'DESLIGADO'}
       </div>
 
-      {terminals.map((t) => (
-        <SchematicTerminalPoint
-          key={t.id}
-          componentId={component.id}
-          terminal={t}
-          voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
-          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
-          isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
-          isConnecting={Boolean(activeTerminal)}
-          onTerminalClick={onTerminalClick}
-          labelPosition={t.y < 100 ? 'top' : 'bottom'}
-        />
-      ))}
+      {terminals.map((t) => {
+        const volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={t}
+            voltage={volt}
+            wireColor={getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages)}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition={t.y < 100 ? 'top' : 'bottom'}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -1128,19 +1176,22 @@ function SchematicButton({
         {isEmergency ? (isLocked ? 'TRAVADA' : 'PRONTA') : isPressed ? 'ACIONADO' : 'EM REPOUSO'}
       </div>
 
-      {terminals.map((t) => (
-        <SchematicTerminalPoint
-          key={t.id}
-          componentId={component.id}
-          terminal={t}
-          voltage={terminalVoltages.get(`${component.id}:${t.id}`)}
-          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
-          isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
-          isConnecting={Boolean(activeTerminal)}
-          onTerminalClick={onTerminalClick}
-          labelPosition={t.y < 85 ? 'top' : 'bottom'}
-        />
-      ))}
+      {terminals.map((t) => {
+        const volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={t}
+            voltage={volt}
+            wireColor={getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages)}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition={t.y < 85 ? 'top' : 'bottom'}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -1166,7 +1217,7 @@ function SchematicMotor({
   const direction = component.state?.direction || 'CW';
   const displayTag = component.tag || 'M1';
 
-  // Coordenadas dos bornes esquemáticos (U1, V1, W1 no topo; W2, U2, V2 na base; PE no terra)
+  // Coordenadas dos bornes esquemáticos de potência (U1, V1, W1 no topo; W2, U2, V2 na base)
   const schematicTerminals = [
     { id: 'U1', label: 'U1', x: 80, y: 35 },
     { id: 'V1', label: 'V1', x: 140, y: 35 },
@@ -1174,16 +1225,50 @@ function SchematicMotor({
     { id: 'W2', label: 'W2', x: 80, y: 245 },
     { id: 'U2', label: 'U2', x: 140, y: 245 },
     { id: 'V2', label: 'V2', x: 200, y: 245 },
-    { id: 'PE', label: 'PE', x: 36, y: 230 },
   ];
 
-  const u1Color = getConnectedWireColor(component.id, 'U1', wires);
-  const v1Color = getConnectedWireColor(component.id, 'V1', wires);
-  const w1Color = getConnectedWireColor(component.id, 'W1', wires);
-  const w2Color = getConnectedWireColor(component.id, 'W2', wires);
-  const u2Color = getConnectedWireColor(component.id, 'U2', wires);
-  const v2Color = getConnectedWireColor(component.id, 'V2', wires);
-  const peColor = getConnectedWireColor(component.id, 'PE', wires, '#00e676');
+  const u1Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:U1`) : undefined;
+  const v1Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:V1`) : undefined;
+  const w1Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:W1`) : undefined;
+  const w2Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:W2`) : undefined;
+  const u2Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:U2`) : undefined;
+  const v2Volt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:V2`) : undefined;
+  const peVolt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:PE`) : undefined;
+
+  const u1Color = getConnectedWireColor(component.id, 'U1', wires, null, u1Volt, terminalVoltages);
+  const v1Color = getConnectedWireColor(component.id, 'V1', wires, null, v1Volt, terminalVoltages);
+  const w1Color = getConnectedWireColor(component.id, 'W1', wires, null, w1Volt, terminalVoltages);
+  const w2Color = getConnectedWireColor(component.id, 'W2', wires, null, w2Volt, terminalVoltages);
+  const u2Color = getConnectedWireColor(component.id, 'U2', wires, null, u2Volt, terminalVoltages);
+  const v2Color = getConnectedWireColor(component.id, 'V2', wires, null, v2Volt, terminalVoltages);
+  const peColor = getConnectedWireColor(component.id, 'PE', wires, '#16a34a', peVolt, terminalVoltages);
+
+  // Projeção do clique em qualquer parte da linha pontilhada de aterramento (M 99 155 L 36 155 L 36 230)
+  const handleGroundLineClick = (e) => {
+    e.stopPropagation();
+    const svg = e.currentTarget.closest('svg');
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * 280;
+    const clickY = ((e.clientY - rect.top) / rect.height) * 280;
+
+    const clampedX = Math.max(36, Math.min(99, clickX));
+    const distHoriz = Math.hypot(clampedX - clickX, 155 - clickY);
+
+    const clampedY = Math.max(155, Math.min(230, clickY));
+    const distVert = Math.hypot(36 - clickX, clampedY - clickY);
+
+    let tapX, tapY;
+    if (distHoriz < distVert) {
+      tapX = Math.round(clampedX);
+      tapY = 155;
+    } else {
+      tapX = 36;
+      tapY = Math.round(clampedY);
+    }
+
+    onTerminalClick(component.id, 'PE', { x: tapX, y: tapY });
+  };
 
   return (
     <div
@@ -1303,17 +1388,9 @@ function SchematicMotor({
         <circle cx="140" cy="245" r="4.5" fill={u2Color || 'rgba(15, 23, 42, 0.85)'} stroke={u2Color || '#ffffff'} strokeWidth="2" />
         <circle cx="200" cy="245" r="4.5" fill={v2Color || 'rgba(15, 23, 42, 0.85)'} stroke={v2Color || '#ffffff'} strokeWidth="2" />
 
-        {/* --- Ramal de Aterramento da Carcaça à Direita (Padrão CAD IEC) --- */}
-        <line x1="186" y1="140" x2="232" y2="140" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
-        <circle cx="232" cy="140" r="4.5" fill="rgba(15, 23, 42, 0.85)" stroke="#ffffff" strokeWidth="2" />
-        {/* Símbolo de terra sob o ramal direito */}
-        <line x1="216" y1="140" x2="216" y2="150" stroke="#ffffff" strokeWidth="1.8" />
-        <line x1="208" y1="150" x2="224" y2="150" stroke="#ffffff" strokeWidth="1.8" />
-        <line x1="211" y1="154" x2="221" y2="154" stroke="#ffffff" strokeWidth="1.5" />
-        <line x1="214" y1="158" x2="218" y2="158" stroke="#ffffff" strokeWidth="1.2" />
-
         {/* --- Linha Pontilhada do Terra (PE) com Símbolo de Terra (conforme rascunho em verde do usuário) --- */}
         <path
+          className="motor-pe-ground-path"
           d="M 99 155 L 36 155 L 36 230"
           fill="none"
           stroke="#00e676"
@@ -1321,13 +1398,61 @@ function SchematicMotor({
           strokeDasharray="3 3"
           strokeLinecap="round"
           strokeLinejoin="round"
+          style={{ pointerEvents: 'none' }}
         />
         {/* Símbolo de Terra em verde */}
         <line x1="22" y1="230" x2="50" y2="230" stroke="#00e676" strokeWidth="2.6" strokeLinecap="round" />
         <line x1="27" y1="236" x2="45" y2="236" stroke="#00e676" strokeWidth="2.2" strokeLinecap="round" />
         <line x1="32" y1="242" x2="40" y2="242" stroke="#00e676" strokeWidth="1.8" strokeLinecap="round" />
-        {/* Borne elétrico de aterramento PE */}
-        <circle cx="36" cy="230" r="4.5" fill={peColor || 'rgba(15, 23, 42, 0.85)'} stroke="#00e676" strokeWidth="2" />
+
+        {/* Linha interativa clicável para conectar aterramento PE em qualquer ponto da linha tracejada */}
+        <path
+          className="motor-pe-interactive-line"
+          d="M 99 155 L 36 155 L 36 230"
+          fill="none"
+          stroke="transparent"
+          strokeWidth="24"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={handleGroundLineClick}
+          style={{ cursor: 'crosshair' }}
+        >
+          <title>Aterramento da carcaça do motor (PE): Clique em qualquer parte da linha pontilhada para conectar o fio de aterramento</title>
+        </path>
+
+        {/* Pontos de conexão para os fios conectados ao PE ao longo da linha pontilhada */}
+        {wires
+          ?.filter(
+            (w) =>
+              (w.fromComponent === component.id && String(w.fromTerminal).toUpperCase() === 'PE') ||
+              (w.toComponent === component.id && String(w.toTerminal).toUpperCase() === 'PE')
+          )
+          .map((w) => {
+            const isFrom = w.fromComponent === component.id;
+            const px = isFrom ? (w.fromTerminalX ?? 36) : (w.toTerminalX ?? 36);
+            const py = isFrom ? (w.fromTerminalY ?? 180) : (w.toTerminalY ?? 180);
+            const dotColor = getConnectedWireColor(
+              component.id,
+              'PE',
+              [w],
+              '#16a34a',
+              peVolt,
+              terminalVoltages
+            );
+            return (
+              <circle
+                key={`pe-conn-dot-${w.id}`}
+                cx={px}
+                cy={py}
+                r="4.5"
+                fill={dotColor}
+                stroke={dotColor}
+                strokeWidth="1.5"
+                pointerEvents="none"
+              />
+            );
+          })}
 
         {/* --- Indicador de Rotação quando em Operação --- */}
         {isRunning && (
@@ -1359,20 +1484,24 @@ function SchematicMotor({
       </svg>
 
       {/* Pontos de Conexão Clicáveis para Fios (SchematicTerminalPoint) */}
-      {schematicTerminals.map((t) => (
-        <SchematicTerminalPoint
-          key={t.id}
-          componentId={component.id}
-          terminal={{ ...t, hideLabel: true }}
-          voltage={terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined}
-          wireColor={getConnectedWireColor(component.id, String(t.id), wires)}
-          isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
-          isConnecting={Boolean(activeTerminal)}
-          onTerminalClick={onTerminalClick}
-          labelPosition={t.y < 50 ? 'top' : t.id === 'PE' ? 'left' : 'bottom'}
-          className="schematic-motor-terminal"
-        />
-      ))}
+      {schematicTerminals.map((t) => {
+        const tVolt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:${t.id}`) : undefined;
+        const tColor = getConnectedWireColor(component.id, String(t.id), wires, null, tVolt, terminalVoltages);
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={{ ...t, hideLabel: true }}
+            voltage={tVolt}
+            wireColor={tColor}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition={t.y < 50 ? 'top' : 'bottom'}
+            className="schematic-motor-terminal"
+          />
+        );
+      })}
     </div>
   );
 }

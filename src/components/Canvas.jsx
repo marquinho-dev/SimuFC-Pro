@@ -578,7 +578,7 @@ export default function Canvas({
           else if (termId === 'W2') { tx = 80; ty = 245; }
           else if (termId === 'U2') { tx = 140; ty = 245; }
           else if (termId === 'V2') { tx = 200; ty = 245; }
-          else if (termId === 'PE') { tx = 36; ty = 230; }
+          else if (termId === 'PE') { tx = 36; ty = 180; }
         } else {
           if (termId === 'W2') { tx = 73; ty = 135; }
           else if (termId === 'U2') { tx = 127; ty = 135; }
@@ -607,12 +607,20 @@ export default function Canvas({
       const p1 =
         wire.fromWireId && wire.fromPoint
           ? wire.fromPoint
-          : getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal);
+          : (wire.fromTerminalX != null && wire.fromTerminalY != null && comp1
+              ? { x: Math.round(comp1.x + wire.fromTerminalX), y: Math.round(comp1.y + wire.fromTerminalY) }
+              : (wire.fromTerminalX != null && comp1
+                  ? { x: Math.round(comp1.x + wire.fromTerminalX), y: getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal).y }
+                  : getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal)));
 
       const p2 =
         wire.toWireId && wire.toPoint
           ? wire.toPoint
-          : getTerminalAbsolutePos(wire.toComponent, wire.toTerminal);
+          : (wire.toTerminalX != null && wire.toTerminalY != null && comp2
+              ? { x: Math.round(comp2.x + wire.toTerminalX), y: Math.round(comp2.y + wire.toTerminalY) }
+              : (wire.toTerminalX != null && comp2
+                  ? { x: Math.round(comp2.x + wire.toTerminalX), y: getTerminalAbsolutePos(wire.toComponent, wire.toTerminal).y }
+                  : getTerminalAbsolutePos(wire.toComponent, wire.toTerminal)));
 
       const term1 = findCompTerminal(comp1, wire.fromTerminal);
       const term2 = findCompTerminal(comp2, wire.toTerminal);
@@ -1141,6 +1149,7 @@ export default function Canvas({
       e.target.closest('.schematic-breaker-toggle-btn') ||
       e.target.closest('.schematic-terminal-point') ||
       e.target.closest('.schematic-terminal-node') ||
+      e.target.closest('.motor-pe-interactive-line') ||
       e.target.closest('.btn-breaker-gear') ||
       e.target.closest('.breaker-external-controls') ||
       e.target.closest('.btn-breaker-remove') ||
@@ -1212,6 +1221,7 @@ export default function Canvas({
         terminalId: termId,
         point: p,
         terminalX: customPoint?.x,
+        terminalY: customPoint?.y,
       });
       setConnectingWaypoints([]);
     } else {
@@ -1263,10 +1273,12 @@ export default function Canvas({
               fromComponent: connectingTerminal.componentId,
               fromTerminal: connectingTerminal.terminalId,
               ...(connectingTerminal.terminalX != null ? { fromTerminalX: connectingTerminal.terminalX } : {}),
+              ...(connectingTerminal.terminalY != null ? { fromTerminalY: connectingTerminal.terminalY } : {}),
             }),
         toComponent: compId,
         toTerminal: termId,
         ...(customPoint?.x != null ? { toTerminalX: customPoint.x } : {}),
+        ...(customPoint?.y != null ? { toTerminalY: customPoint.y } : {}),
         color:
           String(connectingTerminal.terminalId).toUpperCase() === 'PE' ||
           String(termId).toUpperCase() === 'PE' ||
@@ -2135,20 +2147,22 @@ export default function Canvas({
               ? terminalVoltages.get(`${wire.toComponent}:${wire.toTerminal}`)
               : null;
             const vWire = terminalVoltages.get(`wire:${wire.id}`);
-            const potential = vWire || vFrom || vTo;
+            const parentFromWireVolt = wire.fromWireId ? terminalVoltages.get(`wire:${wire.fromWireId}`) : null;
+            const parentToWireVolt = wire.toWireId ? terminalVoltages.get(`wire:${wire.toWireId}`) : null;
+            const potential = vWire || vFrom || vTo || parentFromWireVolt || parentToWireVolt;
             const isEnergized = Boolean(potential);
 
             // Cores de fase da simulação:
             // L1: Roxo (#a855f7)
             // L2: Branco (#ffffff)
             // L3: Vermelho (#ef4444)
-            // N:  Azul (#2563eb)
+            // N:  Azul/Cyan (#06b6d4 / #2563eb)
             // PE: Verde (#16a34a)
             const PHASE_COLORS_MAP = {
               L1: '#a855f7',
               L2: '#ffffff',
               L3: '#ef4444',
-              N: '#2563eb',
+              N: '#06b6d4',
               PE: '#16a34a',
             };
 
@@ -2173,6 +2187,25 @@ export default function Canvas({
             const activeWireColor = (isPowerGroundWire || isPEConductor)
               ? '#16a34a'
               : (phaseColor || wire.color);
+
+            // Cores dedicadas dos pontos de conexão nas extremidades P1 e P2 (adotam a fase quando energizados)
+            const p1Volt = vFrom || parentFromWireVolt || potential;
+            const p1PhaseColor =
+              isSimulationMode && isEnergized && p1Volt && PHASE_COLORS_MAP[p1Volt]
+                ? PHASE_COLORS_MAP[p1Volt]
+                : null;
+            const p1Color = (isPowerGroundWire || isPEConductor)
+              ? '#16a34a'
+              : (p1PhaseColor || activeWireColor);
+
+            const p2Volt = vTo || parentToWireVolt || potential;
+            const p2PhaseColor =
+              isSimulationMode && isEnergized && p2Volt && PHASE_COLORS_MAP[p2Volt]
+                ? PHASE_COLORS_MAP[p2Volt]
+                : null;
+            const p2Color = (isPowerGroundWire || isPEConductor)
+              ? '#16a34a'
+              : (p2PhaseColor || activeWireColor);
 
             const isSchematicMode =
               viewMode === 'schematic' || isCompFromSchematic || isCompToSchematic;
@@ -2404,11 +2437,11 @@ export default function Canvas({
                   >
                     <circle cx="0" cy="0" r="14" fill="transparent" />
                     {viewMode === 'schematic' ? (
-                      <circle cx="0" cy="0" r="5.5" fill={activeWireColor} stroke={activeWireColor} strokeWidth="1" />
+                      <circle cx="0" cy="0" r="5.5" fill={p1Color} stroke={p1Color} strokeWidth="1" />
                     ) : (
                       <>
                         <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-                        <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
+                        <circle cx="0" cy="0" r="2.5" fill={p1Color} />
                       </>
                     )}
                   </g>
@@ -2418,8 +2451,8 @@ export default function Canvas({
                       cx={p1.x}
                       cy={p1.y}
                       r="5.5"
-                      fill={activeWireColor}
-                      stroke={activeWireColor}
+                      fill={p1Color}
+                      stroke={p1Color}
                       strokeWidth="1"
                     />
                   </g>
@@ -2477,11 +2510,11 @@ export default function Canvas({
                   >
                     <circle cx="0" cy="0" r="14" fill="transparent" />
                     {viewMode === 'schematic' ? (
-                      <circle cx="0" cy="0" r="5.5" fill={activeWireColor} stroke={activeWireColor} strokeWidth="1" />
+                      <circle cx="0" cy="0" r="5.5" fill={p2Color} stroke={p2Color} strokeWidth="1" />
                     ) : (
                       <>
                         <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-                        <circle cx="0" cy="0" r="2.5" fill={activeWireColor} />
+                        <circle cx="0" cy="0" r="2.5" fill={p2Color} />
                       </>
                     )}
                   </g>
@@ -2491,8 +2524,8 @@ export default function Canvas({
                       cx={p2.x}
                       cy={p2.y}
                       r="5.5"
-                      fill={activeWireColor}
-                      stroke={activeWireColor}
+                      fill={p2Color}
+                      stroke={p2Color}
                       strokeWidth="1"
                     />
                   </g>

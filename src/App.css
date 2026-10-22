@@ -5761,6 +5761,14 @@
   box-shadow: 0 0 10px rgba(0, 230, 118, 0.7);
 }
 
+.motor-pe-interactive-line {
+  cursor: crosshair;
+}
+
+.motor-pe-interactive-line:hover {
+  filter: drop-shadow(0 0 6px #00e676);
+}
+
 .schematic-motor.motor-spinning .schematic-motor-circle-running {
   animation: motor-pulse-ring 2s infinite ease-in-out;
 }
