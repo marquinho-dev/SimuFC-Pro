@@ -25,6 +25,7 @@ export default function Header({
   selectedWireId,
   selectedWireColor,
   onSelectWireColor,
+  selectedComponent,
   isMuted,
   setIsMuted,
   isSimulationMode,
@@ -45,8 +46,16 @@ export default function Header({
   const [drawerTab, setDrawerTab] = useState('real'); // 'real' | 'schematic'
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  const displayWireColor =
-    selectedWireId && selectedWireColor ? selectedWireColor : activeWireColor;
+  const isPilotLampSelected = selectedComponent?.type === 'pilot_light';
+  const selectedPilotColorHex = isPilotLampSelected
+    ? (WIRE_COLORS.find((w) => w.id === (selectedComponent.state?.color || 'red'))?.color || '#ef4444')
+    : null;
+
+  const displayWireColor = isPilotLampSelected
+    ? selectedPilotColorHex
+    : selectedWireId && selectedWireColor
+    ? selectedWireColor
+    : activeWireColor;
 
   // Close menus when simulation starts
   useEffect(() => {
@@ -354,19 +363,25 @@ export default function Header({
             )}
           </button>
 
-          {/* Wire Color Selector Palette (ao lado do botão de iniciar simulação) */}
+          {/* Wire & Sinaleira Color Selector Palette (ao lado do botão de iniciar simulação) */}
           <div
             className={`wire-color-palette ${isSimulationMode ? 'palette-disabled' : ''}`}
             title={
               isSimulationMode
                 ? 'Modo Simulação: os cabos adotam as cores normatizadas das fases'
+                : isPilotLampSelected
+                ? 'Clique para alterar a cor da sinaleira selecionada'
                 : selectedWireId
                 ? 'Clique para alterar a cor do fio selecionado'
                 : 'Escolha a cor do fio'
             }
           >
             <span className="palette-label">
-              {selectedWireId ? 'Fio Sel.:' : 'Fio:'}
+              {isPilotLampSelected
+                ? 'Sinaleira:'
+                : selectedWireId
+                ? 'Fio Sel.:'
+                : 'Fio:'}
             </span>
             {WIRE_COLORS.map((w) => (
               <button
@@ -381,7 +396,9 @@ export default function Header({
                     : setActiveWireColor(w.color)
                 }
                 title={
-                  selectedWireId
+                  isPilotLampSelected
+                    ? `Mudar cor da sinaleira para ${w.label}`
+                    : selectedWireId
                     ? `Mudar fio selecionado para ${w.label}`
                     : w.label
                 }

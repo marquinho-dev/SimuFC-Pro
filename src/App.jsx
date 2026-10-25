@@ -150,6 +150,7 @@ export default function App() {
   });
   const [isMuted, setIsMuted] = useState(false);
   const [selectedWireId, setSelectedWireId] = useState(null);
+  const [selectedComponentId, setSelectedComponentId] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
   const [viewMode, setViewMode] = useState(() => {
     try {
@@ -884,6 +885,11 @@ export default function App() {
     [selectedWireId, wires]
   );
 
+  const selectedComponent = useMemo(
+    () => (selectedComponentId ? components.find((c) => c.id === selectedComponentId) : null),
+    [selectedComponentId, components]
+  );
+
   const handleSelectWireColor = useCallback(
     (color) => {
       setActiveWireColor(color);
@@ -892,9 +898,27 @@ export default function App() {
           prev.map((w) => (w.id === selectedWireId ? { ...w, color } : w))
         );
         sounds.playButtonClick();
+      } else if (selectedComponentId && !isSimulationMode) {
+        const comp = components.find((c) => c.id === selectedComponentId);
+        if (comp && comp.type === 'pilot_light') {
+          const matched = WIRE_COLORS.find(
+            (w) => w.color.toLowerCase() === color.toLowerCase()
+          );
+          const colorKey = matched ? matched.id : 'red';
+          setComponents((prev) =>
+            prev.map((c) =>
+              c.id === selectedComponentId
+                ? { ...c, state: { ...c.state, color: colorKey } }
+                : c
+            )
+          );
+          try {
+            sounds.playButtonClick();
+          } catch {}
+        }
       }
     },
-    [selectedWireId, isSimulationMode]
+    [selectedWireId, selectedComponentId, isSimulationMode, components]
   );
 
   // Handler to save power source configuration (terminals & voltages)
@@ -1280,6 +1304,7 @@ export default function App() {
         selectedWireId={selectedWireId}
         selectedWireColor={selectedWire?.color}
         onSelectWireColor={handleSelectWireColor}
+        selectedComponent={selectedComponent}
         isMuted={isMuted}
         setIsMuted={setIsMuted}
         isSimulationMode={isSimulationMode}
@@ -1314,6 +1339,8 @@ export default function App() {
             activeWireColor={activeWireColor}
             selectedWireId={selectedWireId}
             onSelectWire={setSelectedWireId}
+            selectedComponentId={selectedComponentId}
+            onSelectComponent={setSelectedComponentId}
             showWireVoltageGlow={showWireVoltageGlow}
             showElectronFlow={showElectronFlow}
             onToggleElectronFlow={handleToggleElectronFlow}

@@ -1,5 +1,4 @@
 import React from 'react';
-import { sounds } from '../../services/soundEffects';
 
 export const PILOT_COLORS = {
   purple: {
@@ -150,16 +149,6 @@ export default function PilotLampElement({
 
   const componentId = component.id;
 
-  const handleSelectColor = (cKey, e) => {
-    e.stopPropagation();
-    try {
-      sounds.playButtonClick();
-    } catch {}
-    if (onUpdateComponentState) {
-      onUpdateComponentState(componentId, { color: cKey });
-    }
-  };
-
   const vX1 = terminalVoltages?.get(`${componentId}:X1`);
   const vX2 = terminalVoltages?.get(`${componentId}:X2`);
 
@@ -305,46 +294,71 @@ export default function PilotLampElement({
         )}
 
         {/* -----------------------------------------------------------------
-            2. CORPO TRASEIRO CILÍNDRICO EM PERSPECTIVA (Fiel à foto de referência)
-            Mostra o tambor industrial cinza escuro com as aletas de ventilação
+            2. CORPO TRASEIRO CILÍNDRICO E BASE DE APOIO NOS BORNES
+            Mostra o tambor industrial cinza escuro com as aletas de ventilação,
+            estendendo-se e apoiando-se diretamente sobre o bloco de bornes X1/X2
             ----------------------------------------------------------------- */}
         <g filter={`url(#${shadowId})`}>
-          {/* Cilindro principal traseiro */}
+          {/* Corpo principal traseiro monolítico que apoia nos bornes */}
           <path
-            d="M 16 30 Q 14 48 16 66 L 46 72 Q 44 48 46 24 Z"
+            d="M 16 30 
+               Q 13 60 16 94 
+               L 86 94 
+               L 86 76 
+               Q 84 50 80 34 
+               L 46 24 
+               Z"
             fill={`url(#${barrelGradId})`}
             stroke="#121518"
             strokeWidth="1.2"
           />
 
-          {/* 3 Aletas / Ranhuras de aperto horizontais (conforme imagem de referência) */}
+          {/* Aletas / Ranhuras de aperto e reforço mecânico descendo até a base dos bornes */}
           <g fill="none" strokeWidth="2.4" strokeLinecap="round">
             {/* Aleta 1 (superior) */}
             <path d="M 22 36 Q 30 38 38 40" stroke={`url(#${finGradId})`} />
             <path d="M 22 38 Q 30 40 38 42" stroke="#0e1115" strokeWidth="1.2" />
 
-            {/* Aleta 2 (central) */}
+            {/* Aleta 2 (central-alta) */}
             <path d="M 20 46 Q 29 48 38 50" stroke={`url(#${finGradId})`} />
             <path d="M 20 48 Q 29 50 38 52" stroke="#0e1115" strokeWidth="1.2" />
 
-            {/* Aleta 3 (inferior) */}
-            <path d="M 22 56 Q 30 58 38 60" stroke={`url(#${finGradId})`} />
-            <path d="M 22 58 Q 30 60 38 62" stroke="#0e1115" strokeWidth="1.2" />
+            {/* Aleta 3 (central) */}
+            <path d="M 20 57 Q 29 59 38 61" stroke={`url(#${finGradId})`} />
+            <path d="M 20 59 Q 29 61 38 63" stroke="#0e1115" strokeWidth="1.2" />
+
+            {/* Aleta 4 (apoio intermediário) */}
+            <path d="M 20 68 Q 29 70 38 72" stroke={`url(#${finGradId})`} />
+            <path d="M 20 70 Q 29 72 38 74" stroke="#0e1115" strokeWidth="1.2" />
+
+            {/* Aleta 5 (apoio inferior próximo aos bornes) */}
+            <path d="M 22 79 Q 30 81 38 83" stroke={`url(#${finGradId})`} />
+            <path d="M 22 81 Q 30 83 38 85" stroke="#0e1115" strokeWidth="1.2" />
           </g>
 
-          {/* Rosca e rebaixos traseiros */}
+          {/* Rosca e rebaixos traseiros estendidos ao longo de todo o corpo até os bornes */}
           <path
-            d="M 14 34 L 14 62"
+            d="M 14 34 L 14 88"
             stroke="#3a414c"
             strokeWidth="3.2"
             strokeLinecap="round"
           />
           <path
-            d="M 12 38 L 12 58"
+            d="M 12 38 L 12 84"
             stroke="#1e2329"
             strokeWidth="2.8"
             strokeLinecap="round"
           />
+
+          {/* Flange / Engate mecânico de travamento sobre o bloco de bornes */}
+          <path
+            d="M 12 90 L 88 90 L 90 94 L 10 94 Z"
+            fill="#121519"
+            stroke="#2b313a"
+            strokeWidth="0.8"
+          />
+          <circle cx="16" cy="92" r="1.4" fill="#475569" />
+          <circle cx="84" cy="92" r="1.4" fill="#475569" />
 
           {/* Colar / Anel de encosto e retenção preto frontal */}
           <path
@@ -582,56 +596,6 @@ export default function PilotLampElement({
           </g>
         </g>
       </svg>
-
-      {/* -----------------------------------------------------------------
-          SELETOR RÁPIDO DA PALETA (Ao selecionar o componente)
-          Cores: Roxo, Branco, Vermelho, Azul, Verde, Preto, Amarelo
-          ----------------------------------------------------------------- */}
-      {!isSimulationMode && isSelected && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-28px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'rgba(15, 23, 42, 0.94)',
-            border: '1px solid rgba(255, 255, 255, 0.18)',
-            borderRadius: '16px',
-            padding: '3px 8px',
-            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.65)',
-            zIndex: 30,
-          }}
-          title="Selecione a cor da Sinaleira LED 22mm"
-        >
-          {COLOR_PALETTE_KEYS.map((k) => {
-            const p = PILOT_COLORS[k];
-            const isCurr = k === colorKey;
-            return (
-              <button
-                key={k}
-                type="button"
-                style={{
-                  width: isCurr ? '14px' : '12px',
-                  height: isCurr ? '14px' : '12px',
-                  borderRadius: '50%',
-                  backgroundColor: p.base,
-                  border: isCurr ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.25)',
-                  boxShadow: isCurr ? `0 0 8px #ffffff, 0 0 12px ${p.glow}` : '0 1px 3px rgba(0,0,0,0.5)',
-                  cursor: 'pointer',
-                  padding: 0,
-                  transition: 'transform 0.12s ease, box-shadow 0.12s ease',
-                  transform: isCurr ? 'scale(1.2)' : 'scale(1)',
-                }}
-                onClick={(e) => handleSelectColor(k, e)}
-                title={`Cor: ${p.label}`}
-              />
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

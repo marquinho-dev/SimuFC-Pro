@@ -289,6 +289,8 @@ export default function Canvas({
   isSimulationMode = false,
   selectedWireId: controlledSelectedWireId,
   onSelectWire,
+  selectedComponentId: controlledSelectedComponentId,
+  onSelectComponent,
   onAddWire,
   onRemoveWire,
   onUpdateWire,
@@ -384,7 +386,20 @@ export default function Canvas({
     [onSelectWire, selectedWireId]
   );
   const [hoveredWireId, setHoveredWireId] = useState(null);
-  const [selectedComponentId, setSelectedComponentId] = useState(null);
+  const [internalSelectedComponentId, setInternalSelectedComponentId] = useState(null);
+  const selectedComponentId =
+    controlledSelectedComponentId !== undefined
+      ? controlledSelectedComponentId
+      : internalSelectedComponentId;
+  const setSelectedComponentId = useCallback(
+    (idOrFn) => {
+      const nextId =
+        typeof idOrFn === 'function' ? idOrFn(selectedComponentId) : idOrFn;
+      if (onSelectComponent) onSelectComponent(nextId);
+      setInternalSelectedComponentId(nextId);
+    },
+    [onSelectComponent, selectedComponentId]
+  );
 
   // Dragging state (for component active elevation / styling)
   const [draggedCompId, setDraggedCompId] = useState(null);
