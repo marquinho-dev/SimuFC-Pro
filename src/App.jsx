@@ -1085,6 +1085,7 @@ export default function App() {
       else if (type === 'power_source') prefix = 'REDE';
       else if (type === 'text_note') prefix = 'TXT';
       else if (type === 'float_switch') prefix = 'B';
+      else if (type === 'selector_switch_3p') prefix = 'SS';
       else prefix = template.tag || 'C';
 
       // Collect existing numbers already in use by components of this type

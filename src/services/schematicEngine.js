@@ -335,6 +335,35 @@ export function decomposeComponent(comp, tagMap, netGraph) {
       });
       break;
 
+    case 'selector_switch_3p': {
+      const pos = String(comp.state?.position ?? '0');
+      // Contato 1 (Posição 1 - MAN)
+      primitives.push({
+        id: `${comp.id}_contact1`,
+        compId: comp.id,
+        compType: comp.type,
+        tag: `${tag}.1`,
+        primitiveType: 'BUTTON_START_NO',
+        domain: 'CONTROL',
+        terminals: { in: '13', out: '14' },
+        isClosed: pos === '1',
+        hasWires: netGraph.hasWire(comp.id, '13') || netGraph.hasWire(comp.id, '14'),
+      });
+      // Contato 2 (Posição 2 - AUTO)
+      primitives.push({
+        id: `${comp.id}_contact2`,
+        compId: comp.id,
+        compType: comp.type,
+        tag: `${tag}.2`,
+        primitiveType: 'BUTTON_START_NO',
+        domain: 'CONTROL',
+        terminals: { in: '23', out: '24' },
+        isClosed: pos === '2',
+        hasWires: netGraph.hasWire(comp.id, '23') || netGraph.hasWire(comp.id, '24'),
+      });
+      break;
+    }
+
     case 'motor_6p':
       primitives.push({
         id: `${comp.id}_motor`,

@@ -817,6 +817,77 @@ export function ButtonEmergencyThumbnail() {
 }
 
 /* ==========================================================
+   8B. SELECTOR SWITCH 3P THUMBNAIL (CHAVE SELETORA 1 - 0 - 2)
+   Matching SelectorSwitch3PElement: Molded mounting flange,
+   4 terminal blocks (13, 23, 14, 24), chrome bezel,
+   black dial with 1 - 0 - 2 scale, and long lever handle.
+   ========================================================== */
+export function SelectorSwitch3PThumbnail() {
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px', background: 'transparent' }}>
+      <svg viewBox="0 0 640 700" style={{ width: '92%', height: '92%', display: 'block' }}>
+        <defs>
+          <linearGradient id="thumbSSFlange" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2c303c" />
+            <stop offset="100%" stopColor="#0f1115" />
+          </linearGradient>
+          <linearGradient id="thumbSSMetal" x1="0.1" y1="0.1" x2="0.9" y2="0.9">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="20%" stopColor="#cbd5e1" />
+            <stop offset="60%" stopColor="#334155" />
+            <stop offset="100%" stopColor="#f8fafc" />
+          </linearGradient>
+          <linearGradient id="thumbSSLever" x1="0" y1="0" x2="1" y2="0.2">
+            <stop offset="0%" stopColor="#383d49" />
+            <stop offset="60%" stopColor="#181a20" />
+            <stop offset="100%" stopColor="#0c0e12" />
+          </linearGradient>
+        </defs>
+        {/* Base flange */}
+        <rect x="84" y="54" width="472" height="592" rx="24" fill="url(#thumbSSFlange)" stroke="#3a4150" strokeWidth="6" />
+        {/* 4 Terminals */}
+        <rect x="142" y="74" width="116" height="96" rx="14" fill="#14171f" stroke="#0b0d12" strokeWidth="4" />
+        <rect x="382" y="74" width="116" height="96" rx="14" fill="#14171f" stroke="#0b0d12" strokeWidth="4" />
+        <rect x="142" y="530" width="116" height="96" rx="14" fill="#14171f" stroke="#0b0d12" strokeWidth="4" />
+        <rect x="382" y="530" width="116" height="96" rx="14" fill="#14171f" stroke="#0b0d12" strokeWidth="4" />
+        {/* Screws */}
+        <circle cx="200" cy="122" r="16" fill="#cbd5e1" />
+        <circle cx="440" cy="122" r="16" fill="#cbd5e1" />
+        <circle cx="200" cy="578" r="16" fill="#cbd5e1" />
+        <circle cx="440" cy="578" r="16" fill="#cbd5e1" />
+        {/* Bezel Ring */}
+        <circle cx="320" cy="350" r="168" fill="url(#thumbSSMetal)" stroke="#475569" strokeWidth="4" />
+        <circle cx="320" cy="350" r="136" fill="#14161c" stroke="#2b313d" strokeWidth="4" />
+        {/* Dial & markings */}
+        <text x="236" y="270" fill="#94a3b8" fontSize="24" fontWeight="900" textAnchor="middle">1</text>
+        <text x="320" y="236" fill="#ffffff" fontSize="24" fontWeight="900" textAnchor="middle">0</text>
+        <text x="404" y="270" fill="#94a3b8" fontSize="24" fontWeight="900" textAnchor="middle">2</text>
+        {/* Lever Handle turned at 45 deg */}
+        <g transform="rotate(45, 320, 350)">
+          <circle cx="320" cy="350" r="66" fill="url(#thumbSSLever)" stroke="#111317" strokeWidth="5" />
+          <path d="M 288 226 L 352 226 L 368 350 L 366 492 C 366 518 344 532 320 532 C 296 532 274 518 274 492 L 272 350 Z" fill="url(#thumbSSLever)" stroke="#0b0d11" strokeWidth="5" />
+          <rect x="313" y="254" width="14" height="76" rx="7" fill="#ffffff" />
+        </g>
+      </svg>
+      <span style={{
+        position: 'absolute',
+        bottom: '2px',
+        right: '2px',
+        fontSize: '7.5px',
+        fontWeight: '800',
+        color: '#38bdf8',
+        background: 'rgba(15, 23, 42, 0.85)',
+        border: '1px solid rgba(56, 189, 248, 0.4)',
+        padding: '0 4px',
+        borderRadius: '3px',
+      }}>
+        1-0-2
+      </span>
+    </div>
+  );
+}
+
+/* ==========================================================
    9. MOTOR 6P THUMBNAIL (MOTOR DE INDUÇÃO TRIFÁSICO)
    Matching Motor6PElement: Exact FRONTAL VIEW of the motor!
    - Top: Gray terminal box with PE green socket & terracotta
@@ -1252,6 +1323,7 @@ export const COMPONENT_THUMBNAILS = {
   button_start: ButtonStartThumbnail,
   button_stop: ButtonStopThumbnail,
   button_emergency: ButtonEmergencyThumbnail,
+  selector_switch_3p: SelectorSwitch3PThumbnail,
   motor_6p: Motor6PThumbnail,
   pilot_light: PilotLightThumbnail,
   led_bulb: LedBulbThumbnail,
@@ -1500,6 +1572,23 @@ export function SchematicLedBulbThumbnail() {
   );
 }
 
+export function SchematicSelectorSwitch3PThumbnail() {
+  return (
+    <svg viewBox="0 0 100 70" className="comp-thumb-svg">
+      <circle cx="28" cy="35" r="3" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="14" y1="35" x2="25" y2="35" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="28" y1="35" x2="65" y2="24" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="72" cy="20" r="3" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="75" y1="20" x2="88" y2="20" stroke="#38bdf8" strokeWidth="1.5" />
+      <circle cx="72" cy="50" r="3" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="75" y1="50" x2="88" y2="50" stroke="#38bdf8" strokeWidth="1.5" />
+      <text x="80" y="16" fill="#38bdf8" fontSize="7" fontWeight="bold">1</text>
+      <text x="80" y="60" fill="#38bdf8" fontSize="7" fontWeight="bold">2</text>
+      <text x="48" y="62" fill="#94a3b8" fontSize="7" fontWeight="bold">1-0-2</text>
+    </svg>
+  );
+}
+
 export const SCHEMATIC_THUMBNAILS = {
   power_source: SchematicPowerSourceThumbnail,
   circuit_breaker: SchematicBreakerThumbnail,
@@ -1510,6 +1599,7 @@ export const SCHEMATIC_THUMBNAILS = {
   button_start: SchematicButtonStartThumbnail,
   button_stop: SchematicButtonStopThumbnail,
   button_emergency: SchematicButtonEmergencyThumbnail,
+  selector_switch_3p: SchematicSelectorSwitch3PThumbnail,
   motor_6p: SchematicMotorThumbnail,
   pilot_light: SchematicPilotLightThumbnail,
   led_bulb: SchematicLedBulbThumbnail,

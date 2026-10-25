@@ -224,6 +224,22 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
           }
           break;
 
+        case 'selector_switch_3p': {
+          // Chave Seletora 3 Posições (1 - 0 - 2 / MAN - 0 - AUTO):
+          // Posição '1' (Esquerda, -45°): Fecha o Bloco 1 (Terminais 13 - 14)
+          // Posição '0' (Centro, 0°): Desligado / Neutro (Nenhum contato conduz)
+          // Posição '2' (Direita, +45°): Fecha o Bloco 2 (Terminais 23 - 24)
+          const pos = String(comp.state?.position ?? '0');
+          if (pos === '1') {
+            addEdge(`${comp.id}:13`, `${comp.id}:14`);
+            addEdge(`${comp.id}:1`, `${comp.id}:2`);
+          } else if (pos === '2') {
+            addEdge(`${comp.id}:23`, `${comp.id}:24`);
+            addEdge(`${comp.id}:3`, `${comp.id}:4`);
+          }
+          break;
+        }
+
         case 'float_switch': {
           // Boia de Nível de Reservatório:
           // Ao encher e subir o nível (>= threshold), a boia sobe e LIGA o contato NA (11-14).

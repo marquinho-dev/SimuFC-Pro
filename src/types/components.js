@@ -38,6 +38,7 @@ export const COMPONENT_TYPES = {
   TERMINAL_BLOCK: 'terminal_block',
   TEXT_NOTE: 'text_note',
   FLOAT_SWITCH: 'float_switch',
+  SELECTOR_SWITCH_3P: 'selector_switch_3p',
 };
 
 // Range scale values matching the physical relay dial in the reference photo
@@ -306,6 +307,13 @@ export const FLOAT_SWITCH_TERMINALS = [
 export const LED_BULB_TERMINALS = [
   { id: 'X1', label: 'X1', x: 20, y: 158, type: 'light_terminal' },
   { id: 'X2', label: 'X2', x: 70, y: 158, type: 'light_terminal' },
+];
+
+export const SELECTOR_SWITCH_3P_TERMINALS = [
+  { id: '13', label: '13 (NA)', x: 45, y: 27, color: '#16a34a', type: 'btn_no' },
+  { id: '23', label: '23 (NA)', x: 99, y: 27, color: '#16a34a', type: 'btn_no' },
+  { id: '14', label: '14 (NA)', x: 45, y: 130, color: '#16a34a', type: 'btn_no' },
+  { id: '24', label: '24 (NA)', x: 99, y: 130, color: '#16a34a', type: 'btn_no' },
 ];
 
 export const INITIAL_COMPONENTS = [
@@ -603,6 +611,19 @@ export const INITIAL_COMPONENTS = [
       threshold: 50,
     },
     terminals: FLOAT_SWITCH_TERMINALS,
+  },
+  {
+    id: 'ss1-1',
+    type: COMPONENT_TYPES.SELECTOR_SWITCH_3P,
+    name: 'Chave Seletora 3 Posições (1 - 0 - 2)',
+    tag: 'SS1',
+    x: 620,
+    y: 40,
+    templateOnly: true,
+    state: {
+      position: '0', // '1' (-45° MAN) | '0' (0° DESL) | '2' (+45° AUTO)
+    },
+    terminals: SELECTOR_SWITCH_3P_TERMINALS,
   },
 ];
 

@@ -11,6 +11,7 @@ export const COMP_DIMENSIONS = {
   button_stop: { w: 144, h: 158 },
   button_start: { w: 144, h: 158 },
   button_emergency: { w: 136, h: 170 },
+  selector_switch_3p: { w: 144, h: 158 },
   pilot_lamp: { w: 104, h: 148 },
   pilot_light: { w: 104, h: 148 },
   led_bulb: { w: 90, h: 180 },
@@ -82,8 +83,8 @@ export function getTerminalExitVector(term, comp) {
     return { dx: 0, dy: 1 };
   }
 
-  // Pushbuttons: top terminal exits UP, bottom terminal exits DOWN
-  if (comp.type === 'button_start' || comp.type === 'button_stop' || comp.type === 'button_emergency') {
+  // Pushbuttons and Selector Switches: top terminal exits UP, bottom terminal exits DOWN
+  if (comp.type === 'button_start' || comp.type === 'button_stop' || comp.type === 'button_emergency' || comp.type === 'selector_switch_3p') {
     return term.y < 85 ? { dx: 0, dy: -1 } : { dx: 0, dy: 1 };
   }
 

@@ -136,6 +136,11 @@ export default function Header({
           name: "Caixa D'Água (Boia)",
           tag: 'B1',
         },
+        {
+          type: 'selector_switch_3p',
+          name: 'Chave Seletora 1-0-2',
+          tag: 'SS1',
+        },
       ],
     },
     {
@@ -261,6 +266,11 @@ export default function Header({
           type: 'float_switch',
           name: 'Boia de Nível B1',
           tag: '-B1',
+        },
+        {
+          type: 'selector_switch_3p',
+          name: 'Chave Seletora 1-0-2',
+          tag: '-SS1',
         },
       ],
     },

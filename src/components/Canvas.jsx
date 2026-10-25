@@ -14,6 +14,7 @@ import TerminalBlockElement from './elements/TerminalBlockElement';
 import DinRailElement from './elements/DinRailElement';
 import TextNoteElement from './elements/TextNoteElement';
 import FloatSwitchElement from './elements/FloatSwitchElement';
+import SelectorSwitch3PElement from './elements/SelectorSwitch3PElement';
 import SchematicElement from './elements/SchematicElement';
 import { TIMER_RELAY_TERMINALS, getBreakerTerminals, getTerminalBlockTerminals, SCHEMATIC_SOURCE_BUSES, SCHEMATIC_SOURCE_BUS_X_END } from '../types/components';
 import { sounds } from '../services/soundEffects';
@@ -620,6 +621,12 @@ export default function Canvas({
         if (termId === '1' || termId === '11' || termId === '11_bot') { tx = 68; ty = 18; }
         else if (termId === '2' || termId === '12' || termId === '12_bot') { tx = 68; ty = 150; }
         else { tx = term.x ?? 68; ty = term.y ?? 18; }
+      } else if (comp.type === 'selector_switch_3p') {
+        if (termId === '13' || termId === '1') { tx = 45; ty = 27; }
+        else if (termId === '23' || termId === '3') { tx = 99; ty = 27; }
+        else if (termId === '14' || termId === '2') { tx = 45; ty = 130; }
+        else if (termId === '24' || termId === '4') { tx = 99; ty = 130; }
+        else { tx = term.x ?? 45; ty = term.y ?? 27; }
       } else if (comp.type === 'timer_relay') {
         const config = TIMER_RELAY_TERMINALS[termId];
         if (config) {
@@ -2417,6 +2424,17 @@ export default function Canvas({
 
                   {comp.type === 'button_emergency' && (
                     <ButtonEmergencyElement
+                      component={comp}
+                      terminalVoltages={terminalVoltages}
+                      activeTerminal={connectingTerminal}
+                      onTerminalClick={handleTerminalClick}
+                      onUpdateComponentState={onUpdateComponentState}
+                      isSimulationMode={isSimulationMode}
+                    />
+                  )}
+
+                  {comp.type === 'selector_switch_3p' && (
+                    <SelectorSwitch3PElement
                       component={comp}
                       terminalVoltages={terminalVoltages}
                       activeTerminal={connectingTerminal}
