@@ -369,6 +369,45 @@ export default function FloatSwitchElement({
         </g>
 
         {/* -------------------------------------------------------------
+            OS 3 CONDUTORES DA BOIA CONVERGINDO DOS BORNES (1, 2, 3) PARA A CAIXA
+            (Conforme desenho de referência do usuário)
+            ------------------------------------------------------------- */}
+        <g>
+          {/* Fio do Borne 1: COM (Preto) */}
+          <path
+            d="M 44 36 C 58 36, 68 40, 78 41"
+            fill="none"
+            stroke="#0f172a"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          {/* Fio do Borne 2: NA (Marrom) */}
+          <path
+            d="M 44 56 C 58 56, 68 45, 78 43"
+            fill="none"
+            stroke="#78350f"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          {/* Fio do Borne 3: NF (Azul) */}
+          <path
+            d="M 44 76 C 58 76, 68 50, 78 45"
+            fill="none"
+            stroke="#1d4ed8"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+
+          {/* Terminais tubulares prateados na saída da borneira */}
+          <rect x="42" y="34.5" width="4" height="3" rx="0.8" fill="#94a3b8" />
+          <rect x="42" y="54.5" width="4" height="3" rx="0.8" fill="#94a3b8" />
+          <rect x="42" y="74.5" width="4" height="3" rx="0.8" fill="#94a3b8" />
+
+          {/* Bucha / prensa-cabo na borda da caixa onde os 3 fios entram na capa preta */}
+          <ellipse cx="78" cy="43" rx="3" ry="5.5" fill="#1e293b" stroke="#0f172a" strokeWidth="1" />
+        </g>
+
+        {/* -------------------------------------------------------------
             2. TUBULAÇÃO DE ENTRADA (A BICA) NA ESQUERDA ABAIXO DOS BORNES
             ------------------------------------------------------------- */}
         <g
@@ -507,16 +546,16 @@ export default function FloatSwitchElement({
           {/* -------------------------------------------------------------
               4. O CABO, CONTRAPESO AMARELO E A BOIA DE NÍVEL
               ------------------------------------------------------------- */}
-          {/* Segmento 1 do cabo: da entrada no topo esquerdo (anchor) até o contrapeso */}
+          {/* Segmento 1 do cabo: da bucha na borda esquerda (onde convergem os 3 fios) até o contrapeso */}
           <path
             d={`
-              M 56 46
-              C ${anchorX} 46, ${anchorX + 8} 60, ${anchorX + 16} 80
-              C ${anchorX + 24} 95, ${weightEnterX - 6} ${weightEnterY - 14}, ${weightEnterX} ${weightEnterY}
+              M 78 43
+              C 84 56, ${anchorX + 16} 78, ${weightEnterX - 8} ${weightEnterY - 18}
+              C ${weightEnterX - 4} ${weightEnterY - 10}, ${weightEnterX} ${weightEnterY - 4}, ${weightEnterX} ${weightEnterY}
             `}
             fill="none"
             stroke="#0f172a"
-            strokeWidth="3.2"
+            strokeWidth="3.4"
             strokeLinecap="round"
           />
 
