@@ -1254,6 +1254,7 @@ export const COMPONENT_THUMBNAILS = {
   button_emergency: ButtonEmergencyThumbnail,
   motor_6p: Motor6PThumbnail,
   pilot_light: PilotLightThumbnail,
+  led_bulb: LedBulbThumbnail,
   din_rail: DinRailThumbnail,
   terminal_block: TerminalBlockThumbnail,
   text_note: TextThumbnail,
@@ -1455,6 +1456,43 @@ export function SchematicFloatSwitchThumbnail() {
   );
 }
 
+export function LedBulbThumbnail() {
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px', background: 'transparent' }}>
+      <img
+        src="/led_bulb.png"
+        alt="Lâmpada LED"
+        style={{ width: '42px', height: '68px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}
+      />
+      <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '7px', fontWeight: 800, color: '#facc15' }}>
+        LÂMPADA LED
+      </span>
+    </div>
+  );
+}
+
+export function SchematicPilotLightThumbnail() {
+  return (
+    <svg viewBox="0 0 100 70" className="comp-thumb-svg">
+      <circle cx="50" cy="35" r="18" fill="#090d16" stroke="#38bdf8" strokeWidth="2" />
+      <line x1="37" y1="22" x2="63" y2="48" stroke="#38bdf8" strokeWidth="2" />
+      <line x1="63" y1="22" x2="37" y2="48" stroke="#38bdf8" strokeWidth="2" />
+      <text x="75" y="38" fill="#ffffff" fontSize="8" fontWeight="bold">H1</text>
+    </svg>
+  );
+}
+
+export function SchematicLedBulbThumbnail() {
+  return (
+    <svg viewBox="0 0 100 70" className="comp-thumb-svg">
+      <circle cx="50" cy="35" r="18" fill="#090d16" stroke="#facc15" strokeWidth="2" />
+      <line x1="37" y1="22" x2="63" y2="48" stroke="#facc15" strokeWidth="2" />
+      <line x1="63" y1="22" x2="37" y2="48" stroke="#facc15" strokeWidth="2" />
+      <text x="75" y="38" fill="#ffffff" fontSize="8" fontWeight="bold">L1</text>
+    </svg>
+  );
+}
+
 export const SCHEMATIC_THUMBNAILS = {
   power_source: SchematicPowerSourceThumbnail,
   circuit_breaker: SchematicBreakerThumbnail,
@@ -1466,6 +1504,8 @@ export const SCHEMATIC_THUMBNAILS = {
   button_stop: SchematicButtonStopThumbnail,
   button_emergency: SchematicButtonEmergencyThumbnail,
   motor_6p: SchematicMotorThumbnail,
+  pilot_light: SchematicPilotLightThumbnail,
+  led_bulb: SchematicLedBulbThumbnail,
   text_note: TextThumbnail,
   float_switch: SchematicFloatSwitchThumbnail,
 };

@@ -9,6 +9,7 @@ import BreakerElement from './elements/BreakersElement';
 import FuseHolderElement from './elements/FuseHolderElement';
 import { ButtonStopElement, ButtonStartElement, ButtonEmergencyElement } from './elements/ButtonsElement';
 import PilotLampElement from './elements/PilotLampsElement';
+import LedBulbElement from './elements/LedBulbElement';
 import TerminalBlockElement from './elements/TerminalBlockElement';
 import DinRailElement from './elements/DinRailElement';
 import TextNoteElement from './elements/TextNoteElement';
@@ -2424,6 +2425,18 @@ export default function Canvas({
 
                   {(comp.type === 'pilot_light' || comp.type === 'pilot_lamp' || comp.type === 'led_green' || comp.type === 'led_red' || comp.type === 'led_yellow') && (
                     <PilotLampElement
+                      component={comp}
+                      terminalVoltages={terminalVoltages}
+                      activeTerminal={connectingTerminal}
+                      onTerminalClick={handleTerminalClick}
+                      onUpdateComponentState={onUpdateComponentState}
+                      isSimulationMode={isSimulationMode}
+                      isSelected={isCompSelected}
+                    />
+                  )}
+
+                  {(comp.type === 'led_bulb' || comp.type === 'lamp_bulb' || comp.type === 'lamp_led') && (
+                    <LedBulbElement
                       component={comp}
                       terminalVoltages={terminalVoltages}
                       activeTerminal={connectingTerminal}

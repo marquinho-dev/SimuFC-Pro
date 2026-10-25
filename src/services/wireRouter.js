@@ -13,6 +13,7 @@ export const COMP_DIMENSIONS = {
   button_emergency: { w: 136, h: 170 },
   pilot_lamp: { w: 104, h: 148 },
   pilot_light: { w: 104, h: 148 },
+  led_bulb: { w: 90, h: 180 },
   motor_6p: { w: 260, h: 551 },
 };
 

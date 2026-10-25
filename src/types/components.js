@@ -32,6 +32,7 @@ export const COMPONENT_TYPES = {
   BUTTON_START: 'button_start',
   BUTTON_EMERGENCY: 'button_emergency',
   PILOT_LIGHT: 'pilot_light',
+  LED_BULB: 'led_bulb',
   DIN_RAIL: 'din_rail',
   FUSE_HOLDER: 'fuse_holder',
   TERMINAL_BLOCK: 'terminal_block',
@@ -302,6 +303,11 @@ export const FLOAT_SWITCH_TERMINALS = [
   { id: 'NF', label: '3', x: 38, y: 76, type: 'float_terminal' },
 ];
 
+export const LED_BULB_TERMINALS = [
+  { id: 'X1', label: 'X1', x: 20, y: 136, type: 'light_terminal' },
+  { id: 'X2', label: 'X2', x: 45, y: 172, type: 'light_terminal' },
+];
+
 export const INITIAL_COMPONENTS = [
   {
     id: 'source-1',
@@ -510,6 +516,20 @@ export const INITIAL_COMPONENTS = [
       { id: 'X1', label: 'X1', x: 31, y: 117, type: 'light_terminal' },
       { id: 'X2', label: 'X2', x: 73, y: 117, type: 'light_terminal' },
     ],
+  },
+  {
+    id: 'bulb-1',
+    type: COMPONENT_TYPES.LED_BULB,
+    name: 'Lâmpada LED Bulbo E27 (220V)',
+    tag: 'L1',
+    x: 820,
+    y: 180,
+    templateOnly: true,
+    state: {
+      lit: false,
+      color: 'warm_white',
+    },
+    terminals: LED_BULB_TERMINALS,
   },
   {
     id: 'din-rail-1',

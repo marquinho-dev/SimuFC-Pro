@@ -128,8 +128,13 @@ export default function Header({
       items: [
         {
           type: 'pilot_light',
-          name: 'Sinaleira LED',
+          name: 'Sinaleira LED 22mm',
           tag: 'H1',
+        },
+        {
+          type: 'led_bulb',
+          name: 'Lâmpada LED (Bulbo E27)',
+          tag: 'L1',
         },
         {
           type: 'motor_6p',
@@ -244,9 +249,19 @@ export default function Header({
     },
     {
       id: 'loads_schematic',
-      title: 'Cargas & Motores',
-      icon: '🌀',
+      title: 'Cargas & Sinalização',
+      icon: '💡',
       items: [
+        {
+          type: 'pilot_light',
+          name: 'Sinalizador LED H1',
+          tag: '-H1',
+        },
+        {
+          type: 'led_bulb',
+          name: 'Lâmpada LED L1',
+          tag: '-L1',
+        },
         {
           type: 'motor_6p',
           name: 'Motor Trifásico',

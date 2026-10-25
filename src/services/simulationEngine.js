@@ -261,6 +261,7 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
         case 'led_yellow':
         case 'pilot_light':
         case 'pilot_lamp':
+        case 'led_bulb':
           // Loads do not short-circuit X1 to X2; they measure DDP across them
           break;
 
@@ -527,13 +528,14 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
 
   // 5. Evaluate loads (LEDs and Motor)
   for (const comp of compMap.values()) {
-    // LEDs / Pilot Lights
+    // LEDs / Pilot Lights / Bulbs
     if (
       comp.type === 'led_green' ||
       comp.type === 'led_red' ||
       comp.type === 'led_yellow' ||
       comp.type === 'pilot_light' ||
-      comp.type === 'pilot_lamp'
+      comp.type === 'pilot_lamp' ||
+      comp.type === 'led_bulb'
     ) {
       const vX1 = finalTerminalVoltages.get(`${comp.id}:X1`);
       const vX2 = finalTerminalVoltages.get(`${comp.id}:X2`);

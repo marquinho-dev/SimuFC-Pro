@@ -309,7 +309,7 @@ export default function App() {
             resetState.rpm = 0;
             resetState.current = 0;
           }
-          if (c.type === 'pilot_light' || c.type === 'pilot_lamp') {
+          if (c.type === 'pilot_light' || c.type === 'pilot_lamp' || c.type === 'led_bulb') {
             resetState.lit = false;
           }
           if (c.type === 'button_start' || c.type === 'button_stop' || c.type === 'button_emergency') {
@@ -1056,6 +1056,7 @@ export default function App() {
       else if (type === 'button_emergency') prefix = 'S00';
       else if (type === 'motor_6p') prefix = 'M';
       else if (type === 'pilot_light' || type === 'pilot_lamp') prefix = 'H';
+      else if (type === 'led_bulb' || type === 'lamp_bulb') prefix = 'L';
       else if (type === 'power_source') prefix = 'REDE';
       else if (type === 'text_note') prefix = 'TXT';
       else if (type === 'float_switch') prefix = 'B';
