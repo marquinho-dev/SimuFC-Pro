@@ -82,9 +82,11 @@ function getVoltageColor(v) {
 
 /**
  * Lâmpada LED Bulbo E27 montada em Bocal Industrial Receptáculo E27
- * - Globo difusor fosco com brilho volumétrico ajustável pela paleta de cabos
- * - Bocal industrial E27 em termoplástico/baquelite com rosca e flange de fixação
- * - Bornes de parafuso industriais X1 (Rosca lateral) e X2 (Pé central)
+ * Estrutura 3D realista em camadas:
+ * 1. Cavidade interna traseira do bocal (fica atrás da lâmpada)
+ * 2. Lâmpada LED penetrando fisicamente dentro da boca do bocal
+ * 3. Borda frontal envolvente do bocal com sombra de oclusão sobreposta (lâmpada entra DENTRO)
+ * 4. Bornes industriais X1 e X2 montados na carcaça do bocal
  */
 export default function LedBulbElement({
   component,
@@ -121,7 +123,7 @@ export default function LedBulbElement({
       }}
       data-component-type="led_bulb"
     >
-      {/* Halo Volumétrico Difuso quando Acesa */}
+      {/* 1. Halo Volumétrico Difuso quando Acesa */}
       {isLit && (
         <div
           style={{
@@ -140,25 +142,73 @@ export default function LedBulbElement({
         />
       )}
 
-      {/* Imagem Fotorealista da Lâmpada LED E27 */}
-      <img
-        src="/led_bulb.png"
-        alt="Lâmpada LED Bulbo E27"
-        draggable={false}
+      {/* 2. PARTE TRASEIRA DO BOCAL (Interior da cavidade rosqueada, fica ATRÁS da lâmpada) */}
+      <svg
+        width="90"
+        height="184"
+        viewBox="0 0 90 184"
         style={{
-          width: '90px',
-          height: '175px',
-          objectFit: 'contain',
-          display: 'block',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 1,
           pointerEvents: 'none',
-          position: 'relative',
-          zIndex: 2,
-          filter: isLit
-            ? colorCfg.filterLit
-            : 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45))',
-          transition: 'filter 0.15s ease',
         }}
-      />
+      >
+        <defs>
+          <linearGradient id={`bocalBackInterior-${componentId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#05070a" />
+            <stop offset="100%" stopColor="#181e28" />
+          </linearGradient>
+          <linearGradient id={`bocalThreadBrass-${componentId}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#78350f" />
+            <stop offset="50%" stopColor="#d97706" />
+            <stop offset="100%" stopColor="#451a03" />
+          </linearGradient>
+        </defs>
+
+        {/* Borda traseira do anel do bocal */}
+        <path
+          d="M 21 125 C 21 118 69 118 69 125 L 69 135 C 69 128 21 128 21 135 Z"
+          fill={`url(#bocalBackInterior-${componentId})`}
+          stroke="#1c222c"
+          strokeWidth="1"
+        />
+
+        {/* Fios de rosca de latão internos visíveis no fundo do bocal */}
+        <path d="M 25 123 C 30 119 60 119 65 123" stroke={`url(#bocalThreadBrass-${componentId})`} strokeWidth="1.5" fill="none" opacity="0.85" />
+        <path d="M 24 126 C 29 122 61 122 66 126" stroke={`url(#bocalThreadBrass-${componentId})`} strokeWidth="1.5" fill="none" opacity="0.6" />
+      </svg>
+
+      {/* 3. LÂMPADA LED PENETRANDO FISICAMENTE DENTRO DO BOCAL (Camada intermediária zIndex: 2) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '0px',
+          left: '0px',
+          width: '90px',
+          height: '148px', // A lâmpada entra até y=148 dentro do bocal e fica alojada no interior
+          overflow: 'hidden',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      >
+        <img
+          src="/led_bulb.png"
+          alt="Lâmpada LED Bulbo E27"
+          draggable={false}
+          style={{
+            width: '90px',
+            height: '175px',
+            objectFit: 'contain',
+            display: 'block',
+            filter: isLit
+              ? colorCfg.filterLit
+              : 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45))',
+            transition: 'filter 0.15s ease',
+          }}
+        />
+      </div>
 
       {/* Tag Identificadora Discreta (ex: L1) */}
       <div
@@ -177,37 +227,31 @@ export default function LedBulbElement({
           borderRadius: '4px',
           border: '1px solid rgba(56, 189, 248, 0.3)',
           pointerEvents: 'none',
-          zIndex: 5,
+          zIndex: 6,
         }}
       >
         {component.tag || 'L1'}
       </div>
 
-      {/* -----------------------------------------------------------------
-          BOCAL / RECEPTÁCULO INDUSTRIAL E27
-          Base mecânica em baquelite/termoplástico que envolve a rosca da lâmpada
-          e aloja os bornes X1 e X2
-          ----------------------------------------------------------------- */}
+      {/* 4. PARTE FRONTAL DO BOCAL (Borda frontal envolvente, corpo e bornes, fica NA FRENTE da lâmpada zIndex: 5) */}
       <svg
         width="90"
-        height="64"
-        viewBox="0 0 90 64"
+        height="184"
+        viewBox="0 0 90 184"
         style={{
           position: 'absolute',
-          bottom: '0px',
-          left: '0px',
-          zIndex: 6,
-          overflow: 'visible',
+          top: 0,
+          left: 0,
+          zIndex: 5,
           pointerEvents: 'none',
+          overflow: 'visible',
         }}
       >
         <defs>
-          {/* Sombra de projeção do bocal */}
-          <filter id={`bocalShadow-${componentId}`} x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#000000" floodOpacity="0.65" />
+          <filter id={`bocalShadowFront-${componentId}`} x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="4" stdDeviation="3.5" floodColor="#000000" floodOpacity="0.7" />
           </filter>
 
-          {/* Gradiente da baquelite do bocal */}
           <linearGradient id={`bocalBodyGrad-${componentId}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#12151b" />
             <stop offset="15%" stopColor="#222834" />
@@ -217,14 +261,13 @@ export default function LedBulbElement({
             <stop offset="100%" stopColor="#0e1116" />
           </linearGradient>
 
-          {/* Gradiente da rosca de latão interna visível */}
-          <linearGradient id={`bocalThreadGrad-${componentId}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#78350f" />
-            <stop offset="50%" stopColor="#d97706" />
-            <stop offset="100%" stopColor="#451a03" />
+          <linearGradient id={`bocalLipGrad-${componentId}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1a202c" />
+            <stop offset="30%" stopColor="#3d475a" />
+            <stop offset="70%" stopColor="#3d475a" />
+            <stop offset="100%" stopColor="#1a202c" />
           </linearGradient>
 
-          {/* Gradiente do parafuso dos bornes */}
           <radialGradient id={`bocalScrewGrad-${componentId}`} cx="38%" cy="32%" r="75%">
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="45%" stopColor="#94a3b8" />
@@ -233,74 +276,75 @@ export default function LedBulbElement({
           </radialGradient>
         </defs>
 
-        {/* Corpo estrutural do Bocal */}
-        <g filter={`url(#bocalShadow-${componentId})`}>
-          {/* Flange / Base inferior alargada de montagem */}
+        {/* Sombra de oclusão do bocal projetada DIRETAMENTE SOBRE a lâmpada inserida */}
+        <path
+          d="M 21 125 
+             C 21 133 69 133 69 125 
+             L 69 131 
+             C 69 139 21 139 21 131 
+             Z"
+          fill="rgba(0, 0, 0, 0.75)"
+        />
+
+        <g filter={`url(#bocalShadowFront-${componentId})`}>
+          {/* Base e flange inferior alargada com orelhas de fixação */}
           <path
-            d="M 12 44 
-               C 12 38 18 32 26 30 
-               L 64 30 
-               C 72 32 78 38 78 44 
-               L 80 56 
-               C 80 60 76 62 72 62 
-               L 18 62 
-               C 14 62 10 60 10 56 
+            d="M 12 164 
+               C 12 154 18 146 26 144 
+               L 64 144 
+               C 72 146 78 154 78 164 
+               L 80 176 
+               C 80 180 76 182 72 182 
+               L 18 182 
+               C 14 182 10 180 10 176 
                Z"
             fill={`url(#bocalBodyGrad-${componentId})`}
             stroke="#2d3442"
             strokeWidth="1.2"
           />
 
-          {/* Corpo cilíndrico central que envolve a rosca E27 */}
+          {/* Corpo cilíndrico central do bocal que abraça a lâmpada */}
           <path
-            d="M 22 10 
-               Q 20 20 20 36 
-               L 70 36 
-               Q 70 20 68 10 
+            d="M 21 127 
+               C 21 134 69 134 69 127 
+               L 70 148 
+               L 20 148 
                Z"
             fill={`url(#bocalBodyGrad-${componentId})`}
             stroke="#1c222c"
             strokeWidth="1.2"
           />
 
-          {/* Ranhuras verticais de aperto e aderência na carcaça */}
-          <line x1="28" y1="12" x2="28" y2="34" stroke="#12161f" strokeWidth="1.8" />
-          <line x1="29" y1="12" x2="29" y2="34" stroke="#434d61" strokeWidth="0.8" />
+          {/* Ranhuras verticais de aperto e ventilação na carcaça do bocal */}
+          <line x1="28" y1="133" x2="28" y2="147" stroke="#12161f" strokeWidth="1.8" />
+          <line x1="29" y1="133" x2="29" y2="147" stroke="#434d61" strokeWidth="0.8" />
 
-          <line x1="45" y1="12" x2="45" y2="34" stroke="#12161f" strokeWidth="1.8" />
-          <line x1="46" y1="12" x2="46" y2="34" stroke="#434d61" strokeWidth="0.8" />
+          <line x1="45" y1="133" x2="45" y2="147" stroke="#12161f" strokeWidth="1.8" />
+          <line x1="46" y1="133" x2="46" y2="147" stroke="#434d61" strokeWidth="0.8" />
 
-          <line x1="61" y1="12" x2="61" y2="34" stroke="#12161f" strokeWidth="1.8" />
-          <line x1="62" y1="12" x2="62" y2="34" stroke="#434d61" strokeWidth="0.8" />
+          <line x1="61" y1="133" x2="61" y2="147" stroke="#12161f" strokeWidth="1.8" />
+          <line x1="62" y1="133" x2="62" y2="147" stroke="#434d61" strokeWidth="0.8" />
 
-          {/* Colar / Borda superior reforçada de entrada da lâmpada */}
-          <ellipse
-            cx="45"
-            cy="10"
-            rx="23"
-            ry="5.5"
-            fill="#12151b"
-            stroke="#3a4354"
-            strokeWidth="1.4"
-          />
-          {/* Fio de latão / bronze da rosca interna E27 */}
-          <ellipse
-            cx="45"
-            cy="9.5"
-            rx="20"
-            ry="4"
-            fill="none"
-            stroke={`url(#bocalThreadGrad-${componentId})`}
-            strokeWidth="1.6"
+          {/* Borda / Lábio frontal do bocal que contorna e sobrepõe a lâmpada (dando efeito de entrada real) */}
+          <path
+            d="M 21 125 
+               C 21 133 69 133 69 125 
+               C 69 128 67 131 65 131 
+               C 55 136 35 136 25 131 
+               C 23 131 21 128 21 125 
+               Z"
+            fill={`url(#bocalLipGrad-${componentId})`}
+            stroke="#455167"
+            strokeWidth="1"
           />
 
-          {/* Friso horizontal da base */}
-          <line x1="14" y1="48" x2="76" y2="48" stroke="#0f131a" strokeWidth="1.6" />
-          <line x1="14" y1="49" x2="76" y2="49" stroke="#434d61" strokeWidth="0.8" />
+          {/* Friso horizontal da base inferior */}
+          <line x1="14" y1="168" x2="76" y2="168" stroke="#0f131a" strokeWidth="1.6" />
+          <line x1="14" y1="169" x2="76" y2="169" stroke="#434d61" strokeWidth="0.8" />
 
-          {/* Parafusos de fixação mecânica da flange */}
-          <circle cx="15" cy="55" r="1.6" fill="#334155" />
-          <circle cx="75" cy="55" r="1.6" fill="#334155" />
+          {/* Parafusos de fixação mecânica da flange no painel */}
+          <circle cx="15" cy="175" r="1.6" fill="#334155" />
+          <circle cx="75" cy="175" r="1.6" fill="#334155" />
         </g>
       </svg>
 
