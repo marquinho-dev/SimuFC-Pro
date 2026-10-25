@@ -2,41 +2,41 @@ import React from 'react';
 import { sounds } from '../../services/soundEffects';
 
 export const PILOT_COLORS = {
-  yellow: {
-    id: 'yellow',
-    label: 'Amarelo',
-    base: '#eab308',
-    glow: 'rgba(234, 179, 8, 0.9)',
-    unlitCenter: '#b45309',
-    unlitEdge: '#78350f',
-    unlitRim: '#92400e',
-    unlitBorder: '#451a03',
+  purple: {
+    id: 'purple',
+    label: 'Roxo',
+    base: '#a855f7',
+    glow: 'rgba(168, 85, 247, 0.95)',
+    unlitCenter: '#7e22ce',
+    unlitEdge: '#3b0764',
+    unlitRim: '#6b21a8',
+    unlitBorder: '#2e1065',
     litCore: '#ffffff',
-    litMid: '#fef08a',
-    litMain: '#eab308',
-    litEdge: '#ca8a04',
-    litHalo: '#f59e0b',
+    litMid: '#f3e8ff',
+    litMain: '#a855f7',
+    litEdge: '#7e22ce',
+    litHalo: '#c084fc',
   },
-  green: {
-    id: 'green',
-    label: 'Verde',
-    base: '#22c55e',
-    glow: 'rgba(34, 197, 94, 0.9)',
-    unlitCenter: '#15803d',
-    unlitEdge: '#052e16',
-    unlitRim: '#166534',
-    unlitBorder: '#022c22',
+  white: {
+    id: 'white',
+    label: 'Branco',
+    base: '#ffffff',
+    glow: 'rgba(255, 255, 255, 0.95)',
+    unlitCenter: '#cbd5e1',
+    unlitEdge: '#475569',
+    unlitRim: '#94a3b8',
+    unlitBorder: '#334155',
     litCore: '#ffffff',
-    litMid: '#bbf7d0',
-    litMain: '#22c55e',
-    litEdge: '#15803d',
-    litHalo: '#4ade80',
+    litMid: '#ffffff',
+    litMain: '#f1f5f9',
+    litEdge: '#cbd5e1',
+    litHalo: '#e2e8f0',
   },
   red: {
     id: 'red',
     label: 'Vermelho',
     base: '#ef4444',
-    glow: 'rgba(239, 68, 68, 0.92)',
+    glow: 'rgba(239, 68, 68, 0.95)',
     unlitCenter: '#b91c1c',
     unlitEdge: '#450a0a',
     unlitRim: '#991b1b',
@@ -50,34 +50,66 @@ export const PILOT_COLORS = {
   blue: {
     id: 'blue',
     label: 'Azul',
-    base: '#38bdf8',
-    glow: 'rgba(56, 189, 248, 0.9)',
+    base: '#2563eb',
+    glow: 'rgba(37, 99, 235, 0.95)',
     unlitCenter: '#1d4ed8',
     unlitEdge: '#0f172a',
     unlitRim: '#1e40af',
     unlitBorder: '#0b132b',
     litCore: '#ffffff',
-    litMid: '#bae6fd',
-    litMain: '#38bdf8',
-    litEdge: '#0284c7',
+    litMid: '#bfdbfe',
+    litMain: '#2563eb',
+    litEdge: '#1d4ed8',
     litHalo: '#60a5fa',
   },
-  white: {
-    id: 'white',
-    label: 'Branco',
-    base: '#f8fafc',
-    glow: 'rgba(255, 255, 255, 0.95)',
-    unlitCenter: '#cbd5e1',
-    unlitEdge: '#475569',
-    unlitRim: '#94a3b8',
-    unlitBorder: '#334155',
+  green: {
+    id: 'green',
+    label: 'Verde',
+    base: '#16a34a',
+    glow: 'rgba(22, 163, 74, 0.95)',
+    unlitCenter: '#15803d',
+    unlitEdge: '#052e16',
+    unlitRim: '#166534',
+    unlitBorder: '#022c22',
     litCore: '#ffffff',
-    litMid: '#ffffff',
-    litMain: '#f1f5f9',
-    litEdge: '#cbd5e1',
-    litHalo: '#e2e8f0',
+    litMid: '#bbf7d0',
+    litMain: '#16a34a',
+    litEdge: '#15803d',
+    litHalo: '#4ade80',
+  },
+  black: {
+    id: 'black',
+    label: 'Preto',
+    base: '#18181b',
+    glow: 'rgba(212, 212, 216, 0.65)',
+    unlitCenter: '#27272a',
+    unlitEdge: '#09090b',
+    unlitRim: '#18181b',
+    unlitBorder: '#09090b',
+    litCore: '#ffffff',
+    litMid: '#e4e4e7',
+    litMain: '#71717a',
+    litEdge: '#27272a',
+    litHalo: '#a1a1aa',
+  },
+  yellow: {
+    id: 'yellow',
+    label: 'Amarelo',
+    base: '#eab308',
+    glow: 'rgba(234, 179, 8, 0.95)',
+    unlitCenter: '#b45309',
+    unlitEdge: '#78350f',
+    unlitRim: '#92400e',
+    unlitBorder: '#451a03',
+    litCore: '#ffffff',
+    litMid: '#fef08a',
+    litMain: '#eab308',
+    litEdge: '#ca8a04',
+    litHalo: '#f59e0b',
   },
 };
+
+export const COLOR_PALETTE_KEYS = ['purple', 'white', 'red', 'blue', 'green', 'black', 'yellow'];
 
 function getVoltageColor(v) {
   switch (v) {
@@ -552,8 +584,8 @@ export default function PilotLampElement({
       </svg>
 
       {/* -----------------------------------------------------------------
-          5. SELETOR RÁPIDO DAS 5 CORES INDUSTRIAIS (Ao selecionar o componente)
-          Cores solicitadas: Amarelo, Verde, Vermelho, Azul, Branco
+          SELETOR RÁPIDO DA PALETA (Ao selecionar o componente)
+          Cores: Roxo, Branco, Vermelho, Azul, Verde, Preto, Amarelo
           ----------------------------------------------------------------- */}
       {!isSimulationMode && isSelected && (
         <div
@@ -564,7 +596,7 @@ export default function PilotLampElement({
             transform: 'translateX(-50%)',
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
+            gap: '6px',
             background: 'rgba(15, 23, 42, 0.94)',
             border: '1px solid rgba(255, 255, 255, 0.18)',
             borderRadius: '16px',
@@ -574,7 +606,7 @@ export default function PilotLampElement({
           }}
           title="Selecione a cor da Sinaleira LED 22mm"
         >
-          {['yellow', 'green', 'red', 'blue', 'white'].map((k) => {
+          {COLOR_PALETTE_KEYS.map((k) => {
             const p = PILOT_COLORS[k];
             const isCurr = k === colorKey;
             return (
@@ -586,15 +618,15 @@ export default function PilotLampElement({
                   height: isCurr ? '14px' : '12px',
                   borderRadius: '50%',
                   backgroundColor: p.base,
-                  border: isCurr ? '2px solid #ffffff' : '1px solid rgba(0,0,0,0.5)',
-                  boxShadow: isCurr ? `0 0 8px ${p.glow}` : 'none',
+                  border: isCurr ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.25)',
+                  boxShadow: isCurr ? `0 0 8px #ffffff, 0 0 12px ${p.glow}` : '0 1px 3px rgba(0,0,0,0.5)',
                   cursor: 'pointer',
                   padding: 0,
-                  transition: 'transform 0.1s ease',
-                  transform: isCurr ? 'scale(1.15)' : 'scale(1)',
+                  transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+                  transform: isCurr ? 'scale(1.2)' : 'scale(1)',
                 }}
                 onClick={(e) => handleSelectColor(k, e)}
-                title={`Mudar para sinaleira cor: ${p.label}`}
+                title={`Cor: ${p.label}`}
               />
             );
           })}

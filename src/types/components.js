@@ -10,6 +10,16 @@ export const WIRE_COLORS = [
   { id: 'yellow', label: 'Comando / Sinal (Amarelo)', color: '#eab308', border: '#facc15' },
 ];
 
+export const LAMP_COLORS = [
+  { id: 'purple', label: 'Roxo', color: '#a855f7' },
+  { id: 'white', label: 'Branco', color: '#ffffff' },
+  { id: 'red', label: 'Vermelho', color: '#ef4444' },
+  { id: 'blue', label: 'Azul', color: '#2563eb' },
+  { id: 'green', label: 'Verde', color: '#16a34a' },
+  { id: 'black', label: 'Preto', color: '#18181b' },
+  { id: 'yellow', label: 'Amarelo', color: '#eab308' },
+];
+
 export const COMPONENT_TYPES = {
   POWER_SOURCE: 'power_source',
   CIRCUIT_BREAKER: 'circuit_breaker',
