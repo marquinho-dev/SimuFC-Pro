@@ -20,8 +20,9 @@ function getVoltageBadgeColor(v) {
 
 /* ==========================================================
    BOTOEIRA INDUSTRIAL REALISTA (CONFORME ESPECIFICAÇÃO SVG)
-   Corpo escuro 3D, bornes parafusados 13/14 (ou 11/12),
-   aro metálico usinado e atuador côncavo/convexo com relevo
+   Base quadrada escura, quatro bornes metálicos parafusados
+   (13-14 NA para verde / 11-12 NF para vermelha), aro metálico
+   e atuador côncavo com símbolo industrial IEC I / O.
    ========================================================== */
 function RealisticPushbuttonSvg({
   component,
@@ -36,20 +37,18 @@ function RealisticPushbuttonSvg({
   const componentId = component.id;
   const isStop = type === 'stop';
   const isEmergency = type === 'emergency';
+  const isStart = !isStop && !isEmergency;
 
-  // Ids escopados para gradientes e filtros
-  const bodyGradId = `bodyGrad-${componentId}`;
-  const terminalGradId = `terminalGrad-${componentId}`;
-  const bezelGradId = `bezelGrad-${componentId}`;
-  const bezelInnerId = `bezelInner-${componentId}`;
-  const btnGradId = `btnGrad-${componentId}`;
+  // Ids escopados para gradientes e filtros SVG
+  const baseGradId = `baseGrad-${componentId}`;
+  const greenGradId = `greenGrad-${componentId}`;
+  const redGradId = `redGrad-${componentId}`;
+  const metalGradId = `metalGrad-${componentId}`;
   const screwGradId = `screwGrad-${componentId}`;
-  const screwDefId = `screw-${componentId}`;
+  const shadowFilterId = `shadow-${componentId}`;
   const glowFilterId = `glow-${componentId}`;
 
   // Terminais: para start (13, 14, 13_bot, 14_bot), para stop/emerg (11, 12, 11_bot, 12_bot)
-  const isStart = !isStop && !isEmergency;
-
   const termTopLeftId = isStart ? '13' : '11';
   const termTopRightId = isStart ? '14' : '12';
   const termBotLeftId = isStart ? '13_bot' : '11_bot';
@@ -81,7 +80,7 @@ function RealisticPushbuttonSvg({
   const botLeftState = getTermState(termBotLeftId, null);
   const botRightState = getTermState(termBotRightId, null);
 
-  const renderScrewTerminal = (x, y, rectX, rectY, termId, label, labelY, state) => {
+  const renderScrewTerminal = (cx, cy, bossX, bossY, plateX, plateY, termId, state) => {
     return (
       <g
         className={`pushbutton-screw-terminal-group ${state.isSelected ? 'selected' : ''} ${
@@ -93,78 +92,95 @@ function RealisticPushbuttonSvg({
         }}
         style={{ cursor: 'pointer' }}
       >
-        {/* Bloco metálico condutor do borne */}
+        {/* Bloco moldado de carcaça integrado ao corpo */}
         <rect
-          x={rectX}
-          y={rectY}
-          width="50"
-          height="60"
-          rx="5"
-          fill={`url(#${terminalGradId})`}
-          stroke={state.isSelected ? '#38bdf8' : state.isConnecting ? '#4ade80' : '#1F2937'}
-          strokeWidth={state.isSelected || state.isConnecting ? '2.5' : '2'}
+          x={bossX}
+          y={bossY}
+          width="118"
+          height="96"
+          rx="14"
+          fill={`url(#${baseGradId})`}
+          stroke="#10131a"
+          strokeWidth="6"
+        />
+
+        {/* Placa metálica condutora alojada no rebaixo */}
+        <rect
+          x={plateX}
+          y={plateY}
+          width="106"
+          height="72"
+          rx="8"
+          fill={`url(#${metalGradId})`}
+          stroke={state.isSelected ? '#38bdf8' : state.isConnecting ? '#4ade80' : '#20242d'}
+          strokeWidth={state.isSelected || state.isConnecting ? '5' : '3.5'}
         />
 
         {/* Halo de indicação interativa quando selecionado ou arrastando fio */}
         {state.isSelected && (
           <circle
-            cx={x}
-            cy={y}
-            r="20"
+            cx={cx}
+            cy={cy}
+            r="32"
             fill="none"
             stroke="#38bdf8"
-            strokeWidth="3"
-            strokeDasharray="4 2"
+            strokeWidth="5"
+            strokeDasharray="8 4"
             className="screw-selected-ring"
           />
         )}
         {state.isConnecting && !state.isSelected && (
           <circle
-            cx={x}
-            cy={y}
-            r="19"
-            fill="rgba(74, 222, 128, 0.15)"
+            cx={cx}
+            cy={cy}
+            r="30"
+            fill="rgba(74, 222, 128, 0.2)"
             stroke="#4ade80"
-            strokeWidth="2"
+            strokeWidth="3.5"
           />
         )}
 
-        {/* Parafuso Phillips */}
-        <use href={`#${screwDefId}`} x={x} y={y} />
+        {/* Cavidade escura do parafuso */}
+        <circle cx={cx} cy={cy} r="22" fill="#242936" />
+
+        {/* Cabeça metálica usinada do parafuso */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r="16"
+          fill={`url(#${screwGradId})`}
+          stroke="#171a22"
+          strokeWidth="1.5"
+        />
+
+        {/* Fenda em cruz Phillips */}
+        <path
+          d={`M ${cx - 8} ${cy} L ${cx + 8} ${cy} M ${cx} ${cy - 8} L ${cx} ${cy + 8}`}
+          stroke="#1f2937"
+          strokeWidth="3.2"
+          strokeLinecap="round"
+        />
+        <circle cx={cx} cy={cy} r="3" fill="#1f2937" opacity="0.6" />
 
         {/* Ponto indicador de tensão elétrica energizada */}
         {state.isPowered && (
           <circle
-            cx={x}
-            cy={y}
-            r="5"
+            cx={cx}
+            cy={cy}
+            r="7"
             fill={getVoltageBadgeColor(state.voltage)}
             filter={`url(#${glowFilterId})`}
           />
         )}
 
-        {/* Hotspot transparente para clique preciso */}
+        {/* Hotspot de clique preciso para conexão */}
         <circle
-          cx={x}
-          cy={y}
-          r="18"
+          cx={cx}
+          cy={cy}
+          r="34"
           fill="transparent"
           data-terminal-target={`${componentId}:${termId}`}
         />
-
-        {/* Rótulo de identificação do borne */}
-        <text
-          x={x}
-          y={labelY}
-          fontFamily="Arial, sans-serif"
-          fontWeight="bold"
-          fontSize="22"
-          fill="#374151"
-          textAnchor="middle"
-          style={{ userSelect: 'none', pointerEvents: 'none' }}
-        >
-          {label}
-        </text>
       </g>
     );
   };
@@ -172,87 +188,55 @@ function RealisticPushbuttonSvg({
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 400 500"
+      viewBox="0 0 640 700"
       width="100%"
       height="100%"
       className="industrial-pushbutton-svg"
       style={{ display: 'block', overflow: 'visible', userSelect: 'none' }}
     >
       <defs>
-        {/* Efeito 3D para o Corpo Principal */}
-        <linearGradient id={bodyGradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#4B5563" />
-          <stop offset="50%" stopColor="#374151" />
-          <stop offset="100%" stopColor="#1F2937" />
+        {/* Base industrial escura */}
+        <linearGradient id={baseGradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#414653" />
+          <stop offset="50%" stopColor="#171a22" />
+          <stop offset="100%" stopColor="#303541" />
         </linearGradient>
 
-        {/* Efeito 3D para os Terminais/Bornes */}
-        <linearGradient id={terminalGradId} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#6B7280" />
-          <stop offset="50%" stopColor="#9CA3AF" />
-          <stop offset="100%" stopColor="#4B5563" />
+        {/* Atuador verde esmeralda industrial */}
+        <linearGradient id={greenGradId} x1="0" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor="#19c7a2" />
+          <stop offset="55%" stopColor="#00a985" />
+          <stop offset="100%" stopColor="#00866d" />
         </linearGradient>
 
-        {/* Efeito 3D para o Anel Metálico (Bezel) */}
-        <radialGradient id={bezelGradId} cx="50%" cy="50%" r="50%">
-          <stop offset="70%" stopColor="#F3F4F6" />
-          <stop offset="90%" stopColor="#9CA3AF" />
-          <stop offset="100%" stopColor="#4B5563" />
-        </radialGradient>
-
-        {/* Sombra interna do Bezel */}
-        <radialGradient id={bezelInnerId} cx="50%" cy="50%" r="50%">
-          <stop offset="80%" stopColor="#374151" />
-          <stop offset="100%" stopColor="#111827" />
-        </radialGradient>
-
-        {/* Gradiente 3D para o Botão (Verde para liga, Vermelho para desliga/emergência) */}
-        {isStart ? (
-          <radialGradient id={btnGradId} cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#4ADE80" />
-            <stop offset="50%" stopColor="#22C55E" />
-            <stop offset="85%" stopColor="#16A34A" />
-            <stop offset="100%" stopColor="#14532D" />
-          </radialGradient>
-        ) : (
-          <radialGradient id={btnGradId} cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#F87171" />
-            <stop offset="50%" stopColor="#EF4444" />
-            <stop offset="85%" stopColor="#DC2626" />
-            <stop offset="100%" stopColor="#7F1D1D" />
-          </radialGradient>
-        )}
-
-        {/* Gradiente para o Parafuso */}
-        <linearGradient id={screwGradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#E5E7EB" />
-          <stop offset="50%" stopColor="#9CA3AF" />
-          <stop offset="100%" stopColor="#4B5563" />
+        {/* Atuador vermelho rubi industrial */}
+        <linearGradient id={redGradId} x1="0" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor="#ff4b4b" />
+          <stop offset="55%" stopColor="#d61a1a" />
+          <stop offset="100%" stopColor="#8c0b0b" />
         </linearGradient>
 
-        {/* Modelo do Parafuso Reutilizável */}
-        <g id={screwDefId}>
-          <circle
-            cx="0"
-            cy="0"
-            r="14"
-            fill={`url(#${screwGradId})`}
-            stroke="#374151"
-            strokeWidth="1.5"
-          />
-          {/* Fenda Phillips */}
-          <path
-            d="M -8 -8 L 8 8 M -8 8 L 8 -8"
-            stroke="#1F2937"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <circle cx="0" cy="0" r="4" fill="#374151" opacity="0.5" />
-        </g>
+        {/* Metal escovado dos bornes */}
+        <linearGradient id={metalGradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f5f7fa" />
+          <stop offset="100%" stopColor="#a2a8b3" />
+        </linearGradient>
 
-        {/* Filtro de brilho para terminais energizados */}
+        {/* Gradiente para os parafusos */}
+        <linearGradient id={screwGradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#f1f5f9" />
+          <stop offset="50%" stopColor="#94a3b8" />
+          <stop offset="100%" stopColor="#475569" />
+        </linearGradient>
+
+        {/* Sombra de projeção suave */}
+        <filter id={shadowFilterId} x="-25%" y="-25%" width="150%" height="160%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
+
+        {/* Brilho neon de terminal energizado */}
         <filter id={glowFilterId} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -260,161 +244,170 @@ function RealisticPushbuttonSvg({
         </filter>
       </defs>
 
-      {/* Sombra projetada do bloco inteiro */}
-      <rect x="70" y="80" width="270" height="350" rx="15" fill="rgba(0,0,0,0.3)" />
+      {/* Sombra de base */}
+      <ellipse
+        cx="320"
+        cy="640"
+        rx="195"
+        ry="16"
+        fill="#000000"
+        opacity="0.22"
+        filter={`url(#${shadowFilterId})`}
+      />
 
-      {/* BORNES SUPERIORES */}
-      {/* Borne Esquerdo Topo (13 ou 11) */}
-      {renderScrewTerminal(
-        135,
-        80,
-        110,
-        50,
-        termTopLeftId,
-        labelLeft,
-        35,
-        topLeftState
-      )}
+      {/* 4 BORNES INTEGRADOS À CARCAÇA (SUPERIORES E INFERIORES SIMÉTRICOS) */}
+      {/* Topo Esquerdo (13 ou 11) */}
+      {renderScrewTerminal(201, 122, 142, 80, 148, 86, termTopLeftId, topLeftState)}
+      {/* Topo Direito (14 ou 12) */}
+      {renderScrewTerminal(439, 122, 380, 80, 386, 86, termTopRightId, topRightState)}
+      {/* Base Esquerda (13 ou 11) */}
+      {renderScrewTerminal(201, 578, 142, 524, 148, 542, termBotLeftId, botLeftState)}
+      {/* Base Direita (14 ou 12) */}
+      {renderScrewTerminal(439, 578, 380, 524, 386, 542, termBotRightId, botRightState)}
 
-      {/* Borne Direito Topo (14 ou 12) */}
-      {renderScrewTerminal(
-        265,
-        80,
-        240,
-        50,
-        termTopRightId,
-        labelRight,
-        35,
-        topRightState
-      )}
-
-      {/* BORNES INFERIORES */}
-      {/* Borne Esquerdo Base (13 ou 11) */}
-      {renderScrewTerminal(
-        135,
-        420,
-        110,
-        390,
-        termBotLeftId,
-        labelLeft,
-        480,
-        botLeftState
-      )}
-
-      {/* Borne Direito Base (14 ou 12) */}
-      {renderScrewTerminal(
-        265,
-        420,
-        240,
-        390,
-        termBotRightId,
-        labelRight,
-        480,
-        botRightState
-      )}
-
-      {/* CORPO PRINCIPAL (Base plástica retangular) */}
+      {/* CORPO PRINCIPAL - CAIXA QUADRADA INDUSTRIAL CENTRALIZADA */}
       <rect
-        x="60"
-        y="90"
-        width="280"
-        height="320"
-        rx="15"
-        fill={`url(#${bodyGradId})`}
-        stroke="#111827"
-        strokeWidth="3"
+        x="108"
+        y="138"
+        width="424"
+        height="424"
+        rx="34"
+        fill={`url(#${baseGradId})`}
+        stroke="#10131a"
+        strokeWidth="7"
         style={{ pointerEvents: 'none' }}
       />
-      {/* Detalhe de relevo no corpo plástico */}
       <rect
-        x="75"
-        y="105"
-        width="250"
-        height="290"
-        rx="10"
-        fill="transparent"
-        stroke="#4B5563"
-        strokeWidth="2"
+        x="128"
+        y="158"
+        width="384"
+        height="384"
+        rx="24"
+        fill="none"
+        stroke="#555b68"
+        strokeWidth="4"
+        opacity="0.8"
         style={{ pointerEvents: 'none' }}
       />
 
-      {/* ARO METÁLICO EXTERNO (Bezel) */}
-      {/* Base Sombra */}
-      <circle cx="200" cy="250" r="112" fill="#111827" style={{ pointerEvents: 'none' }} />
-      {/* Superfície do Bezel */}
+      {/* 4 ORIFÍCIOS DE FIXAÇÃO NOS CANTOS DA BASE */}
+      <g fill="#090b10" stroke="#555b68" strokeWidth="4" style={{ pointerEvents: 'none' }}>
+        <circle cx="151" cy="181" r="13" />
+        <circle cx="489" cy="181" r="13" />
+        <circle cx="151" cy="519" r="13" />
+        <circle cx="489" cy="519" r="13" />
+      </g>
+
+      {/* ARO METÁLICO USINADO (BEZEL) */}
       <circle
-        cx="200"
-        cy="250"
-        r="110"
-        fill={`url(#${bezelGradId})`}
+        cx="320"
+        cy="350"
+        r="177"
+        fill="#080a0f"
+        stroke="#565c68"
+        strokeWidth="8"
         style={{ pointerEvents: 'none' }}
       />
-      {/* Borda Interna do Bezel (Profundidade) */}
       <circle
-        cx="200"
-        cy="250"
-        r="90"
-        fill={`url(#${bezelInnerId})`}
+        cx="320"
+        cy="350"
+        r="161"
+        fill="#20242e"
+        stroke="#0a0c12"
+        strokeWidth="5"
         style={{ pointerEvents: 'none' }}
       />
 
-      {/* BOTÃO ATUADOR CENTRAL INTERATIVO */}
+      {/* BOTÃO ATUADOR CENTRAL INTERATIVO (VERDE OU VERMELHO) */}
       <g
         className={`pushbutton-actuator-center ${!isSimulationMode ? 'actuator-locked' : ''}`}
         onPointerDown={isSimulationMode ? onPointerDown : undefined}
         style={{
           cursor: isSimulationMode ? 'pointer' : 'grab',
-          transformOrigin: '200px 250px',
-          transform: isPressed && isSimulationMode ? 'scale(0.96) translate(0px, 3px)' : 'none',
-          transition: 'transform 0.08s ease',
+          transformOrigin: '320px 350px',
+          transform: isPressed && isSimulationMode ? 'scale(0.96) translate(0px, 4px)' : 'none',
+          transition: 'transform 0.06s ease',
         }}
       >
-        {/* Sombra de borda do botão */}
+        {/* Atuador colorido */}
         <circle
-          cx="200"
-          cy="250"
-          r="86"
-          fill={isStart ? '#064E3B' : '#450A0A'}
+          cx="320"
+          cy="350"
+          r="148"
+          fill={isStart ? `url(#${greenGradId})` : `url(#${redGradId})`}
+          stroke="#05080c"
+          strokeWidth="5"
         />
 
-        {/* Superfície curva do botão (Efeito 3D) */}
-        <circle
-          cx="200"
-          cy="250"
-          r="84"
-          fill={`url(#${btnGradId})`}
-        />
-
-        {/* Reflexo superior esquerdo vítreo 3D */}
-        <ellipse
-          cx="175"
-          cy="215"
-          rx="32"
-          ry="18"
-          fill="#FFFFFF"
-          opacity={isPressed ? '0.2' : '0.4'}
-          transform="rotate(-25 175 215)"
+        {/* Arco de reflexo especular */}
+        <path
+          d="M220 245 A146 146 0 0 1 321 203"
+          fill="none"
+          stroke={isStart ? '#8bf0d8' : '#ffa8a8'}
+          strokeWidth="5"
+          opacity="0.32"
+          strokeLinecap="round"
           style={{ pointerEvents: 'none' }}
         />
 
-        {/* TEXTO DO ATUADOR ("ON", "OFF" ou "EMERG") */}
+        {/* Símbolo IEC I / O */}
         <text
-          x="200"
-          y="265"
+          x="320"
+          y="328"
+          fill="#ffffff"
           fontFamily="'Segoe UI', Arial, sans-serif"
           fontWeight="900"
-          fontSize={isEmergency ? '34' : '45'}
-          fill="#FFFFFF"
+          fontSize={isStart ? '52' : '50'}
           textAnchor="middle"
-          letterSpacing="2"
           style={{
+            filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.7))',
             userSelect: 'none',
             pointerEvents: 'none',
-            filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.6))',
           }}
         >
-          {isStart ? 'ON' : isEmergency ? 'EMERG' : 'OFF'}
+          {isStart ? 'I' : 'O'}
         </text>
+
+        {/* Palavra LIGA / DESLIGA grande e destacada */}
+        <text
+          x="320"
+          y="386"
+          fill="#ffffff"
+          fontFamily="'Segoe UI', Arial, sans-serif"
+          fontWeight="900"
+          fontSize={isStart ? '48' : '40'}
+          letterSpacing={isStart ? '5' : '3'}
+          textAnchor="middle"
+          style={{
+            filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.8))',
+            userSelect: 'none',
+            pointerEvents: 'none',
+          }}
+        >
+          {isStart ? 'LIGA' : 'DESLIGA'}
+        </text>
+      </g>
+
+      {/* IDENTIFICAÇÃO DOS BORNES (13-14 OU 11-12) */}
+      <g
+        fill="#ffffff"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="32"
+        fontWeight="800"
+        textAnchor="middle"
+        style={{
+          paintOrder: 'stroke fill',
+          stroke: '#0f172a',
+          strokeWidth: '6px',
+          strokeLinejoin: 'round',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        }}
+      >
+        <text x="201" y="60">{labelLeft}</text>
+        <text x="439" y="60">{labelRight}</text>
+        <text x="201" y="662">{labelLeft}</text>
+        <text x="439" y="662">{labelRight}</text>
       </g>
     </svg>
   );
@@ -562,10 +555,17 @@ function RealisticEmergencyButtonSvg({
   // Ids escopados para gradientes e filtros SVG
   const yellowPlateGradId = `emergPlateGrad-${componentId}`;
   const yellowDiscGradId = `emergDiscGrad-${componentId}`;
-  const redBtnGradId = `emergRedBtnGrad-${componentId}`;
+  const emergBevelGradId = `emergBevelGrad-${componentId}`;
+  const emergTopFaceGradId = `emergTopFaceGrad-${componentId}`;
+  const emergCenterDomeGradId = `emergCenterDomeGrad-${componentId}`;
   const socketGradId = `emergSocketGrad-${componentId}`;
   const textArcId = `emergTextArc-${componentId}`;
   const glowFilterId = `emergGlow-${componentId}`;
+  const shadowFilterId = `emergMushroomShadow-${componentId}`;
+
+  // Caminho da seta curva em baixo-relevo
+  const DEBOSSED_ARROW_PATH =
+    'M 43.67 -27.29 L 51.31 -32.06 A 60.5 60.5 0 0 1 58.16 16.68 L 63.75 17.08 L 45.87 32.12 L 44.43 11.91 L 49.5 14.2 A 51.5 51.5 0 0 0 43.67 -27.29 Z';
 
   // Helper de estado para bornes (11 topo, 12 base)
   const getTermState = (primaryId, fallbackIds = []) => {
@@ -629,7 +629,7 @@ function RealisticEmergencyButtonSvg({
           />
         )}
 
-        {/* Borda / carcaça externa vermelha do borne (conforme imagem do usuário) */}
+        {/* Borda / carcaça externa vermelha do borne */}
         <circle
           cx={cx}
           cy={cy}
@@ -649,7 +649,7 @@ function RealisticEmergencyButtonSvg({
           strokeWidth="2"
         />
 
-        {/* Receptáculo interno (branco/prata com ponto de encaixe) */}
+        {/* Receptáculo interno */}
         <circle
           cx={cx}
           cy={cy}
@@ -715,13 +715,27 @@ function RealisticEmergencyButtonSvg({
           <stop offset="100%" stopColor="#ca8a04" />
         </radialGradient>
 
-        {/* Gradiente 3D para o cogumelo vermelho */}
-        <radialGradient id={redBtnGradId} cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="#f87171" />
-          <stop offset="35%" stopColor="#ef4444" />
-          <stop offset="70%" stopColor="#dc2626" />
-          <stop offset="92%" stopColor="#991b1b" />
-          <stop offset="100%" stopColor="#450a0a" />
+        {/* Gradiente do bisel externo chanfrado do cogumelo */}
+        <radialGradient id={emergBevelGradId} cx="38%" cy="32%" r="68%">
+          <stop offset="0%" stopColor="#bf2222" />
+          <stop offset="50%" stopColor="#991515" />
+          <stop offset="85%" stopColor="#6e0b0b" />
+          <stop offset="100%" stopColor="#450606" />
+        </radialGradient>
+
+        {/* Gradiente da face superior do cogumelo */}
+        <radialGradient id={emergTopFaceGradId} cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#c72828" />
+          <stop offset="45%" stopColor="#a81a1a" />
+          <stop offset="85%" stopColor="#821010" />
+          <stop offset="100%" stopColor="#5c0808" />
+        </radialGradient>
+
+        {/* Gradiente do domo central do cogumelo */}
+        <radialGradient id={emergCenterDomeGradId} cx="42%" cy="36%" r="60%">
+          <stop offset="0%" stopColor="#c02424" />
+          <stop offset="60%" stopColor="#9c1616" />
+          <stop offset="100%" stopColor="#7a0e0e" />
         </radialGradient>
 
         {/* Gradiente para os bornes circulares vermelhos */}
@@ -740,10 +754,15 @@ function RealisticEmergencyButtonSvg({
           </feMerge>
         </filter>
 
+        {/* Sombra de projeção sob o cogumelo */}
+        <filter id={shadowFilterId} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
+
         {/* Caminho em arco superior para curvar o texto "EMERGENCY" */}
         <path
           id={textArcId}
-          d="M 94 246 A 108 108 0 0 1 306 246"
+          d="M 94 250 A 108 108 0 0 1 306 250"
           fill="none"
         />
       </defs>
@@ -782,14 +801,14 @@ function RealisticEmergencyButtonSvg({
       {/* DISCO CIRCULAR REBAIXADO AMARELO (Bezel interno) */}
       <circle
         cx="200"
-        cy="246"
+        cy="250"
         r="124"
         fill="#b45309"
         style={{ pointerEvents: 'none' }}
       />
       <circle
         cx="200"
-        cy="246"
+        cy="250"
         r="121"
         fill={`url(#${yellowDiscGradId})`}
         stroke="#ca8a04"
@@ -799,7 +818,7 @@ function RealisticEmergencyButtonSvg({
       {/* Linha de profundidade circular */}
       <circle
         cx="200"
-        cy="246"
+        cy="250"
         r="108"
         fill="transparent"
         stroke="#d97706"
@@ -826,67 +845,116 @@ function RealisticEmergencyButtonSvg({
         </textPath>
       </text>
 
-      {/* ATUADOR COGUMELO VERMELHO CENTRAL INTERATIVO */}
+      {/* ATUADOR COGUMELO VERMELHO CENTRAL INTERATIVO (CONFORME FOTO REAL) */}
       <g
         className={`pushbutton-actuator-center emergency-actuator ${!isSimulationMode ? 'actuator-locked' : ''}`}
         onPointerDown={isSimulationMode ? onPointerDown : undefined}
         style={{
           cursor: isSimulationMode ? 'pointer' : 'grab',
-          transformOrigin: '200px 254px',
-          transform: isPressed && isSimulationMode ? 'scale(0.94) rotate(15deg)' : 'none',
+          transformOrigin: '200px 250px',
+          transform: isPressed && isSimulationMode ? 'scale(0.93) rotate(16deg)' : 'none',
           transition: 'transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1)',
         }}
       >
-        {/* Base de sombra profunda do cogumelo */}
-        <circle cx="200" cy="254" r="82" fill="#450a0a" />
+        <g transform="translate(200, 250)">
+          {/* Sombra de projeção sob o cogumelo */}
+          <circle cx="0" cy="5" r="88" fill="rgba(0, 0, 0, 0.45)" filter={`url(#${shadowFilterId})`} />
 
-        {/* Superfície do botão vermelho esférico */}
-        <circle
-          cx="200"
-          cy="254"
-          r="80"
-          fill={`url(#${redBtnGradId})`}
-          stroke="#7f1d1d"
-          strokeWidth="2.5"
-        />
+          {/* Base escura do perímetro serrilhado */}
+          <circle cx="0" cy="0" r="88" fill="#3c0606" />
 
-        {/* Reflexo vítreo superior esquerdo */}
-        <ellipse
-          cx="172"
-          cy="216"
-          rx="34"
-          ry="18"
-          fill="#FFFFFF"
-          opacity={isPressed ? '0.2' : '0.45'}
-          transform="rotate(-22 172 216)"
-          style={{ pointerEvents: 'none' }}
-        />
+          {/* Estrias serrilhadas antiderrapantes ao redor de todo o bordo (grip teeth) */}
+          <circle
+            cx="0"
+            cy="0"
+            r="86"
+            fill="none"
+            stroke="#6e0c0c"
+            strokeWidth="4.5"
+            strokeDasharray="3.4 2.4"
+          />
+          <circle
+            cx="0"
+            cy="0"
+            r="85"
+            fill="none"
+            stroke="#941414"
+            strokeWidth="2.5"
+            strokeDasharray="3.4 2.4"
+          />
 
-        {/* 3 SETAS BRANCAS CURVADAS DE DESTRAVAMENTO (TWIST TO RESET) */}
-        {/* Distribuídas simetricamente a cada 120° em sentido horário */}
-        {[0, 120, 240].map((angle) => (
-          <g
-            key={`arrow-${angle}`}
-            transform={`rotate(${angle} 200 254)`}
+          {/* Corpo do cogumelo: bisel de transição chanfrado */}
+          <circle
+            cx="0"
+            cy="0"
+            r="83"
+            fill={`url(#${emergBevelGradId})`}
+            stroke="#450707"
+            strokeWidth="2"
+          />
+
+          {/* Superfície do platô do botão */}
+          <circle
+            cx="0"
+            cy="0"
+            r="76"
+            fill={`url(#${emergTopFaceGradId})`}
+          />
+
+          {/* Anel de rebaixo da pista das setas */}
+          <circle cx="0" cy="0" r="68" fill="none" stroke="#680b0b" strokeWidth="1" opacity="0.4" />
+          <circle cx="0" cy="0" r="44" fill="none" stroke="#680b0b" strokeWidth="1" opacity="0.4" />
+
+          {/* 3 SETAS EM BAIXO-RELEVO (DEBOSSED NO PLÁSTICO VERMELHO) */}
+          {[-75, 45, 165].map((angle) => (
+            <g key={`arrow-${angle}`} transform={`rotate(${angle})`}>
+              {/* Filete de luz na borda inferior do baixo-relevo */}
+              <path
+                d={DEBOSSED_ARROW_PATH}
+                fill="none"
+                stroke="rgba(255, 140, 140, 0.38)"
+                strokeWidth="1.6"
+                transform="translate(0.8, 0.8)"
+                style={{ pointerEvents: 'none' }}
+              />
+              {/* Filete de sombra na borda superior do baixo-relevo */}
+              <path
+                d={DEBOSSED_ARROW_PATH}
+                fill="none"
+                stroke="#250303"
+                strokeWidth="1.5"
+                transform="translate(-0.5, -0.5)"
+                style={{ pointerEvents: 'none' }}
+              />
+              {/* Vala escura do baixo-relevo (entalhado no próprio plástico vermelho) */}
+              <path
+                d={DEBOSSED_ARROW_PATH}
+                fill="#4a0707"
+                style={{ pointerEvents: 'none' }}
+              />
+            </g>
+          ))}
+
+          {/* Domo circular central ligeiramente saliente */}
+          <circle
+            cx="0"
+            cy="0"
+            r="42"
+            fill={`url(#${emergCenterDomeGradId})`}
+            stroke="#630a0a"
+            strokeWidth="1.5"
+          />
+
+          {/* Brilho suave acetinado no domo central */}
+          <path
+            d="M -26 -16 A 30 30 0 0 1 16 -26"
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.18)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
             style={{ pointerEvents: 'none' }}
-          >
-            {/* Arco da seta */}
-            <path
-              d="M 160 220 A 48 48 0 0 1 206 206"
-              fill="none"
-              stroke="#FFFFFF"
-              strokeWidth="7"
-              strokeLinecap="round"
-              filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))"
-            />
-            {/* Ponta da seta apontando em sentido horário */}
-            <polygon
-              points="206,196 222,210 203,218"
-              fill="#FFFFFF"
-              filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))"
-            />
-          </g>
-        ))}
+          />
+        </g>
       </g>
 
       {/* BORNE INFERIOR (Borne 12 NF - Red circular socket) */}

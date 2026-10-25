@@ -2207,7 +2207,7 @@ export default function SchematicModal({
                           y={node.y}
                           width={node.width}
                           height="26"
-                          rx="8 8 0 0"
+                          rx="8"
                           fill="#1c273c"
                         />
                         <text

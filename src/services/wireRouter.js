@@ -1,17 +1,18 @@
 // Smart Auto-Routing, Obstacle Avoidance, Segment Dragging, Rounded Fillets, and Wire Jump ("Voltinha") Engine
 
 export const COMP_DIMENSIONS = {
-  power_source: { w: 420, h: 414 },
+  power_source: { w: 400, h: 490 },
   circuit_breaker: { w: 156, h: 218 },
   breaker_3p: { w: 156, h: 218 },
   breaker_1p: { w: 52, h: 218 },
   contactor: { w: 210, h: 360 },
   thermal_relay: { w: 220, h: 160 },
   timer_relay: { w: 120, h: 350 },
-  button_stop: { w: 136, h: 170 },
-  button_start: { w: 136, h: 170 },
+  button_stop: { w: 144, h: 158 },
+  button_start: { w: 144, h: 158 },
   button_emergency: { w: 136, h: 170 },
-  pilot_lamp: { w: 80, h: 120 },
+  pilot_lamp: { w: 104, h: 148 },
+  pilot_light: { w: 104, h: 148 },
   motor_6p: { w: 260, h: 551 },
 };
 
@@ -22,6 +23,10 @@ export function getComponentBounds(c) {
     const poles = Number(c.state?.poles) || 3;
     const w = poles * 52;
     dim = { w, h: 218 };
+  } else if (c.type === 'terminal_block') {
+    const poles = Math.max(1, Math.min(24, Number(c.state?.poles) || 4));
+    const w = poles * 34;
+    dim = { w, h: 146 };
   }
   const w = c.width || dim.w;
   const h = c.height || dim.h;
@@ -63,12 +68,15 @@ export function getLineIntersection(p1, p2, p3, p4) {
 export function getTerminalExitVector(term, comp) {
   if (!comp || !term) return { dx: 0, dy: 1 }; // Default exit downward
 
-  // Power source sockets exit downwards in real mode, or rightwards in schematic mode
+  // Power source / Energy meter sockets exit downwards in real mode (PE exits upwards), or rightwards in schematic mode
   if (comp.type === 'power_source') {
     const isCompSchematic =
       comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic';
     if (isCompSchematic) {
       return { dx: 1, dy: 0 };
+    }
+    if (term?.id === 'PE') {
+      return { dx: 0, dy: 1 };
     }
     return { dx: 0, dy: 1 };
   }
@@ -103,11 +111,178 @@ export function getTerminalExitVector(term, comp) {
 }
 
 /**
- * Auto-route a wire between P1 and P2 with intelligent Obstacle Avoidance.
- * Automatically goes around intermediate components without crossing them.
+ * Extract orthogonal segments from all existing wires for collision and overlap prevention.
  */
-export function computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wireIndex = 0, allComponents = []) {
+export function extractExistingSegments(existingWiresPoints) {
+  const segments = [];
+  if (!Array.isArray(existingWiresPoints)) return segments;
+
+  for (const pts of existingWiresPoints) {
+    if (!Array.isArray(pts) || pts.length < 2) continue;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+      if (!a || !b) continue;
+      const isHoriz = Math.abs(a.y - b.y) <= Math.abs(a.x - b.x);
+      if (isHoriz) {
+        segments.push({
+          isHoriz: true,
+          y: Math.round(a.y),
+          minX: Math.min(a.x, b.x),
+          maxX: Math.max(a.x, b.x),
+        });
+      } else {
+        segments.push({
+          isHoriz: false,
+          x: Math.round(a.x),
+          minY: Math.min(a.y, b.y),
+          maxY: Math.max(a.y, b.y),
+        });
+      }
+    }
+  }
+  return segments;
+}
+
+/**
+ * Finds an unoccupied horizontal Y-coordinate for a segment spanning [x1, x2].
+ * Ensures it doesn't overlap with any existing wire segment or cut through an obstacle component.
+ */
+export function findFreeHorizontalLane(
+  desiredY,
+  x1,
+  x2,
+  existingSegments = [],
+  minSpacing = 16,
+  preferredDirection = 0,
+  candidateObstacles = []
+) {
+  const minX = Math.min(x1, x2);
+  const maxX = Math.max(x1, x2);
+  if (maxX - minX < 4) return desiredY;
+
+  const overlappingSegs = existingSegments.filter(
+    (s) => s.isHoriz && Math.max(minX, s.minX) < Math.min(maxX, s.maxX) - 4
+  );
+
+  const isFree = (y) => {
+    // 1. Minimum distance to parallel existing wire segments
+    for (const s of overlappingSegs) {
+      if (Math.abs(s.y - y) < minSpacing - 2) {
+        return false;
+      }
+    }
+    // 2. Do not cut through obstacle components
+    for (const comp of candidateObstacles) {
+      const b = getComponentBounds(comp);
+      if (y > b.top + 4 && y < b.bottom - 4) {
+        if (Math.max(minX, b.left) < Math.min(maxX, b.right) - 4) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  if (isFree(desiredY)) return desiredY;
+
+  const step = minSpacing;
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    if (preferredDirection !== 0) {
+      const testY = Math.round(desiredY + preferredDirection * attempt * step);
+      if (isFree(testY)) return testY;
+    } else {
+      const testY1 = Math.round(desiredY + attempt * step);
+      if (isFree(testY1)) return testY1;
+      const testY2 = Math.round(desiredY - attempt * step);
+      if (isFree(testY2)) return testY2;
+    }
+  }
+
+  return desiredY;
+}
+
+/**
+ * Finds an unoccupied vertical X-coordinate for a segment spanning [y1, y2].
+ * Ensures it doesn't overlap with any existing wire segment or cut through an obstacle component.
+ */
+export function findFreeVerticalLane(
+  desiredX,
+  y1,
+  y2,
+  existingSegments = [],
+  minSpacing = 16,
+  preferredDirection = 0,
+  candidateObstacles = []
+) {
+  const minY = Math.min(y1, y2);
+  const maxY = Math.max(y1, y2);
+  if (maxY - minY < 4) return desiredX;
+
+  const overlappingSegs = existingSegments.filter(
+    (s) => !s.isHoriz && Math.max(minY, s.minY) < Math.min(maxY, s.maxY) - 4
+  );
+
+  const isFree = (x) => {
+    // 1. Minimum distance to parallel existing wire segments
+    for (const s of overlappingSegs) {
+      if (Math.abs(s.x - x) < minSpacing - 2) {
+        return false;
+      }
+    }
+    // 2. Do not cut through obstacle components
+    for (const comp of candidateObstacles) {
+      const b = getComponentBounds(comp);
+      if (x > b.left + 4 && x < b.right - 4) {
+        if (Math.max(minY, b.top) < Math.min(maxY, b.bottom) - 4) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  if (isFree(desiredX)) return desiredX;
+
+  const step = minSpacing;
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    if (preferredDirection !== 0) {
+      const testX = Math.round(desiredX + preferredDirection * attempt * step);
+      if (isFree(testX)) return testX;
+    } else {
+      const testX1 = Math.round(desiredX + attempt * step);
+      if (isFree(testX1)) return testX1;
+      const testX2 = Math.round(desiredX - attempt * step);
+      if (isFree(testX2)) return testX2;
+    }
+  }
+
+  return desiredX;
+}
+
+/**
+ * Auto-route a wire between P1 and P2 with intelligent non-overlapping lane allocation
+ * and obstacle avoidance. Prevents wires from riding/overlapping on top of each other.
+ */
+export function computeAutoRoute(
+  p1,
+  p2,
+  comp1,
+  comp2,
+  term1,
+  term2,
+  wireIndex = 0,
+  allComponents = [],
+  existingWiresPoints = []
+) {
   if (!p1 || !p2) return [];
+
+  const existingSegs = extractExistingSegments(existingWiresPoints);
+  const candidateObstacles = (allComponents || []).filter((c) => {
+    if (!c || c.type === 'din_rail') return false;
+    if (c.id === comp1?.id || c.id === comp2?.id) return false;
+    return true;
+  });
 
   // Case 0: Direct jumpers within the exact same component (e.g. Motor Star/Delta links, Contactor coil jumpers)
   if (comp1 && comp2 && comp1.id === comp2.id) {
@@ -118,22 +293,32 @@ export function computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wireIndex =
     // Horizontally aligned terminals (e.g. W2-U2, U2-V2 for Star)
     if (Math.abs(p1.y - p2.y) < 8) {
       const exitDy = term1?.y < 120 ? -18 : 18;
+      const baseJumperY = Math.round(p1.y + exitDy);
+      const freeJumperY = findFreeHorizontalLane(
+        baseJumperY,
+        p1.x,
+        p2.x,
+        existingSegs,
+        14,
+        exitDy < 0 ? -1 : 1
+      );
       return [
-        { x: p1.x, y: Math.round(p1.y + exitDy) },
-        { x: p2.x, y: Math.round(p2.y + exitDy) },
+        { x: p1.x, y: freeJumperY },
+        { x: p2.x, y: freeJumperY },
       ];
     }
     // Internal jumper with offset (e.g. 14 to A1)
     const exit1 = getTerminalExitVector(term1, comp1);
     const exit2 = getTerminalExitVector(term2, comp2);
     const sideX = Math.round(comp1.x + (term1?.x < 100 ? -22 : (comp1.width || 210) + 22));
-    const y1 = Math.round(p1.y + exit1.dy * 20);
-    const y2 = Math.round(p2.y + exit2.dy * 20);
+    const freeSideX = findFreeVerticalLane(sideX, p1.y, p2.y, existingSegs, 14, term1?.x < 100 ? -1 : 1);
+    const y1 = findFreeHorizontalLane(Math.round(p1.y + exit1.dy * 20), p1.x, freeSideX, existingSegs, 14, exit1.dy);
+    const y2 = findFreeHorizontalLane(Math.round(p2.y + exit2.dy * 20), freeSideX, p2.x, existingSegs, 14, exit2.dy);
     return simplifyOrthogonalPoints([
       p1,
       { x: p1.x, y: y1 },
-      { x: sideX, y: y1 },
-      { x: sideX, y: y2 },
+      { x: freeSideX, y: y1 },
+      { x: freeSideX, y: y2 },
       { x: p2.x, y: y2 },
       p2,
     ]).slice(1, -1);
@@ -141,9 +326,6 @@ export function computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wireIndex =
 
   const exit1 = getTerminalExitVector(term1, comp1);
   const exit2 = getTerminalExitVector(term2, comp2);
-
-  // Subtle lane offset (-10px to +10px) to prevent multiple parallel wires from overlapping completely
-  const laneOffset = ((wireIndex % 5) - 2) * 5;
 
   // Stubs extending perpendicularly from terminal socket
   const stubLen = 22;
@@ -158,15 +340,8 @@ export function computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wireIndex =
 
   // Helper to check if a horizontal or vertical segment cuts through an obstacle box
   const candidateIntersectsObstacle = (pts) => {
-    const candidateObstacles = (allComponents || []).filter((c) => {
-      if (!c || c.type === 'din_rail') return false;
-      if (c.id === comp1?.id || c.id === comp2?.id) return false;
-      return true;
-    });
-
     for (const c of candidateObstacles) {
       const b = getComponentBounds(c);
-      // Box with safety padding
       const left = b.left + 4;
       const right = b.right - 4;
       const top = b.top + 4;
@@ -211,15 +386,28 @@ export function computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wireIndex =
     (exit1.dy === 1 && exit2.dy === -1 && p1.y <= p2.y + 10) ||
     (exit1.dy === -1 && exit2.dy === 1 && p1.y >= p2.y - 10)
   ) {
-    if (Math.abs(p1.x - p2.x) < 4) {
-      // Directly aligned vertically -> straight line!
+    const isAlignedX = Math.abs(p1.x - p2.x) < 4;
+    // Check if the straight vertical line is free of existing vertical wires
+    const isVertLineFree = isAlignedX && findFreeVerticalLane(p1.x, p1.y, p2.y, existingSegs, 14, 0, candidateObstacles) === p1.x;
+
+    if (isAlignedX && isVertLineFree) {
+      // Directly aligned vertically with no conflicting wires -> straight vertical line!
       candidatePoints = [p1, p2];
     } else {
-      const midY = Math.round((s1.y + s2.y) / 2 + laneOffset);
+      const baseMidY = Math.round((s1.y + s2.y) / 2);
+      const freeMidY = findFreeHorizontalLane(
+        baseMidY,
+        p1.x,
+        p2.x,
+        existingSegs,
+        16,
+        0,
+        candidateObstacles
+      );
       candidatePoints = [
         p1,
-        { x: p1.x, y: midY },
-        { x: p2.x, y: midY },
+        { x: p1.x, y: freeMidY },
+        { x: p2.x, y: freeMidY },
         p2,
       ];
     }
@@ -227,94 +415,156 @@ export function computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wireIndex =
 
   // =========================================================================
   // CASE 2: Both terminals exit UP (e.g. top of K1 to top of K2)
-  // Route cleanly across the upper horizontal canaleta
+  // Route cleanly across the upper horizontal canaleta in a free parallel lane
   // =========================================================================
   else if (exit1.dy === -1 && exit2.dy === -1) {
-    const canaletaY = Math.round(Math.min(s1.y, s2.y) - 18 + laneOffset);
+    const baseCanaletaY = Math.round(Math.min(s1.y, s2.y) - 18);
+    const freeCanaletaY = findFreeHorizontalLane(
+      baseCanaletaY,
+      p1.x,
+      p2.x,
+      existingSegs,
+      16,
+      -1, // Preferred: step upwards further into the upper canaleta
+      candidateObstacles
+    );
     candidatePoints = [
       p1,
-      { x: p1.x, y: canaletaY },
-      { x: p2.x, y: canaletaY },
+      { x: p1.x, y: freeCanaletaY },
+      { x: p2.x, y: freeCanaletaY },
       p2,
     ];
   }
 
   // =========================================================================
   // CASE 3: Both terminals exit DOWN (e.g. bottom of K1 to bottom of K2)
-  // Route cleanly across the lower horizontal canaleta
+  // Route cleanly across the lower horizontal canaleta in a free parallel lane
   // =========================================================================
   else if (exit1.dy === 1 && exit2.dy === 1) {
-    const canaletaY = Math.round(Math.max(s1.y, s2.y) + 18 + laneOffset);
+    const baseCanaletaY = Math.round(Math.max(s1.y, s2.y) + 18);
+    const freeCanaletaY = findFreeHorizontalLane(
+      baseCanaletaY,
+      p1.x,
+      p2.x,
+      existingSegs,
+      16,
+      1, // Preferred: step downwards further into the lower canaleta
+      candidateObstacles
+    );
     candidatePoints = [
       p1,
-      { x: p1.x, y: canaletaY },
-      { x: p2.x, y: canaletaY },
+      { x: p1.x, y: freeCanaletaY },
+      { x: p2.x, y: freeCanaletaY },
       p2,
     ];
   }
 
   // =========================================================================
-  // CASE 4: Terminals pointing in opposite directions but NOT facing each other
-  // e.g. p1 exits DOWN and p2 is ABOVE p1 (so p1 points away from p2)
-  // or p1 exits UP and p2 is BELOW p1 (so p1 points away from p2)
+  // CASE 4: Terminals pointing in opposite directions but NOT facing each other,
+  // or lateral/horizontal terminal exits. Route through a clear vertical channel.
   // =========================================================================
   else {
-    // Find a clean vertical channel between the components or on their outside
     const b1 = comp1 ? getComponentBounds(comp1) : { left: p1.x, right: p1.x, top: p1.y, bottom: p1.y };
     const b2 = comp2 ? getComponentBounds(comp2) : { left: p2.x, right: p2.x, top: p2.y, bottom: p2.y };
 
-    let channelX;
+    let baseChannelX;
     if (b1.right < b2.left) {
-      // Space between comp1 and comp2
-      channelX = Math.round((b1.right + b2.left) / 2 + laneOffset);
+      baseChannelX = Math.round((b1.right + b2.left) / 2);
     } else if (b2.right < b1.left) {
-      // Space between comp2 and comp1
-      channelX = Math.round((b2.right + b1.left) / 2 + laneOffset);
+      baseChannelX = Math.round((b2.right + b1.left) / 2);
     } else {
-      // Vertically overlapping or near: route via the closer lateral side
-      channelX = Math.round(Math.max(b1.right, b2.right) + 24 + laneOffset);
+      baseChannelX = Math.round(Math.max(b1.right, b2.right) + 24);
     }
+
+    const freeChannelX = findFreeVerticalLane(
+      baseChannelX,
+      s1.y,
+      s2.y,
+      existingSegs,
+      16,
+      0,
+      candidateObstacles
+    );
+
+    const freeY1 = findFreeHorizontalLane(
+      s1.y,
+      p1.x,
+      freeChannelX,
+      existingSegs,
+      16,
+      exit1.dy !== 0 ? exit1.dy : 1,
+      candidateObstacles
+    );
+
+    const freeY2 = findFreeHorizontalLane(
+      s2.y,
+      freeChannelX,
+      p2.x,
+      existingSegs,
+      16,
+      exit2.dy !== 0 ? exit2.dy : -1,
+      candidateObstacles
+    );
 
     candidatePoints = [
       p1,
-      { x: p1.x, y: s1.y },
-      { x: channelX, y: s1.y },
-      { x: channelX, y: s2.y },
-      { x: p2.x, y: s2.y },
+      { x: p1.x, y: freeY1 },
+      { x: freeChannelX, y: freeY1 },
+      { x: freeChannelX, y: freeY2 },
+      { x: p2.x, y: freeY2 },
       p2,
     ];
   }
 
   // =========================================================================
-  // OBSTACLE AVOIDANCE: Check if the candidate path cuts into any component
+  // OBSTACLE AVOIDANCE: If path cuts into any obstacle component, detour cleanly
   // =========================================================================
   const hitObstacle = candidateIntersectsObstacle(candidatePoints);
   if (hitObstacle) {
     const obsB = getComponentBounds(hitObstacle);
-    // Determine whether bypassing over the top or below the bottom of this specific obstacle is shorter
     const distOverTop = Math.abs(p1.y - obsB.top) + Math.abs(p2.y - obsB.top);
     const distUnderBottom = Math.abs(p1.y - obsB.bottom) + Math.abs(p2.y - obsB.bottom);
 
     if (distOverTop <= distUnderBottom) {
-      const topY = Math.round(obsB.top - 24 + laneOffset);
+      const topY = findFreeHorizontalLane(
+        Math.round(obsB.top - 24),
+        p1.x,
+        p2.x,
+        existingSegs,
+        16,
+        -1,
+        candidateObstacles
+      );
       candidatePoints = [
         p1,
+        { x: p1.x, y: s1.y },
         { x: p1.x, y: topY },
         { x: p2.x, y: topY },
+        { x: p2.x, y: s2.y },
         p2,
       ];
     } else {
-      const bottomY = Math.round(obsB.bottom + 24 + laneOffset);
+      const bottomY = findFreeHorizontalLane(
+        Math.round(obsB.bottom + 24),
+        p1.x,
+        p2.x,
+        existingSegs,
+        16,
+        1,
+        candidateObstacles
+      );
       candidatePoints = [
         p1,
+        { x: p1.x, y: s1.y },
         { x: p1.x, y: bottomY },
         { x: p2.x, y: bottomY },
+        { x: p2.x, y: s2.y },
         p2,
       ];
     }
   }
 
-  // Clean redundant points and return waypoints
+  // Clean redundant collinear points and return intermediate waypoints
   const simplified = simplifyOrthogonalPoints(candidatePoints);
   return simplified.slice(1, -1);
 }

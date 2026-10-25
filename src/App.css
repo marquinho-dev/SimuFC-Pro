@@ -43,20 +43,27 @@
 }
 
 .logo-badge {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+  cursor: pointer;
 }
 
-.logo-zap {
-  color: #fff;
-  width: 22px;
-  height: 22px;
+.logo-badge:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6));
+}
+
+.app-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
 }
 
 .branding-text {
@@ -402,33 +409,42 @@
   cursor: pointer;
 }
 
-.wire-segment-handle-group circle {
-  transition: transform 0.15s ease, fill 0.15s ease;
+.wire-segment-handle-group circle.seg-handle-dot {
+  transition: r 0.15s ease, filter 0.15s ease;
 }
 
-.wire-segment-handle-group:hover circle {
-  transform: scale(1.35);
-  fill: #34d399;
-  filter: drop-shadow(0 0 6px #10b981);
+.wire-segment-handle-group:hover circle.seg-handle-dot {
+  r: 6.5px;
+  filter: drop-shadow(0 0 6px #38bdf8);
 }
 
 .wire-junction-splice {
   pointer-events: auto !important;
   cursor: grab;
   filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.7));
-  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.wire-junction-splice circle.splice-dot {
+  transition: r 0.15s ease, filter 0.15s ease;
 }
 
 .wire-junction-splice:hover {
   cursor: grab;
-  transform: scale(1.35);
-  filter: drop-shadow(0 0 8px #38bdf8);
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+}
+
+.wire-junction-splice:hover circle.splice-dot {
+  r: 7px;
 }
 
 .wire-junction-splice:active,
 .wire-junction-splice.is-dragging {
   cursor: grabbing !important;
-  transform: scale(1.4);
+}
+
+.wire-junction-splice:active circle.splice-dot,
+.wire-junction-splice.is-dragging circle.splice-dot {
+  r: 7.5px;
 }
 
 .btn-wire-del-badge,
@@ -446,8 +462,12 @@
   filter: drop-shadow(0 0 8px #0284c7);
 }
 
+.wire-waypoint-group circle {
+  transition: r 0.15s ease, fill 0.15s ease, filter 0.15s ease;
+}
+
 .wire-waypoint-group:hover circle:first-child {
-  transform: scale(1.3);
+  r: 8.5px;
   fill: #67e8f9;
   filter: drop-shadow(0 0 6px #38bdf8);
 }
@@ -2103,63 +2123,47 @@
   gap: 10px;
 }
 
-/* Individual Component Miniature Card */
+/* Individual Component Miniature Item (Sem molduras, limpo e direto) */
 .component-thumb-card {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: rgba(22, 30, 46, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  border-radius: 12px;
-  padding: 10px 8px 10px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 8px 6px;
   cursor: pointer;
   text-align: center;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  overflow: hidden;
-}
-
-.component-thumb-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  overflow: visible;
+  box-shadow: none;
 }
 
 .component-thumb-card:hover {
-  background: rgba(30, 41, 59, 0.85);
-  border-color: rgba(56, 189, 248, 0.45);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45), 0 0 14px rgba(56, 189, 248, 0.2);
-}
-
-.component-thumb-card:hover::before {
-  opacity: 1;
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+  box-shadow: none;
 }
 
 .component-thumb-card:active {
-  transform: translateY(-1px) scale(0.98);
+  transform: translateY(0) scale(0.98);
 }
 
-/* Miniature Graphic Box */
+/* Miniature Graphic Box (Sem molduras, limpo e direto) */
 .thumb-preview-box {
   width: 100%;
   height: 74px;
   border-radius: 8px;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  margin-bottom: 8px;
+  padding: 4px;
+  margin-bottom: 6px;
   position: relative;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
 }
 
 .comp-thumb-svg {
@@ -2184,15 +2188,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-height: 48px;
+  gap: 4px;
+  min-height: 38px;
 }
 
 .thumb-name {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #f1f5f9;
   line-height: 1.25;
+  text-align: center;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -2966,8 +2971,8 @@
 .button-device,
 .compact-button-device,
 .industrial-pushbutton-device {
-  width: 136px;
-  height: 170px;
+  width: 144px;
+  height: 157.5px;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -3644,84 +3649,290 @@
 }
 
 /* ==========================================================
-   SHORT CIRCUIT ALERT
+/* ==========================================================
+   NOTIFICATION BELL & DISCREET ALERTS (SININHO DISCRETO)
    ========================================================== */
-.short-circuit-alert-overlay {
+.notification-bell-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-bell {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.btn-bell.has-alert {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  animation: bellGentleRing 2.2s infinite ease-in-out;
+}
+
+@keyframes bellGentleRing {
+  0%, 100% { transform: rotate(0deg); }
+  6% { transform: rotate(9deg); }
+  12% { transform: rotate(-9deg); }
+  18% { transform: rotate(6deg); }
+  24% { transform: rotate(-6deg); }
+  30% { transform: rotate(0deg); }
+}
+
+.bell-badge-pulse {
   position: absolute;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, rgba(185, 28, 28, 0.96) 0%, rgba(127, 29, 29, 0.98) 100%);
-  border: 2px solid #ef4444;
-  border-radius: 10px;
-  padding: 12px 24px;
-  color: #ffffff;
-  z-index: 999;
-  box-shadow: 0 0 35px rgba(239, 68, 68, 0.85), 0 8px 24px rgba(0, 0, 0, 0.6);
-  animation: alertPulse 0.6s infinite alternate;
-  pointer-events: all;
-  max-width: 90vw;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 1.5px solid #0f172a;
+  box-shadow: 0 0 8px #ef4444;
+  animation: badgeBlink 1.4s infinite alternate;
 }
 
-@keyframes alertPulse {
-  from { transform: translateX(-50%) scale(1); }
-  to { transform: translateX(-50%) scale(1.025); }
+@keyframes badgeBlink {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px rgba(239, 68, 68, 0.9); }
 }
 
-.alert-content {
+/* Toast discreto no canto superior direito ancorado ao sino */
+.bell-discreet-toast {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.alert-icon {
-  font-size: 2rem;
-  animation: sparkJitter 0.15s infinite;
-}
-
-@keyframes sparkJitter {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.2) rotate(10deg); filter: drop-shadow(0 0 10px #facc15); }
-  100% { transform: scale(1.05) rotate(-10deg); }
-}
-
-.alert-text h3 {
-  font-size: 1rem;
-  font-weight: 900;
-  color: #fef08a;
-  letter-spacing: 0.05em;
-  margin: 0 0 2px 0;
-  text-shadow: 0 0 12px rgba(250, 204, 21, 0.8);
-}
-
-.alert-text p {
-  font-size: 0.82rem;
-  margin: 0;
-  color: #fecaca;
-  font-weight: 500;
-}
-
-.btn-clear-short {
-  background: #fef08a;
-  color: #991b1b;
-  font-family: inherit;
-  font-weight: 900;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.94) 0%, rgba(127, 29, 29, 0.96) 100%);
+  border: 1px solid #ef4444;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(239, 68, 68, 0.4);
   font-size: 0.78rem;
-  padding: 7px 16px;
-  border-radius: 7px;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 1001;
+  cursor: pointer;
+  animation: slideToastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s ease;
+}
+
+.bell-discreet-toast:hover {
+  transform: translateY(1px);
+}
+
+@keyframes slideToastIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast-pulse-icon {
+  font-size: 0.95rem;
+  animation: sparkJitter 0.2s infinite;
+}
+
+.toast-text {
+  letter-spacing: 0.02em;
+}
+
+.btn-toast-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  border-radius: 4px;
+  margin-left: 2px;
+  transition: color 0.15s ease;
+}
+
+.btn-toast-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Backdrop e Popover do Sininho */
+.notif-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: transparent;
+}
+
+.notification-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  max-width: 90vw;
+  background: rgba(15, 23, 42, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 20px rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  overflow: hidden;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.55);
+}
+
+.notif-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.btn-notif-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-notif-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.notif-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.notif-card {
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-card-danger {
+  background: rgba(185, 28, 28, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+.notif-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-alert-badge {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.notif-time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.notif-card-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fca5a5;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.notif-card-text {
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.notif-card-actions {
+  margin-top: 4px;
+}
+
+.btn-notif-clear-short {
+  background: #ef4444;
+  color: #ffffff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.74rem;
+  padding: 6px 14px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
   transition: all 0.15s ease;
-  white-space: nowrap;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
-.btn-clear-short:hover {
-  background: #ffffff;
-  color: #b91c1c;
-  transform: scale(1.06);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+.btn-notif-clear-short:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+}
+
+.notif-card-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 14px;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+.notif-empty-icon {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.notif-empty-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.notif-empty-text {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 2px;
 }
 
 /* Condutor com efeito de arco elétrico e curto-circuito violento */
@@ -5943,6 +6154,59 @@
 }
 
 /* ==========================================================================
+   ENERGY METER POWER SOURCE (VOLTEX VX-3300T)
+   ========================================================================== */
+.meter-power-source-plate {
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45));
+  transition: filter 0.2s ease;
+  background: transparent !important;
+}
+
+.meter-power-source-plate.is-unpowered {
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35)) grayscale(0.4) opacity(0.85);
+}
+
+.meter-terminal-socket {
+  cursor: crosshair;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.meter-terminal-socket:hover {
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.95));
+}
+
+.meter-terminal-socket.selected {
+  filter: drop-shadow(0 0 10px #00e676);
+}
+
+.meter-display-button-group {
+  transition: filter 0.15s ease;
+  user-select: none;
+}
+
+.meter-display-button-group:hover {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.85));
+}
+
+.meter-display-button-group:active {
+  transform: translate(400px, 253px) scale(0.97) !important;
+}
+
+.meter-display-button-interactive {
+  transition: filter 0.15s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+.meter-display-button-interactive:hover {
+  filter: drop-shadow(0 0 7px rgba(56, 189, 248, 0.85));
+}
+
+.meter-display-button-interactive:active {
+  transform: translate(0, 2px);
+}
+
+
+/* ==========================================================================
    TRANSFORMER POWER SOURCE (Novo Transformador com Borne PE)
    ========================================================================== */
 .transformer-power-source-plate {
@@ -6246,6 +6510,383 @@
   color: #38bdf8 !important;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.5) !important;
 }
+
+/* ==========================================================
+   FUSE HOLDER (SECCIONADORA PORTA-FUSÍVEL 10x38 ZBENY BR-30)
+   ========================================================== */
+.fuse-holder-din-device {
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+/* Cena 3D em coordenadas originais (94x395), escalada pelo componente */
+.fuse-holder-din-device .fh-scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  perspective: 700px;
+  perspective-origin: 50% 30%;
+}
+
+/* Cavidade interna */
+.fuse-holder-din-device .fh-cavity {
+  position: absolute;
+  left: 12px;
+  top: 82px;
+  width: 70px;
+  height: 226px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #39414a, #555f69 50%, #39414a);
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.fuse-holder-din-device .fh-clip {
+  position: absolute;
+  left: 15px;
+  width: 40px;
+  height: 24px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #8b6a25, #e0bd5c 35%, #c49b3c 65%, #7d5e1e);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.2s;
+}
+.fuse-holder-din-device .fh-clip::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 3px;
+  width: 10px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 2px;
+}
+.fuse-holder-din-device .fh-clip-top { top: 10px; }
+.fuse-holder-din-device .fh-clip-bot { bottom: 22px; }
+.fuse-holder-din-device .fh-clip.live {
+  box-shadow: 0 0 12px 3px rgba(255, 170, 0, 0.8), 0 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+.fuse-holder-din-device .fh-hinge {
+  position: absolute;
+  left: 6px;
+  top: 302px;
+  width: 82px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(#6b747b, #2e353b);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Tampa articulada: caixa 3D que gira para a frente em torno da dobradiça inferior.
+   Fechamento = empurrão rápido que trava (0.42s, casar com CLOSE_SEAT_MS no componente).
+   Abertura   = tampa cai para a frente e desacelera no batente (0.65s). */
+.fuse-holder-din-device .fh-scene {
+  perspective: 650px;
+}
+.fuse-holder-din-device .fh-lever {
+  position: absolute;
+  left: 8px;
+  top: 80px;
+  width: 78px;
+  height: 228px;
+  border-radius: 6px;
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  transform: translateZ(4px);
+  transition: transform 0.42s cubic-bezier(0.5, 0, 0.75, 0.35);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+.fuse-holder-din-device .fh-lever.open {
+  transform: translateZ(4px) rotateX(-55deg);
+  transition: transform 0.65s cubic-bezier(0.25, 0.8, 0.3, 1);
+  box-shadow: 0 14px 18px rgba(0, 0, 0, 0.45);
+}
+.fuse-holder-din-device .fh-lever:focus-visible {
+  outline: 3px solid #f0a82a;
+  outline-offset: 3px;
+}
+
+/* Face frontal com janela vazada (x 15–63, y 34–196) */
+.fuse-holder-din-device .fh-front {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #d8dee9, #ffffff 22%, #f1f5f9 62%, #cbd5e1);
+  box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.55);
+  clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 15px 34px, 63px 34px, 63px 196px, 15px 196px, 15px 34px);
+  transition: filter 0.15s;
+}
+.fuse-holder-din-device .fh-lever:hover .fh-front {
+  filter: brightness(1.04);
+}
+
+/* Interior da gaveta (profundidade 28px) */
+.fuse-holder-din-device .fh-back {
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  width: 48px;
+  height: 162px;
+  background: #101417;
+  transform: translateZ(-28px);
+}
+.fuse-holder-din-device .fh-wall {
+  position: absolute;
+  background: linear-gradient(90deg, #0d1114, #2b333a);
+}
+.fuse-holder-din-device .fh-wl,
+.fuse-holder-din-device .fh-wr {
+  top: 34px;
+  width: 28px;
+  height: 162px;
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+}
+.fuse-holder-din-device .fh-wl { left: 15px; }
+.fuse-holder-din-device .fh-wr {
+  left: 63px;
+  background: linear-gradient(90deg, #2b333a, #0d1114);
+}
+.fuse-holder-din-device .fh-wt,
+.fuse-holder-din-device .fh-wb {
+  left: 15px;
+  width: 48px;
+  height: 28px;
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg);
+  background: linear-gradient(#0d1114, #222a30);
+}
+.fuse-holder-din-device .fh-wt { top: 34px; }
+.fuse-holder-din-device .fh-wb { top: 196px; }
+
+/* Copos de latão que prendem as pontas do fusível */
+.fuse-holder-din-device .fh-cup {
+  position: absolute;
+  left: 18px;
+  width: 42px;
+  height: 12px;
+  border-radius: 3px;
+  transform: translateZ(-27px);
+  background: linear-gradient(90deg, #8b6a25, #e0bd5c 35%, #c49b3c 65%, #7d5e1e);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Vidro/sombra interna da janela */
+.fuse-holder-din-device .fh-pane {
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  width: 48px;
+  height: 162px;
+  transform: translateZ(1px);
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 40%);
+  box-shadow: inset 0 0 10px 4px rgba(0, 0, 0, 0.65);
+}
+
+.fuse-holder-din-device .fh-grip {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  transform: translateZ(1px);
+  background: repeating-linear-gradient(to bottom, rgba(15, 23, 42, 0.35) 0 2px, rgba(255, 255, 255, 0.4) 2px 5px);
+}
+.fuse-holder-din-device .fh-grip span {
+  margin: auto;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #252b31;
+  color: #e6eaee;
+  font: 700 10px Arial, sans-serif;
+}
+.fuse-holder-din-device .fh-tag {
+  position: absolute;
+  right: 3px;
+  top: 34px;
+  padding: 1px 2px;
+  border-radius: 2px;
+  background: #0f172a;
+  color: #38bdf8;
+  font: 700 8px Arial, sans-serif;
+  writing-mode: vertical-rl;
+  transform: translateZ(1px);
+}
+
+/* Fusível 10x38 — Cilindro 3D Tubular Real (com topo elíptico e volume em perspectiva) */
+.fuse-holder-din-device .fh-tube-3d {
+  position: absolute;
+  left: 39px;
+  top: 38px;
+  width: 0;
+  height: 154px;
+  transform: translateZ(-16px);
+  transform-style: preserve-3d;
+}
+
+/* Facetas individuais do tubo cilíndrico (16 lados) */
+.fuse-holder-din-device .fh-facet {
+  position: absolute;
+  left: -3.08px;
+  width: 6.17px;
+  backface-visibility: hidden;
+  box-sizing: border-box;
+}
+.fuse-holder-din-device .fh-facet.cap-top {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+.fuse-holder-din-device .fh-facet.cap-bot {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Discos circulares das extremidades (revelam o formato tubular ao inclinar a tampa) */
+.fuse-holder-din-device .fh-disc {
+  position: absolute;
+  left: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+/* Disco superior metálico: vira para a frente da câmera quando a gaveta abre */
+.fuse-holder-din-device .fh-disc-top {
+  top: -14px;
+  transform: rotateX(90deg);
+  background: radial-gradient(circle at 45% 40%, #ffffff 0%, #d8dee3 45%, #9aa3ab 80%, #6e7780 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+/* Pino indicador central no topo do fusível */
+.fuse-holder-din-device .fh-disc-pin {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #7d8791, #39424a);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.4);
+  transition: background 0.25s, box-shadow 0.25s;
+}
+.fuse-holder-din-device .fh-tube-3d.blown .fh-disc-pin {
+  background: radial-gradient(circle at 40% 40%, #ff8377, #e0342a 65%, #991b1b);
+  box-shadow: 0 0 8px 1px #e0342a, inset 0 0 1px #ffffff;
+}
+
+/* Disco inferior da base metálica */
+.fuse-holder-din-device .fh-disc-bot {
+  top: 140px;
+  transform: rotateX(-90deg);
+  background: radial-gradient(circle at 50% 50%, #9aa3ab, #59636c);
+}
+
+/* Inscrição técnica gravada na face cerâmica frontal */
+.fuse-holder-din-device .fh-tube-label {
+  position: absolute;
+  left: -12px;
+  top: 25px;
+  width: 24px;
+  height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(14.2px);
+  pointer-events: none;
+}
+.fuse-holder-din-device .fh-tube-label span {
+  writing-mode: vertical-rl;
+  font: 700 8.5px "Segoe UI", Arial, sans-serif;
+  letter-spacing: 0.5px;
+  color: #3b3a35;
+  white-space: nowrap;
+  opacity: 0.88;
+}
+
+/* Fuligem de sobrecorrente na superfície cerâmica */
+.fuse-holder-din-device .fh-tube-soot {
+  position: absolute;
+  left: -13px;
+  top: 54px;
+  width: 26px;
+  height: 48px;
+  border-radius: 4px;
+  transform: translateZ(14.4px);
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(35, 20, 15, 0.9), rgba(35, 20, 15, 0) 75%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.fuse-holder-din-device .fh-tube-3d.blown .fh-tube-soot {
+  opacity: 1;
+}
+
+.fuse-holder-din-device .fh-lens {
+  position: absolute;
+  left: 22px;
+  top: 204px;
+  width: 34px;
+  height: 12px;
+  border-radius: 6px;
+  background: #7f1d1d;
+  border: 1px solid #0f172a;
+  box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.25);
+  transform: translateZ(1px);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.fuse-holder-din-device .fh-lens.on {
+  background: #ef4444;
+  box-shadow: 0 0 10px 2px rgba(239, 68, 68, 0.85), inset 0 2px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Ações com a tampa aberta (trocar fusível / corrente nominal) */
+.fuse-holder-din-device .fh-actions {
+  position: absolute;
+  left: 50%;
+  top: 42px;
+  transform: translateX(-50%);
+  z-index: 25;
+}
+.fuse-holder-din-device .fh-action-btn {
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  border: 1px solid #64748b;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+  animation: fhActionIn 0.35s 0.3s both;
+}
+.fuse-holder-din-device .fh-action-btn:hover {
+  border-color: #38bdf8;
+  background: rgba(15, 23, 42, 1);
+}
+.fuse-holder-din-device .fh-action-replace {
+  background: rgba(239, 68, 68, 0.95);
+  border-color: #fca5a5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 8px rgba(239, 68, 68, 0.6);
+}
+.fuse-holder-din-device .fh-action-replace:hover {
+  background: #ef4444;
+  border-color: #fff;
+}
+@keyframes fhActionIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fuse-holder-din-device .fh-lever { transition: none; }
+  .fuse-holder-din-device .fh-action-btn { animation: none; }
+}
+
 
 
 

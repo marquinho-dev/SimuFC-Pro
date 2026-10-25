@@ -6,7 +6,8 @@ import TheoryGuideModal from './components/TheoryGuideModal';
 import MultimeterModal from './components/MultimeterModal';
 import PowerSourceSettingsModal from './components/PowerSourceSettingsModal';
 import BreakerSettingsModal from './components/BreakerSettingsModal';
-import { INITIAL_COMPONENTS, WIRE_COLORS, TIMER_RELAY_TERMINALS, POWER_MODES } from './types/components';
+import TerminalBlockSettingsModal from './components/TerminalBlockSettingsModal';
+import { INITIAL_COMPONENTS, WIRE_COLORS, TIMER_RELAY_TERMINALS, POWER_MODES, getTerminalBlockTerminals } from './types/components';
 import { PRESETS } from './presets/circuits';
 import { evaluateCircuit } from './services/simulationEngine';
 import { sounds } from './services/soundEffects';
@@ -114,6 +115,24 @@ function getInitialWorkbenchState() {
   };
 }
 
+// Helper for cascading wire deletion (removes parent wires and any wires tapped into them recursively)
+function cascadeDeleteWires(wiresList, deletedIds) {
+  const toDelete = new Set(deletedIds);
+  let added = true;
+  while (added) {
+    added = false;
+    for (const w of wiresList) {
+      if (!toDelete.has(w.id)) {
+        if ((w.fromWireId && toDelete.has(w.fromWireId)) || (w.toWireId && toDelete.has(w.toWireId))) {
+          toDelete.add(w.id);
+          added = true;
+        }
+      }
+    }
+  }
+  return wiresList.filter((w) => !toDelete.has(w.id));
+}
+
 export default function App() {
   const initialData = useMemo(() => getInitialWorkbenchState(), []);
   const [components, setComponents] = useState(initialData.components);
@@ -207,6 +226,8 @@ export default function App() {
   const [isPowerSettingsOpen, setIsPowerSettingsOpen] = useState(false);
   const [isBreakerSettingsOpen, setIsBreakerSettingsOpen] = useState(false);
   const [selectedBreaker, setSelectedBreaker] = useState(null);
+  const [isTerminalBlockSettingsOpen, setIsTerminalBlockSettingsOpen] = useState(false);
+  const [selectedTerminalBlock, setSelectedTerminalBlock] = useState(null);
 
   // Sound mute sync
   useEffect(() => {
@@ -274,6 +295,9 @@ export default function App() {
           if (c.type === 'circuit_breaker' || c.type === 'breaker_3p' || c.type === 'breaker_1p') {
             resetState.closed = false;
           }
+          if (c.type === 'fuse_holder') {
+            resetState.closed = true;
+          }
           if (c.type === 'contactor' || c.type === 'contactor_coil') {
             resetState.energized = false;
           }
@@ -318,19 +342,40 @@ export default function App() {
   const shortedWireIds = simulationResult.shortedWireIds || [];
   const trippedBreakerIds = simulationResult.trippedBreakerIds || [];
 
-  // Handler to update an individual component state (e.g. breaker toggled, button pressed, contactor manual toggle)
+  // Handler to update an individual component state (e.g. breaker toggled, button pressed, contactor manual toggle, terminal block poles)
   const handleUpdateComponentState = useCallback((compId, partialState) => {
     setComponents((prev) =>
       prev.map((c) => {
         if (c.id === compId) {
+          let updatedTerminals = c.terminals;
+          if (c.type === 'terminal_block' && partialState.poles !== undefined) {
+            updatedTerminals = getTerminalBlockTerminals(partialState.poles);
+          }
           return {
             ...c,
             state: { ...c.state, ...partialState },
+            terminals: updatedTerminals,
           };
         }
         return c;
       })
     );
+
+    if (partialState.poles !== undefined) {
+      setWires((prev) => {
+        const newTerminals = getTerminalBlockTerminals(partialState.poles);
+        const newTermIds = new Set(newTerminals.map((t) => t.id));
+        const deadWireIds = prev
+          .filter(
+            (w) =>
+              (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) ||
+              (w.toComponent === compId && !newTermIds.has(w.toTerminal))
+          )
+          .map((w) => w.id);
+        if (deadWireIds.length === 0) return prev;
+        return cascadeDeleteWires(prev, deadWireIds);
+      });
+    }
   }, []);
 
   // Short-circuit audio feedback & automatic circuit breaker tripping
@@ -351,9 +396,15 @@ export default function App() {
           sounds.playShortCircuit();
         }
         trippedBreakerIds.forEach((bId) => {
-          handleUpdateComponentState(bId, { closed: false });
+          const comp = components.find((c) => c.id === bId);
+          if (comp?.type === 'fuse_holder') {
+            handleUpdateComponentState(bId, { fuseBlown: true });
+          } else {
+            handleUpdateComponentState(bId, { closed: false });
+          }
         });
-        setToastMessage('⚡ Disjuntor desarmou por curto-circuito!');
+        const hasFuseBlown = trippedBreakerIds.some((bId) => components.find((c) => c.id === bId)?.type === 'fuse_holder');
+        setToastMessage(hasFuseBlown ? '⚡ Fusível de proteção queimou por curto-circuito!' : '⚡ Disjuntor desarmou por curto-circuito!');
       } else {
         // Curto-circuito SEM PROTEÇÃO (por exemplo feito antes do disjuntor ou sem disjuntor)
         // Dispara o barulho de arco elétrico contínuo de curto-circuito
@@ -459,7 +510,7 @@ export default function App() {
     sounds.stopShortCircuitArc();
     if (shortedWireIds.length > 0) {
       const shortSet = new Set(shortedWireIds);
-      setWires((prev) => prev.filter((w) => !shortSet.has(w.id)));
+      setWires((prev) => cascadeDeleteWires(prev, shortSet));
       setToastMessage('✅ Fios em curto-circuito foram desconectados.');
     }
   }, [shortedWireIds]);
@@ -525,9 +576,9 @@ export default function App() {
 
     // Also update any internal jumper wires and any wire splices attached to this component
     setWires((prevWires) => {
-      const internalWireIds = new Set(
+      const directlyConnectedWireIds = new Set(
         prevWires
-          .filter((w) => w.fromComponent === compId && w.toComponent === compId)
+          .filter((w) => w.fromComponent === compId || w.toComponent === compId)
           .map((w) => w.id)
       );
 
@@ -543,11 +594,11 @@ export default function App() {
           updated = true;
         }
 
-        if (w.fromWireId && internalWireIds.has(w.fromWireId) && w.fromPoint) {
+        if (w.fromWireId && directlyConnectedWireIds.has(w.fromWireId) && w.fromPoint) {
           newFromPoint = { x: w.fromPoint.x + dx, y: w.fromPoint.y + dy };
           updated = true;
         }
-        if (w.toWireId && internalWireIds.has(w.toWireId) && w.toPoint) {
+        if (w.toWireId && directlyConnectedWireIds.has(w.toWireId) && w.toPoint) {
           newToPoint = { x: w.toPoint.x + dx, y: w.toPoint.y + dy };
           updated = true;
         }
@@ -770,9 +821,7 @@ export default function App() {
   // Remove wire handler (blocked in simulation)
   const handleRemoveWire = useCallback((wireId) => {
     if (isSimulationMode) return;
-    setWires((prev) =>
-      prev.filter((w) => w.id !== wireId && w.fromWireId !== wireId && w.toWireId !== wireId)
-    );
+    setWires((prev) => cascadeDeleteWires(prev, [wireId]));
     setSelectedWireId((cur) => (cur === wireId ? null : cur));
   }, [isSimulationMode]);
 
@@ -817,15 +866,18 @@ export default function App() {
       })
     );
 
-    // Clean any wires attached to terminals that no longer exist
+    // Clean any wires attached to terminals that no longer exist (with cascading delete)
     const newTermIds = new Set(terminals.map((t) => t.id));
-    setWires((prev) =>
-      prev.filter((w) => {
-        if (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) return false;
-        if (w.toComponent === compId && !newTermIds.has(w.toTerminal)) return false;
-        return true;
-      })
-    );
+    setWires((prev) => {
+      const deadWireIds = prev
+        .filter(
+          (w) =>
+            (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) ||
+            (w.toComponent === compId && !newTermIds.has(w.toTerminal))
+        )
+        .map((w) => w.id);
+      return cascadeDeleteWires(prev, deadWireIds);
+    });
   }, []);
 
   // Handler to open breaker settings
@@ -850,30 +902,64 @@ export default function App() {
       })
     );
 
-    // Clean any wires attached to terminals that no longer exist
+    // Clean any wires attached to terminals that no longer exist (with cascading delete)
     const newTermIds = new Set(terminals.map((t) => t.id));
-    setWires((prev) =>
-      prev.filter((w) => {
-        if (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) return false;
-        if (w.toComponent === compId && !newTermIds.has(w.toTerminal)) return false;
-        return true;
-      })
-    );
+    setWires((prev) => {
+      const deadWireIds = prev
+        .filter(
+          (w) =>
+            (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) ||
+            (w.toComponent === compId && !newTermIds.has(w.toTerminal))
+        )
+        .map((w) => w.id);
+      return cascadeDeleteWires(prev, deadWireIds);
+    });
 
     setToastMessage('✅ Disjuntor reconfigurado com sucesso.');
     setTimeout(() => setToastMessage(null), 2500);
   }, []);
 
+  // Handler to open terminal block settings
+  const handleOpenTerminalBlockSettings = useCallback((comp) => {
+    if (isSimulationMode) return;
+    setSelectedTerminalBlock(comp);
+    setIsTerminalBlockSettingsOpen(true);
+  }, [isSimulationMode]);
+
+  // Handler to save terminal block configuration (poles/bornes)
+  const handleSaveTerminalBlockSettings = useCallback((compId, { state, terminals }) => {
+    setComponents((prev) =>
+      prev.map((c) => {
+        if (c.id === compId) {
+          return {
+            ...c,
+            state: { ...c.state, ...state },
+            terminals,
+          };
+        }
+        return c;
+      })
+    );
+
+    // Clean any wires attached to terminals that no longer exist (with cascading delete)
+    const newTermIds = new Set(terminals.map((t) => t.id));
+    setWires((prev) => {
+      const deadWireIds = prev
+        .filter(
+          (w) =>
+            (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) ||
+            (w.toComponent === compId && !newTermIds.has(w.toTerminal))
+        )
+        .map((w) => w.id);
+      return cascadeDeleteWires(prev, deadWireIds);
+    });
+  }, []);
+
   // Handler to add a new component to canvas (blocked in simulation)
   const handleAddComponent = useCallback((type, posX, posY, displayMode = 'real') => {
     if (isSimulationMode) {
-      setToastMessage('⚠️ Alterne para o Modo Edição para adicionar componentes.');
-      setTimeout(() => setToastMessage(null), 2500);
       return;
     }
-    try {
-      sounds.playButtonClick();
-    } catch {}
     const template = INITIAL_COMPONENTS.find((c) => c.type === type);
     if (!template) return;
 
@@ -889,6 +975,7 @@ export default function App() {
       let prefix = 'KM';
       if (type === 'contactor' || type === 'contactor_coil') prefix = 'KM';
       else if (type === 'circuit_breaker') prefix = 'Q';
+      else if (type === 'fuse_holder') prefix = 'F';
       else if (type === 'thermal_relay') prefix = 'RT';
       else if (type === 'timer_relay') prefix = 'KT';
       else if (type === 'button_start') prefix = 'S';
@@ -987,9 +1074,12 @@ export default function App() {
           return updated;
         });
     });
-    setWires((prev) =>
-      prev.filter((w) => w.fromComponent !== compId && w.toComponent !== compId)
-    );
+    setWires((prev) => {
+      const directlyConnectedIds = prev
+        .filter((w) => w.fromComponent === compId || w.toComponent === compId)
+        .map((w) => w.id);
+      return cascadeDeleteWires(prev, directlyConnectedIds);
+    });
   }, []);
 
   // Clear all components (clean workspace)
@@ -1055,13 +1145,6 @@ export default function App() {
 
   return (
     <div className="app-container eletro-sim-app">
-      {/* Toast Feedback Banner */}
-      {toastMessage && (
-        <div className="simulator-toast-banner">
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* Top Navigation & Controls Toolbar */}
       <Header
         activeWireColor={activeWireColor}
@@ -1083,6 +1166,9 @@ export default function App() {
         onOpenTheory={() => setIsTheoryOpen(true)}
         onOpenMultimeter={() => setIsMultimeterOpen(true)}
         onAddComponent={handleAddComponent}
+        shortCircuit={shortCircuit}
+        shortCircuitDetails={shortCircuitDetails}
+        onClearShortWires={handleClearShortWires}
       />
 
       {/* Main Interactive Workbench Canvas */}
@@ -1114,6 +1200,7 @@ export default function App() {
             onUnlinkComponents={handleUnlinkComponents}
             onOpenPowerSettings={() => !isSimulationMode && setIsPowerSettingsOpen(true)}
             onOpenBreakerSettings={handleOpenBreakerSettings}
+            onOpenTerminalBlockSettings={handleOpenTerminalBlockSettings}
             onRemoveComponent={handleRemoveComponent}
             onAddComponent={handleAddComponent}
             onLoadPreset={handleLoadPreset}
@@ -1142,6 +1229,18 @@ export default function App() {
           }}
           component={selectedBreaker}
           onSaveSettings={handleSaveBreakerSettings}
+        />
+      )}
+
+      {isTerminalBlockSettingsOpen && selectedTerminalBlock && (
+        <TerminalBlockSettingsModal
+          isOpen={isTerminalBlockSettingsOpen}
+          onClose={() => {
+            setIsTerminalBlockSettingsOpen(false);
+            setSelectedTerminalBlock(null);
+          }}
+          component={selectedTerminalBlock}
+          onSaveSettings={handleSaveTerminalBlockSettings}
         />
       )}
 

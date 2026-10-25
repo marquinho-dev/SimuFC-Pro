@@ -6,11 +6,13 @@ import ThermalRelayElement from './elements/ThermalRelayElement';
 import TimerRelayElement from './elements/TimerRelayElement';
 import Motor6PElement from './elements/Motor6PElement';
 import BreakerElement from './elements/BreakersElement';
+import FuseHolderElement from './elements/FuseHolderElement';
 import { ButtonStopElement, ButtonStartElement, ButtonEmergencyElement } from './elements/ButtonsElement';
 import PilotLampElement from './elements/PilotLampsElement';
+import TerminalBlockElement from './elements/TerminalBlockElement';
 import DinRailElement from './elements/DinRailElement';
 import SchematicElement from './elements/SchematicElement';
-import { TIMER_RELAY_TERMINALS, getBreakerTerminals, SCHEMATIC_SOURCE_BUSES, SCHEMATIC_SOURCE_BUS_X_END } from '../types/components';
+import { TIMER_RELAY_TERMINALS, getBreakerTerminals, getTerminalBlockTerminals, SCHEMATIC_SOURCE_BUSES, SCHEMATIC_SOURCE_BUS_X_END } from '../types/components';
 import { sounds } from '../services/soundEffects';
 import {
   computeAutoRoute,
@@ -236,6 +238,25 @@ function WireMotorRingLug({ pt, nextPt, wireColor }) {
   );
 }
 
+function getSpliceStroke(color) {
+  if (!color) return '#ffffff';
+  const c = color.toLowerCase();
+  if (
+    c === '#18181b' ||
+    c === '#000000' ||
+    c === '#111827' ||
+    c === '#0f172a' ||
+    c === '#222222' ||
+    c === '#333333'
+  ) {
+    return 'rgba(255, 255, 255, 0.85)';
+  }
+  if (c === '#ffffff' || c === '#f8fafc' || c === '#f1f5f9') {
+    return '#1e293b';
+  }
+  return 'rgba(0, 0, 0, 0.55)';
+}
+
 function findCompTerminal(comp, termId) {
   if (!comp) return null;
   let t = comp.terminals?.find((x) => x.id === termId);
@@ -275,6 +296,7 @@ export default function Canvas({
   onUnlinkComponents,
   onOpenPowerSettings,
   onOpenBreakerSettings,
+  onOpenTerminalBlockSettings,
   onRemoveComponent,
   onAddComponent,
   onLoadPreset,
@@ -392,7 +414,7 @@ export default function Canvas({
     };
   }, [pan, zoom]);
 
-  // Smooth balanced zoom centered on container center (prevents drifting sideways)
+  // Smooth zoom centered on mouse cursor position
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -400,19 +422,29 @@ export default function Canvas({
     const handleWheel = (e) => {
       e.preventDefault();
       const rect = container.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      const zoomFactor = e.deltaY < 0 ? 1.09 : 0.917;
       const curZoom = zoomRef.current || 1;
       const curPan = panRef.current || { x: 0, y: 0 };
 
-      const newZoom = Math.min(2.5, Math.max(0.35, Number((curZoom * zoomFactor).toFixed(3))));
+      // Calculate smooth zoom factor (supports both mouse wheel steps and trackpad pinch)
+      let zoomFactor;
+      if (e.ctrlKey) {
+        // Pinch-to-zoom on trackpad
+        zoomFactor = Math.exp(-e.deltaY * 0.01);
+      } else {
+        // Normal mouse wheel
+        zoomFactor = e.deltaY < 0 ? 1.12 : 0.893;
+      }
+
+      // Allow up to 500% (5.0) zoom and down to 20% (0.2)
+      const newZoom = Math.min(5.0, Math.max(0.2, Number((curZoom * zoomFactor).toFixed(3))));
       if (newZoom === curZoom) return;
 
       const newPan = {
-        x: Math.round(centerX - (centerX - curPan.x) * (newZoom / curZoom)),
-        y: Math.round(centerY - (centerY - curPan.y) * (newZoom / curZoom)),
+        x: Math.round(mouseX - (mouseX - curPan.x) * (newZoom / curZoom)),
+        y: Math.round(mouseY - (mouseY - curPan.y) * (newZoom / curZoom)),
       };
 
       setZoom(newZoom);
@@ -494,6 +526,10 @@ export default function Canvas({
         const poles = Number(comp.state?.poles) || 3;
         term = getBreakerTerminals(poles).find((t) => t.id === termId);
       }
+      if (!term && comp.type === 'terminal_block') {
+        const poles = Number(comp.state?.poles) || 4;
+        term = getTerminalBlockTerminals(poles).find((t) => t.id === termId);
+      }
       if (!term) return { x: Math.round(comp.x + 50), y: Math.round(comp.y + 50) };
 
       const isCompSchematic =
@@ -541,21 +577,25 @@ export default function Canvas({
         if (term) {
           tx = term.x;
           ty = term.y;
-        } else if (termId.startsWith('L1') || termId === 'X1') { tx = 185; ty = 156; }
-        else if (termId.startsWith('L2') || termId === 'X2') { tx = 234; ty = 156; }
-        else if (termId.startsWith('L3') || termId === 'X3') { tx = 285; ty = 156; }
-        else if (termId.startsWith('N') || termId === 'X0') { tx = 134; ty = 156; }
-        else if (termId.startsWith('PE')) { tx = 72; ty = 375; }
+        } else if (termId === 'N' || termId === 'N_out' || termId === '5' || termId === 'X0') { tx = 220; ty = 268; }
+        else if (termId === 'L1' || termId === 'L1_out' || termId === '6' || termId === 'X1') { tx = 258; ty = 268; }
+        else if (termId === 'L2' || termId === 'L2_out' || termId === '7' || termId === 'X2') { tx = 297; ty = 268; }
+        else if (termId === 'L3' || termId === 'L3_out' || termId === '8' || termId === 'X3') { tx = 335; ty = 268; }
+        else if (termId === '1' || termId === 'L1_in') { tx = 66; ty = 268; }
+        else if (termId === '2' || termId === 'L2_in') { tx = 104; ty = 268; }
+        else if (termId === '3' || termId === 'L3_in') { tx = 143; ty = 268; }
+        else if (termId === '4' || termId === 'N_in') { tx = 181; ty = 268; }
+        else if (termId === 'PE' || termId.startsWith('PE')) { tx = 196; ty = 460; }
       } else if (comp.type === 'button_start') {
-        if (termId === '3' || termId === '13') { tx = 46; ty = 27; }
-        else if (termId === '4' || termId === '14') { tx = 90; ty = 27; }
-        else if (termId === '13_bot') { tx = 46; ty = 143; }
-        else if (termId === '14_bot') { tx = 90; ty = 143; }
+        if (termId === '3' || termId === '13') { tx = 45; ty = 27; }
+        else if (termId === '4' || termId === '14') { tx = 99; ty = 27; }
+        else if (termId === '13_bot') { tx = 45; ty = 130; }
+        else if (termId === '14_bot') { tx = 99; ty = 130; }
       } else if (comp.type === 'button_stop') {
-        if (termId === '1' || termId === '11') { tx = 46; ty = 27; }
-        else if (termId === '2' || termId === '12') { tx = 90; ty = 27; }
-        else if (termId === '11_bot' || termId === '1_bot') { tx = 46; ty = 143; }
-        else if (termId === '12_bot' || termId === '2_bot') { tx = 90; ty = 143; }
+        if (termId === '1' || termId === '11') { tx = 45; ty = 27; }
+        else if (termId === '2' || termId === '12') { tx = 99; ty = 27; }
+        else if (termId === '11_bot' || termId === '1_bot') { tx = 45; ty = 130; }
+        else if (termId === '12_bot' || termId === '2_bot') { tx = 99; ty = 130; }
       } else if (comp.type === 'button_emergency') {
         // Emergency stop has top center socket (11 NF) and bottom center socket (12 NF)
         if (termId === '1' || termId === '11' || termId === '11_bot') { tx = 68; ty = 18; }
@@ -588,6 +628,21 @@ export default function Canvas({
           else if (termId === 'W1') { tx = 182; ty = 224; }
           else if (termId === 'PE') { tx = 211; ty = 179; }
         }
+      } else if (comp.type === 'pilot_light' || comp.type === 'pilot_lamp') {
+        if (termId === 'X1' || termId === '1') { tx = 31; ty = 117; }
+        else if (termId === 'X2' || termId === '2') { tx = 73; ty = 117; }
+        else { tx = term?.x ?? 31; ty = term?.y ?? 117; }
+      } else if (comp.type === 'terminal_block') {
+        const match = termId.match(/^(\d+)(_bot)?$/);
+        if (match) {
+          const idx = parseInt(match[1], 10);
+          const isBot = Boolean(match[2]);
+          tx = 17 + (idx - 1) * 34;
+          ty = isBot ? 118 : 28;
+        } else {
+          tx = term?.x ?? 17;
+          ty = term?.y ?? 28;
+        }
       }
 
       return {
@@ -600,38 +655,83 @@ export default function Canvas({
 
   // Compute all polyline points for each wire (supports terminal-to-terminal, wire-to-terminal, wire-to-wire, and busbar taps)
   const wiresPointLists = useMemo(() => {
-    return wires.map((wire, idx) => {
+    const computedMap = new Map(); // wireId -> points[]
+    const result = new Array(wires.length);
+    const uncomputedIndices = new Set(wires.map((_, i) => i));
+
+    const computeSingleWire = (wire, idx) => {
       const comp1 = wire.fromComponent ? components.find((c) => c.id === wire.fromComponent) : null;
       const comp2 = wire.toComponent ? components.find((c) => c.id === wire.toComponent) : null;
 
-      const p1 =
-        wire.fromWireId && wire.fromPoint
-          ? wire.fromPoint
-          : (wire.fromTerminalX != null && wire.fromTerminalY != null && comp1
-              ? { x: Math.round(comp1.x + wire.fromTerminalX), y: Math.round(comp1.y + wire.fromTerminalY) }
-              : (wire.fromTerminalX != null && comp1
-                  ? { x: Math.round(comp1.x + wire.fromTerminalX), y: getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal).y }
-                  : getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal)));
+      let p1;
+      let exit1;
+      let term1 = null;
+      if (wire.fromWireId) {
+        const parentPts = computedMap.get(wire.fromWireId);
+        if (parentPts && parentPts.length >= 2) {
+          const snap = getClosestPointOnWire(
+            parentPts,
+            wire.fromPoint?.x ?? 0,
+            wire.fromPoint?.y ?? 0
+          );
+          p1 = snap?.point ? { ...snap.point } : (wire.fromPoint ? { ...wire.fromPoint } : { x: 0, y: 0 });
 
-      const p2 =
-        wire.toWireId && wire.toPoint
-          ? wire.toPoint
-          : (wire.toTerminalX != null && wire.toTerminalY != null && comp2
-              ? { x: Math.round(comp2.x + wire.toTerminalX), y: Math.round(comp2.y + wire.toTerminalY) }
-              : (wire.toTerminalX != null && comp2
-                  ? { x: Math.round(comp2.x + wire.toTerminalX), y: getTerminalAbsolutePos(wire.toComponent, wire.toTerminal).y }
-                  : getTerminalAbsolutePos(wire.toComponent, wire.toTerminal)));
+          if (snap && parentPts[snap.segIdx] && parentPts[snap.segIdx + 1]) {
+            const segA = parentPts[snap.segIdx];
+            const segB = parentPts[snap.segIdx + 1];
+            const isParentHorizontal = Math.abs(segA.x - segB.x) >= Math.abs(segA.y - segB.y);
+            exit1 = isParentHorizontal ? { dx: 0, dy: 1 } : { dx: 1, dy: 0 };
+          }
+        } else {
+          p1 = wire.fromPoint ? { ...wire.fromPoint } : { x: 0, y: 0 };
+        }
+      } else {
+        p1 =
+          wire.fromTerminalX != null && wire.fromTerminalY != null && comp1 && comp1.type !== 'power_source'
+            ? { x: Math.round(comp1.x + wire.fromTerminalX), y: Math.round(comp1.y + wire.fromTerminalY) }
+            : (wire.fromTerminalX != null && comp1 && comp1.type !== 'power_source'
+                ? { x: Math.round(comp1.x + wire.fromTerminalX), y: getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal).y }
+                : getTerminalAbsolutePos(wire.fromComponent, wire.fromTerminal));
+        term1 = findCompTerminal(comp1, wire.fromTerminal);
+        exit1 = getTerminalExitVector(term1, comp1);
+      }
 
-      const term1 = findCompTerminal(comp1, wire.fromTerminal);
-      const term2 = findCompTerminal(comp2, wire.toTerminal);
-      const exit1 = getTerminalExitVector(term1, comp1);
-      const exit2 = getTerminalExitVector(term2, comp2);
+      let p2;
+      let exit2;
+      let term2 = null;
+      if (wire.toWireId) {
+        const parentPts = computedMap.get(wire.toWireId);
+        if (parentPts && parentPts.length >= 2) {
+          const snap = getClosestPointOnWire(
+            parentPts,
+            wire.toPoint?.x ?? 0,
+            wire.toPoint?.y ?? 0
+          );
+          p2 = snap?.point ? { ...snap.point } : (wire.toPoint ? { ...wire.toPoint } : { x: 0, y: 0 });
+
+          if (snap && parentPts[snap.segIdx] && parentPts[snap.segIdx + 1]) {
+            const segA = parentPts[snap.segIdx];
+            const segB = parentPts[snap.segIdx + 1];
+            const isParentHorizontal = Math.abs(segA.x - segB.x) >= Math.abs(segA.y - segB.y);
+            exit2 = isParentHorizontal ? { dx: 0, dy: 1 } : { dx: 1, dy: 0 };
+          }
+        } else {
+          p2 = wire.toPoint ? { ...wire.toPoint } : { x: 0, y: 0 };
+        }
+      } else {
+        p2 =
+          wire.toTerminalX != null && wire.toTerminalY != null && comp2 && comp2.type !== 'power_source'
+            ? { x: Math.round(comp2.x + wire.toTerminalX), y: Math.round(comp2.y + wire.toTerminalY) }
+            : (wire.toTerminalX != null && comp2 && comp2.type !== 'power_source'
+                ? { x: Math.round(comp2.x + wire.toTerminalX), y: getTerminalAbsolutePos(wire.toComponent, wire.toTerminal).y }
+                : getTerminalAbsolutePos(wire.toComponent, wire.toTerminal));
+        term2 = findCompTerminal(comp2, wire.toTerminal);
+        exit2 = getTerminalExitVector(term2, comp2);
+      }
 
       let waypoints = wire.waypoints;
-      
-      // Auto-recalculate route ONLY if:
-      // 1) Wire has no custom routing, AND
-      // 2) Wire has no waypoints OR either connected component is currently being moved
+
+      // Auto-recalculate route if wire is not custom-routed
       const isCustom = Boolean(wire.isCustomRouted && waypoints && waypoints.length > 0);
       const isConnectedToMovingComp = Boolean(
         draggedCompId &&
@@ -642,45 +742,76 @@ export default function Canvas({
         !isCustom && (isConnectedToMovingComp || !waypoints || waypoints.length === 0);
 
       if (shouldAutoRoute && wire.fromComponent && wire.toComponent && comp1 && comp2) {
-        waypoints = computeAutoRoute(p1, p2, comp1, comp2, term1, term2, idx, components);
+        // Pass currently computed paths so this wire selects free, non-overlapping lanes
+        waypoints = computeAutoRoute(p1, p2, comp1, comp2, term1, term2, idx, components, Array.from(computedMap.values()));
       } else if (!waypoints || waypoints.length === 0) {
-        // Fallback clean orthogonal step
-        waypoints = [
-          { x: p1.x, y: Math.round((p1.y + p2.y) / 2) },
-          { x: p2.x, y: Math.round((p1.y + p2.y) / 2) },
-        ];
+        // Fallback clean orthogonal step respecting perpendicular approach
+        if (exit2?.dx !== 0) {
+          waypoints = [
+            { x: Math.round((p1.x + p2.x) / 2), y: p1.y },
+            { x: Math.round((p1.x + p2.x) / 2), y: p2.y },
+          ];
+        } else {
+          waypoints = [
+            { x: p1.x, y: Math.round((p1.y + p2.y) / 2) },
+            { x: p2.x, y: Math.round((p1.y + p2.y) / 2) },
+          ];
+        }
       }
 
       // Ensure every wire is 100% strictly orthogonal (90-deg angles, never diagonal or slanted)
-      return ensureOrthogonalPath([p1, ...waypoints, p2], exit1, exit2);
-    });
+      const fullPath = ensureOrthogonalPath([p1, ...(waypoints || []), p2], exit1, exit2);
+      return fullPath;
+    };
+
+    // Multi-pass dependency resolution (up to 5 passes to resolve branch hierarchies)
+    for (let pass = 0; pass < 5 && uncomputedIndices.size > 0; pass++) {
+      for (const idx of Array.from(uncomputedIndices)) {
+        const wire = wires[idx];
+        const canCompute =
+          (!wire.fromWireId || computedMap.has(wire.fromWireId)) &&
+          (!wire.toWireId || computedMap.has(wire.toWireId));
+
+        if (canCompute || pass === 4) {
+          const path = computeSingleWire(wire, idx);
+          computedMap.set(wire.id, path);
+          result[idx] = path;
+          uncomputedIndices.delete(idx);
+        }
+      }
+    }
+
+    return result;
   }, [wires, components, getTerminalAbsolutePos, draggedCompId]);
 
   // Extract all electrical splice/junction points between wires and busbars so we don't draw bridge jumps over them
   const allJunctionPoints = useMemo(() => {
     const list = [];
-    for (const w of wires) {
-      if (w.fromPoint) list.push(w.fromPoint);
-      if (w.toPoint) list.push(w.toPoint);
+    wires.forEach((w, idx) => {
+      const pts = wiresPointLists[idx];
+      if (pts && pts.length >= 2) {
+        if (w.fromWireId) {
+          list.push(pts[0]);
+        } else if (w.fromPoint) {
+          list.push(w.fromPoint);
+        }
+        if (w.toWireId) {
+          list.push(pts[pts.length - 1]);
+        } else if (w.toPoint) {
+          list.push(w.toPoint);
+        }
+      }
       const comp1 = w.fromComponent ? components.find((c) => c.id === w.fromComponent) : null;
       if (comp1?.type === 'power_source') {
-        list.push(
-          w.fromTerminalX != null
-            ? { x: Math.round(comp1.x + w.fromTerminalX), y: getTerminalAbsolutePos(w.fromComponent, w.fromTerminal).y }
-            : getTerminalAbsolutePos(w.fromComponent, w.fromTerminal)
-        );
+        list.push(getTerminalAbsolutePos(w.fromComponent, w.fromTerminal));
       }
       const comp2 = w.toComponent ? components.find((c) => c.id === w.toComponent) : null;
       if (comp2?.type === 'power_source') {
-        list.push(
-          w.toTerminalX != null
-            ? { x: Math.round(comp2.x + w.toTerminalX), y: getTerminalAbsolutePos(w.toComponent, w.toTerminal).y }
-            : getTerminalAbsolutePos(w.toComponent, w.toTerminal)
-        );
+        list.push(getTerminalAbsolutePos(w.toComponent, w.toTerminal));
       }
-    }
+    });
     return list;
-  }, [wires, components, getTerminalAbsolutePos]);
+  }, [wires, wiresPointLists, components, getTerminalAbsolutePos]);
 
   useEffect(() => {
     wiresPointListsRef.current = wiresPointLists;
@@ -794,15 +925,21 @@ export default function Canvas({
           if (
             draggedComp.type === 'contactor' ||
             draggedComp.type === 'circuit_breaker' ||
+            draggedComp.type === 'fuse_holder' ||
             draggedComp.type === 'timer_relay'
           ) {
             const compWidth =
               draggedComp.type === 'circuit_breaker'
                 ? (draggedComp.state?.poles || 3) * 52
+                : draggedComp.type === 'fuse_holder'
+                ? 52
                 : draggedComp.type === 'timer_relay'
                 ? 120
                 : 210;
-            const compHeight = draggedComp.type === 'circuit_breaker' ? 218 : 350;
+            const compHeight =
+              draggedComp.type === 'circuit_breaker' || draggedComp.type === 'fuse_holder'
+                ? 218
+                : 350;
 
             const dinRails = componentsRef.current.filter((c) => c.type === 'din_rail');
             let snappedToRail = false;
@@ -811,7 +948,7 @@ export default function Canvas({
               const railLength = Math.max(300, Number(rail.state?.length) || 800);
               const railCenterY = rail.y + 25;
               const targetY =
-                draggedComp.type === 'circuit_breaker'
+                draggedComp.type === 'circuit_breaker' || draggedComp.type === 'fuse_holder'
                   ? Math.round(railCenterY - 109)
                   : Math.round(railCenterY - 175);
 
@@ -832,9 +969,12 @@ export default function Canvas({
                       c.id !== draggedComp.id &&
                       (c.type === 'contactor' ||
                         c.type === 'circuit_breaker' ||
+                        c.type === 'fuse_holder' ||
                         c.type === 'timer_relay') &&
                       Math.abs(
-                        (c.type === 'circuit_breaker' ? c.y + 109 : c.y + 175) - railCenterY
+                        (c.type === 'circuit_breaker' || c.type === 'fuse_holder'
+                          ? c.y + 109
+                          : c.y + 175) - railCenterY
                       ) < 20
                   );
 
@@ -842,6 +982,8 @@ export default function Canvas({
                     const otherW =
                       other.type === 'circuit_breaker'
                         ? (other.state?.poles || 3) * 52
+                        : other.type === 'fuse_holder'
+                        ? 52
                         : other.type === 'timer_relay'
                         ? 120
                         : 210;
@@ -929,19 +1071,28 @@ export default function Canvas({
               const childIdx = wiresRef.current.findIndex((w) => w.id === wireId);
               const childPts = wiresPointListsRef.current[childIdx];
               const childWire = wiresRef.current[childIdx];
+              const segA = targetPts[closest.segIdx];
+              const segB = targetPts[closest.segIdx + 1];
+              const isTargetHorizontal = segA && segB ? Math.abs(segA.x - segB.x) >= Math.abs(segA.y - segB.y) : true;
 
               if (isFrom) {
                 // Moving p1 (fromPoint)
                 const otherEnd = childPts ? childPts[childPts.length - 1] : { x: 0, y: 0 };
+                const exit1 = isTargetHorizontal ? { dx: 0, dy: 1 } : { dx: 1, dy: 0 };
                 let newWaypoints;
                 if (childWire?.waypoints && childWire.waypoints.length > 0) {
-                  const updatedOrth = ensureOrthogonalPath([closest.point, ...childWire.waypoints, otherEnd]);
+                  const updatedOrth = ensureOrthogonalPath([closest.point, ...childWire.waypoints, otherEnd], exit1);
                   newWaypoints = updatedOrth.slice(1, -1);
                 } else {
-                  newWaypoints = [
-                    { x: closest.point.x, y: Math.round((closest.point.y + otherEnd.y) / 2) },
-                    { x: otherEnd.x, y: Math.round((closest.point.y + otherEnd.y) / 2) },
-                  ];
+                  newWaypoints = isTargetHorizontal
+                    ? [
+                        { x: closest.point.x, y: Math.round((closest.point.y + otherEnd.y) / 2) },
+                        { x: otherEnd.x, y: Math.round((closest.point.y + otherEnd.y) / 2) },
+                      ]
+                    : [
+                        { x: Math.round((closest.point.x + otherEnd.x) / 2), y: closest.point.y },
+                        { x: Math.round((closest.point.x + otherEnd.x) / 2), y: otherEnd.y },
+                      ];
                 }
                 onUpdateWireRef.current(wireId, {
                   fromPoint: closest.point,
@@ -951,15 +1102,21 @@ export default function Canvas({
               } else {
                 // Moving p2 (toPoint)
                 const otherEnd = childPts ? childPts[0] : { x: 0, y: 0 };
+                const exit2 = isTargetHorizontal ? { dx: 0, dy: 1 } : { dx: 1, dy: 0 };
                 let newWaypoints;
                 if (childWire?.waypoints && childWire.waypoints.length > 0) {
-                  const updatedOrth = ensureOrthogonalPath([otherEnd, ...childWire.waypoints, closest.point]);
+                  const updatedOrth = ensureOrthogonalPath([otherEnd, ...childWire.waypoints, closest.point], undefined, exit2);
                   newWaypoints = updatedOrth.slice(1, -1);
                 } else {
-                  newWaypoints = [
-                    { x: otherEnd.x, y: Math.round((otherEnd.y + closest.point.y) / 2) },
-                    { x: closest.point.x, y: Math.round((otherEnd.y + closest.point.y) / 2) },
-                  ];
+                  newWaypoints = isTargetHorizontal
+                    ? [
+                        { x: otherEnd.x, y: Math.round((otherEnd.y + closest.point.y) / 2) },
+                        { x: closest.point.x, y: Math.round((otherEnd.y + closest.point.y) / 2) },
+                      ]
+                    : [
+                        { x: Math.round((otherEnd.x + closest.point.x) / 2), y: otherEnd.y },
+                        { x: Math.round((otherEnd.x + closest.point.x) / 2), y: closest.point.y },
+                      ];
                 }
                 onUpdateWireRef.current(wireId, {
                   toPoint: closest.point,
@@ -999,16 +1156,44 @@ export default function Canvas({
           }
         }
 
-        // Commit fresh waypoints for any wires attached to the moved component ONLY if the component was ACTUALLY moved!
+        // Commit fresh waypoints and tap points for any wires attached to the moved component or attached to moved wires
         if (didMove && onUpdateWireRef.current && wiresPointListsRef.current) {
-          wiresRef.current.forEach((w, wIdx) => {
+          const movedWireIds = new Set();
+          wiresRef.current.forEach((w) => {
             if (w.fromComponent === movedCompId || w.toComponent === movedCompId) {
+              movedWireIds.add(w.id);
+            }
+          });
+
+          // Cascade to any wires connected to moved wires
+          let added = true;
+          while (added) {
+            added = false;
+            wiresRef.current.forEach((w) => {
+              if (!movedWireIds.has(w.id)) {
+                if ((w.fromWireId && movedWireIds.has(w.fromWireId)) || (w.toWireId && movedWireIds.has(w.toWireId))) {
+                  movedWireIds.add(w.id);
+                  added = true;
+                }
+              }
+            });
+          }
+
+          wiresRef.current.forEach((w, wIdx) => {
+            if (movedWireIds.has(w.id)) {
               const pts = wiresPointListsRef.current[wIdx];
               if (pts && pts.length >= 2) {
-                onUpdateWireRef.current(w.id, {
+                const updates = {
                   waypoints: pts.slice(1, -1),
                   isCustomRouted: Boolean(w.isCustomRouted),
-                });
+                };
+                if (w.fromWireId) {
+                  updates.fromPoint = pts[0];
+                }
+                if (w.toWireId) {
+                  updates.toPoint = pts[pts.length - 1];
+                }
+                onUpdateWireRef.current(w.id, updates);
               }
             }
           });
@@ -1145,6 +1330,7 @@ export default function Canvas({
       e.target.closest('.btn-busbar-gear') ||
       e.target.closest('.breaker-terminal-socket') ||
       e.target.closest('.breaker-interactive-handle') ||
+      e.target.closest('.fuse-drawer-handle-interactive') ||
       e.target.closest('.schematic-breaker-handle') ||
       e.target.closest('.schematic-breaker-toggle-btn') ||
       e.target.closest('.schematic-terminal-point') ||
@@ -1256,7 +1442,17 @@ export default function Canvas({
       let finalWaypoints = connectingWaypoints;
       if (!isCustom) {
         if (comp1 && comp2) {
-          finalWaypoints = computeAutoRoute(p1, p2, comp1, comp2, term1, term2, wires.length, components);
+          finalWaypoints = computeAutoRoute(
+            p1,
+            p2,
+            comp1,
+            comp2,
+            term1,
+            term2,
+            wires.length,
+            components,
+            wiresPointLists
+          );
         } else {
           finalWaypoints = [
             { x: p1.x, y: Math.round((p1.y + p2.y) / 2) },
@@ -1290,6 +1486,7 @@ export default function Canvas({
         waypoints: finalWaypoints,
       });
 
+      setSelectedWireId(null);
       setConnectingTerminal(null);
       setConnectingWaypoints([]);
     }
@@ -1332,6 +1529,15 @@ export default function Canvas({
     const closest = getClosestPointOnWire(pts, canvasPos.x, canvasPos.y);
 
     if (connectingTerminal) {
+      // PREVENT SELF-LOOP: Clicking the same wire that was selected to start a connection
+      if (connectingTerminal.wireId && connectingTerminal.wireId === wireId) {
+        sounds.playButtonClick();
+        setSelectedWireId(null);
+        setConnectingTerminal(null);
+        setConnectingWaypoints([]);
+        return;
+      }
+
       // Connect to this wire (creates an electrical T-junction / splice)!
       sounds.playButtonClick();
       const p1 = connectingTerminal.wireId
@@ -1339,12 +1545,27 @@ export default function Canvas({
         : getTerminalAbsolutePos(connectingTerminal.componentId, connectingTerminal.terminalId);
       const p2 = closest ? closest.point : canvasPos;
 
+      // Determine parent segment orientation at p2 to arrive perpendicularly
+      let isParentHorizontal = true;
+      if (closest && pts && pts.length >= 2 && closest.segIdx < pts.length - 1) {
+        const segA = pts[closest.segIdx];
+        const segB = pts[closest.segIdx + 1];
+        if (segA && segB) {
+          isParentHorizontal = Math.abs(segA.x - segB.x) >= Math.abs(segA.y - segB.y);
+        }
+      }
+
       const finalWaypoints =
         connectingWaypoints.length > 0
           ? connectingWaypoints
-          : [
+          : isParentHorizontal
+          ? [
               { x: p1.x, y: Math.round((p1.y + p2.y) / 2) },
               { x: p2.x, y: Math.round((p1.y + p2.y) / 2) },
+            ]
+          : [
+              { x: Math.round((p1.x + p2.x) / 2), y: p1.y },
+              { x: Math.round((p1.x + p2.x) / 2), y: p2.y },
             ];
 
       onAddWire({
@@ -1360,8 +1581,10 @@ export default function Canvas({
             ? '#16a34a'
             : activeWireColor,
         waypoints: finalWaypoints,
+        isCustomRouted: true,
       });
 
+      setSelectedWireId(null);
       setConnectingTerminal(null);
       setConnectingWaypoints([]);
       return;
@@ -1460,11 +1683,41 @@ export default function Canvas({
 
   // Zoom Toolbar Handlers
   const handleZoomIn = () => {
-    setZoom((z) => Math.min(2.5, Number((z * 1.2).toFixed(2))));
+    const curZoom = zoomRef.current || 1;
+    const curPan = panRef.current || { x: 0, y: 0 };
+    const newZoom = Math.min(5.0, Number((curZoom * 1.25).toFixed(2)));
+    if (newZoom === curZoom) return;
+
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const newPan = {
+        x: Math.round(centerX - (centerX - curPan.x) * (newZoom / curZoom)),
+        y: Math.round(centerY - (centerY - curPan.y) * (newZoom / curZoom)),
+      };
+      setPan(newPan);
+    }
+    setZoom(newZoom);
   };
 
   const handleZoomOut = () => {
-    setZoom((z) => Math.max(0.35, Number((z * 0.83).toFixed(2))));
+    const curZoom = zoomRef.current || 1;
+    const curPan = panRef.current || { x: 0, y: 0 };
+    const newZoom = Math.max(0.2, Number((curZoom * 0.8).toFixed(2)));
+    if (newZoom === curZoom) return;
+
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const newPan = {
+        x: Math.round(centerX - (centerX - curPan.x) * (newZoom / curZoom)),
+        y: Math.round(centerY - (centerY - curPan.y) * (newZoom / curZoom)),
+      };
+      setPan(newPan);
+    }
+    setZoom(newZoom);
   };
 
   const handleZoomReset = () => {
@@ -1485,7 +1738,7 @@ export default function Canvas({
 
     const scaleX = rect.width / boundW;
     const scaleY = rect.height / boundH;
-    const newZoom = Math.min(1.4, Math.max(0.4, Number(Math.min(scaleX, scaleY).toFixed(2))));
+    const newZoom = Math.min(2.5, Math.max(0.2, Number(Math.min(scaleX, scaleY).toFixed(2))));
 
     setZoom(newZoom);
     setPan({
@@ -1722,7 +1975,7 @@ export default function Canvas({
               {showLateralButtons && (
                 <div className="comp-card-actions-lateral">
                   {/* 1. Toggle Mode Button (Icon only) */}
-                  {comp.type !== 'din_rail' && (
+                  {comp.type !== 'din_rail' && comp.type !== 'terminal_block' && (
                     <button
                       type="button"
                       className="btn-action-lateral btn-lateral-mode"
@@ -1764,6 +2017,53 @@ export default function Canvas({
                     >
                       <Settings size={14} />
                     </button>
+                  )}
+
+                  {comp.type === 'terminal_block' && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn-action-lateral btn-lateral-size"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const currentPoles = Math.max(1, Math.min(24, Number(comp.state?.poles) || 4));
+                          const newPoles = Math.min(24, currentPoles + 1);
+                          onUpdateComponentState(comp.id, { poles: newPoles });
+                        }}
+                        title="Adicionar 1 borne (+)"
+                      >
+                        <Plus size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-action-lateral btn-lateral-size"
+                        disabled={(Number(comp.state?.poles) || 4) <= 1}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const currentPoles = Math.max(1, Math.min(24, Number(comp.state?.poles) || 4));
+                          const newPoles = Math.max(1, currentPoles - 1);
+                          onUpdateComponentState(comp.id, { poles: newPoles });
+                        }}
+                        title="Remover 1 borne (-)"
+                        style={{
+                          opacity: (Number(comp.state?.poles) || 4) <= 1 ? 0.45 : 1,
+                          cursor: (Number(comp.state?.poles) || 4) <= 1 ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-action-lateral btn-lateral-settings"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenTerminalBlockSettings?.(comp);
+                        }}
+                        title="Ajustes da Borneira (Configurações detalhadas)"
+                      >
+                        <Settings size={14} />
+                      </button>
+                    </>
                   )}
 
                   {/* DIN Rail Specific Actions: Align, + Length, - Length */}
@@ -1870,6 +2170,7 @@ export default function Canvas({
                   onTerminalClick={handleTerminalClick}
                   onUpdateComponentState={onUpdateComponentState}
                   onOpenSettings={onOpenPowerSettings}
+                  isSimulationMode={isSimulationMode}
                 />
               )}
 
@@ -1883,6 +2184,18 @@ export default function Canvas({
                   onUpdateComponentState={onUpdateComponentState}
                   onOpenSettings={!isSimulationMode ? () => onOpenBreakerSettings?.(comp) : undefined}
                   onRemoveComponent={onRemoveComponent}
+                  isSimulationMode={isSimulationMode}
+                />
+              )}
+
+              {comp.type === 'fuse_holder' && (
+                <FuseHolderElement
+                  component={comp}
+                  isSelected={isCompSelected}
+                  terminalVoltages={terminalVoltages}
+                  activeTerminal={connectingTerminal}
+                  onTerminalClick={handleTerminalClick}
+                  onUpdateComponentState={onUpdateComponentState}
                   isSimulationMode={isSimulationMode}
                 />
               )}
@@ -1972,6 +2285,19 @@ export default function Canvas({
                       activeTerminal={connectingTerminal}
                       onTerminalClick={handleTerminalClick}
                       onUpdateComponentState={onUpdateComponentState}
+                      isSimulationMode={isSimulationMode}
+                      isSelected={isCompSelected}
+                    />
+                  )}
+
+                  {comp.type === 'terminal_block' && (
+                    <TerminalBlockElement
+                      component={comp}
+                      terminalVoltages={terminalVoltages}
+                      activeTerminal={connectingTerminal}
+                      onTerminalClick={handleTerminalClick}
+                      onUpdateComponentState={onUpdateComponentState}
+                      onOpenSettings={onOpenTerminalBlockSettings}
                       isSimulationMode={isSimulationMode}
                       isSelected={isCompSelected}
                     />
@@ -2104,16 +2430,6 @@ export default function Canvas({
             );
             const isFromPowerSource = Boolean(compFrom?.type === 'power_source' && !isCompFromSchematic && viewMode === 'real');
             const isToPowerSource = Boolean(compTo?.type === 'power_source' && !isCompToSchematic && viewMode === 'real');
-            const getTransformerTermColor = (termId) => {
-              const t = String(termId || '').toUpperCase().trim();
-              if (t === 'L1') return '#a855f7';
-              if (t === 'L2') return '#ffffff';
-              if (t === 'L3') return '#ef4444';
-              if (t === 'PE') return '#16a34a';
-              return '#2563eb';
-            };
-            const p1TransformerColor = isFromPowerSource ? getTransformerTermColor(wire.fromTerminal) : null;
-            const p2TransformerColor = isToPowerSource ? getTransformerTermColor(wire.toTerminal) : null;
             const isFromCageTerminal = Boolean(
               compFrom &&
               (compFrom.type === 'circuit_breaker' || compFrom.type === 'contactor' || compFrom.type === 'thermal_relay') &&
@@ -2253,10 +2569,10 @@ export default function Canvas({
                 if (!comp || !term) return null;
                 const t = String(term).toUpperCase().trim();
                 if (comp.type === 'power_source') {
-                  if (t.startsWith('L1')) return 'phase-l1';
-                  if (t.startsWith('L2')) return 'phase-l2';
-                  if (t.startsWith('L3')) return 'phase-l3';
-                  if (t.startsWith('N')) return 'phase-n';
+                  if (t.startsWith('L1') || t === '1' || t === '6') return 'phase-l1';
+                  if (t.startsWith('L2') || t === '2' || t === '7') return 'phase-l2';
+                  if (t.startsWith('L3') || t === '3' || t === '8') return 'phase-l3';
+                  if (t.startsWith('N') || t === '4' || t === '5') return 'phase-n';
                   if (t.startsWith('PE')) return 'phase-pe';
                 }
                 // Common industrial power terminals (disjuntor, contator, relé térmico, motor)
@@ -2436,14 +2752,15 @@ export default function Canvas({
                     title="Ponto de conexão (Emenda): Clique e arraste para mover ao longo do condutor"
                   >
                     <circle cx="0" cy="0" r="14" fill="transparent" />
-                    {viewMode === 'schematic' ? (
-                      <circle cx="0" cy="0" r="5.5" fill={p1Color} stroke={p1Color} strokeWidth="1" />
-                    ) : (
-                      <>
-                        <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-                        <circle cx="0" cy="0" r="2.5" fill={p1Color} />
-                      </>
-                    )}
+                    <circle
+                      className="splice-dot"
+                      cx="0"
+                      cy="0"
+                      r="5.5"
+                      fill={p1Color}
+                      stroke={getSpliceStroke(p1Color)}
+                      strokeWidth={p1Color === '#ffffff' || p1Color === '#18181b' ? '1.4' : '1.2'}
+                    />
                   </g>
                 ) : isCompFromSchematic || viewMode === 'schematic' ? (
                   <g className="schematic-wire-terminal-dot" pointerEvents="none">
@@ -2456,43 +2773,7 @@ export default function Canvas({
                       strokeWidth="1"
                     />
                   </g>
-                ) : isFromPowerSource ? (
-                  <g className="wire-transformer-bolt-cap" transform={`translate(${p1.x}, ${p1.y})`} pointerEvents="none">
-                    {/* Arruela de encosto lisa em aço zincado prensando o cabo contra o transformador */}
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r="14.5"
-                      fill="#0f172a"
-                      stroke={p1TransformerColor}
-                      strokeWidth="2.8"
-                      style={{
-                        filter: isShorted
-                          ? 'drop-shadow(0 0 8px #ef4444)'
-                          : isEnergized
-                          ? `drop-shadow(0 0 6px ${p1TransformerColor})`
-                          : 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))',
-                      }}
-                    />
-                    <circle cx="0" cy="0" r="12.5" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" />
-                    {/* Cabeça do Parafuso Sextavado sobre o cabo (o cabo fica visivelmente ABAIXO do parafuso) */}
-                    <polygon
-                      points="0,-9.5 8.2,-4.8 8.2,4.8 0,9.5 -8.2,4.8 -8.2,-4.8"
-                      fill="url(#hexGrad-cap)"
-                      stroke="#1e293b"
-                      strokeWidth="1.2"
-                    />
-                    {/* Rebaixo central usinado */}
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r="3.2"
-                      fill={isEnergized ? p1TransformerColor : '#1e293b'}
-                      stroke="#334155"
-                      strokeWidth="0.8"
-                    />
-                  </g>
-                ) : isFromMotor ? (
+                ) : isFromPowerSource ? null : isFromMotor ? (
                   <WireMotorRingLug pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
                 ) : isFromCageTerminal ? (
                   <WireTerminalCageEntry pt={p1} nextPt={points[1]} wireColor={activeWireColor} />
@@ -2509,14 +2790,15 @@ export default function Canvas({
                     title="Ponto de conexão (Emenda): Clique e arraste para mover ao longo do condutor"
                   >
                     <circle cx="0" cy="0" r="14" fill="transparent" />
-                    {viewMode === 'schematic' ? (
-                      <circle cx="0" cy="0" r="5.5" fill={p2Color} stroke={p2Color} strokeWidth="1" />
-                    ) : (
-                      <>
-                        <circle cx="0" cy="0" r="6" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-                        <circle cx="0" cy="0" r="2.5" fill={p2Color} />
-                      </>
-                    )}
+                    <circle
+                      className="splice-dot"
+                      cx="0"
+                      cy="0"
+                      r="5.5"
+                      fill={p2Color}
+                      stroke={getSpliceStroke(p2Color)}
+                      strokeWidth={p2Color === '#ffffff' || p2Color === '#18181b' ? '1.4' : '1.2'}
+                    />
                   </g>
                 ) : isCompToSchematic || viewMode === 'schematic' ? (
                   <g className="schematic-wire-terminal-dot" pointerEvents="none">
@@ -2529,43 +2811,7 @@ export default function Canvas({
                       strokeWidth="1"
                     />
                   </g>
-                ) : isToPowerSource ? (
-                  <g className="wire-transformer-bolt-cap" transform={`translate(${p2.x}, ${p2.y})`} pointerEvents="none">
-                    {/* Arruela de encosto lisa em aço zincado prensando o cabo contra o transformador */}
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r="14.5"
-                      fill="#0f172a"
-                      stroke={p2TransformerColor}
-                      strokeWidth="2.8"
-                      style={{
-                        filter: isShorted
-                          ? 'drop-shadow(0 0 8px #ef4444)'
-                          : isEnergized
-                          ? `drop-shadow(0 0 6px ${p2TransformerColor})`
-                          : 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))',
-                      }}
-                    />
-                    <circle cx="0" cy="0" r="12.5" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" />
-                    {/* Cabeça do Parafuso Sextavado sobre o cabo (o cabo fica visivelmente ABAIXO do parafuso) */}
-                    <polygon
-                      points="0,-9.5 8.2,-4.8 8.2,4.8 0,9.5 -8.2,4.8 -8.2,-4.8"
-                      fill="url(#hexGrad-cap)"
-                      stroke="#1e293b"
-                      strokeWidth="1.2"
-                    />
-                    {/* Rebaixo central usinado */}
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r="3.2"
-                      fill={isEnergized ? p2TransformerColor : '#1e293b'}
-                      stroke="#334155"
-                      strokeWidth="0.8"
-                    />
-                  </g>
-                ) : isToMotor ? (
+                ) : isToPowerSource ? null : isToMotor ? (
                   <WireMotorRingLug pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
                 ) : isToCageTerminal ? (
                   <WireTerminalCageEntry pt={p2} nextPt={points[points.length - 2]} wireColor={activeWireColor} />
@@ -2587,27 +2833,29 @@ export default function Canvas({
                       <g
                         key={`seg-handle-${sIdx}`}
                         className="wire-segment-handle-group"
+                        transform={`translate(${midX}, ${midY})`}
                         onPointerDown={(e) => handleSegmentPointerDown(e, wire.id, sIdx)}
                         style={{ cursor: isHoriz ? 'ns-resize' : 'ew-resize' }}
                         title="Arraste este trecho do fio para reposicionar livremente"
                       >
                         {/* Invisible wide hit area for effortless grabbing */}
                         <rect
-                          x={isHoriz ? Math.min(pStart.x, pEnd.x) + 4 : midX - 12}
-                          y={isHoriz ? midY - 12 : Math.min(pStart.y, pEnd.y) + 4}
-                          width={isHoriz ? Math.max(segLen - 8, 20) : 24}
-                          height={isHoriz ? 24 : Math.max(segLen - 8, 20)}
+                          x={isHoriz ? -Math.min(segLen / 2 - 4, 40) : -12}
+                          y={isHoriz ? -12 : -Math.min(segLen / 2 - 4, 40)}
+                          width={isHoriz ? Math.max(segLen - 8, 24) : 24}
+                          height={isHoriz ? 24 : Math.max(segLen - 8, 24)}
                           fill="transparent"
                         />
-                        {/* Visual indicator handle (green dot) */}
+                        {/* Visual indicator handle (matches wire color) */}
                         <circle
-                          cx={midX}
-                          cy={midY}
-                          r="5"
-                          fill="#10b981"
-                          stroke="#064e3b"
+                          className="seg-handle-dot"
+                          cx="0"
+                          cy="0"
+                          r="4.5"
+                          fill={activeWireColor}
+                          stroke={getSpliceStroke(activeWireColor)}
                           strokeWidth="1.5"
-                          filter="drop-shadow(0 0 3px rgba(16,185,129,0.7))"
+                          filter="drop-shadow(0 0 3px rgba(0,0,0,0.5))"
                         />
                       </g>
                     );
@@ -2722,39 +2970,8 @@ export default function Canvas({
         </svg>
       </div>
 
-      {/* Short Circuit Alert Banner - Always Fixed at Top Center of Screen Viewport */}
-      {shortCircuit && (
-        <div className="short-circuit-alert-overlay" role="alert">
-          <div className="alert-content">
-            <span className="alert-icon">⚡</span>
-            <div className="alert-text">
-              <h3>CURTO-CIRCUITO DETECTADO!</h3>
-              <p>
-                {shortCircuitDetails?.description ||
-                  'Houve uma ligação direta entre Fase e Neutro (ou entre Fases) sem carga intermediária. Verifique a fiação.'}
-              </p>
-            </div>
-            {onClearShortWires && (
-              <button
-                type="button"
-                className="btn-clear-short"
-                onClick={onClearShortWires}
-                title="Desconectar imediatamente o fio em curto"
-              >
-                Desfazer Curto
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Floating Simulation Running Indicator */}
-      {isSimulationMode && (
-        <div className="simulation-running-pill">
-          <span className="sim-pulse-dot"></span>
-          <span>MODO SIMULAÇÃO ATIVO • Alterações Bloqueadas</span>
-        </div>
-      )}
+
     </div>
   );
 }

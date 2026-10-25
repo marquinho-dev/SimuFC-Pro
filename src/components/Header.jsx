@@ -8,19 +8,16 @@ import {
   BookOpen,
   FileText,
   Gauge,
-  Sparkles,
   Trash2,
   Play,
   Pause,
   Layers,
-  ChevronDown,
-  RotateCw,
-  ArrowRight,
+  Bell,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import { WIRE_COLORS } from '../types/components';
 import { COMPONENT_THUMBNAILS, SCHEMATIC_THUMBNAILS } from './ComponentThumbnails';
-import { sounds } from '../services/soundEffects';
-import { PRESETS } from '../presets/circuits';
 
 export default function Header({
   activeWireColor,
@@ -40,10 +37,13 @@ export default function Header({
   onOpenTheory,
   onOpenMultimeter,
   onAddComponent,
+  shortCircuit = false,
+  shortCircuitDetails = null,
+  onClearShortWires = null,
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState('real'); // 'real' | 'schematic'
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const displayWireColor =
     selectedWireId && selectedWireColor ? selectedWireColor : activeWireColor;
@@ -51,12 +51,11 @@ export default function Header({
   // Close menus when simulation starts
   useEffect(() => {
     if (isSimulationMode) {
-      setIsPresetsOpen(false);
       setIsMenuOpen(false);
     }
   }, [isSimulationMode]);
 
-  // Real industrial hardware components catalog
+  // Real industrial hardware components catalog (Nomes limpos e diretos)
   const COMPONENT_CATEGORIES_REAL = [
     {
       id: 'power_protection',
@@ -65,21 +64,23 @@ export default function Header({
       items: [
         {
           type: 'power_source',
-          name: 'Transformador Trifásico',
+          name: 'Rede',
           tag: 'REDE',
-          subtitle: '3Ø + N + Terra (PE)',
         },
         {
           type: 'circuit_breaker',
-          name: 'Disjuntor Termomagnético',
+          name: 'Disjuntor',
           tag: 'Q1',
-          subtitle: 'Padrão DIN (Curva C)',
+        },
+        {
+          type: 'fuse_holder',
+          name: 'Porta-Fusível',
+          tag: 'F1',
         },
         {
           type: 'thermal_relay',
-          name: 'Relé Térmico Sobrecarga',
+          name: 'Relé Térmico',
           tag: 'RT1',
-          subtitle: 'Proteção Bimetálica',
         },
       ],
     },
@@ -90,33 +91,28 @@ export default function Header({
       items: [
         {
           type: 'contactor',
-          name: 'Contator de Potência',
+          name: 'Contator',
           tag: 'K1',
-          subtitle: 'Bobina 220V + Auxiliares',
         },
         {
           type: 'button_start',
           name: 'Botoeira Liga (NA)',
           tag: 'S1',
-          subtitle: 'Retorno por Mola (Verde)',
         },
         {
           type: 'button_stop',
           name: 'Botoeira Desliga (NF)',
           tag: 'S0',
-          subtitle: 'Retorno por Mola (Vermelho)',
         },
         {
           type: 'timer_relay',
           name: 'Relé Temporizador',
           tag: 'KT1',
-          subtitle: 'Retardo RE / RD (0.5 a 60s)',
         },
         {
           type: 'button_emergency',
-          name: 'Botoeira de Emergência',
+          name: 'Botoeira Emergência',
           tag: 'S00',
-          subtitle: 'Cogumelo Trava Giratória',
         },
       ],
     },
@@ -127,15 +123,13 @@ export default function Header({
       items: [
         {
           type: 'pilot_light',
-          name: 'Lâmpada LED Bulbo E27 (220V)',
+          name: 'Sinaleira LED',
           tag: 'H1',
-          subtitle: 'Lâmpada LED 220V • Rosca E27 e Pé Central (X1-X2)',
         },
         {
           type: 'motor_6p',
-          name: 'Motor de Indução Trifásico',
+          name: 'Motor Trifásico',
           tag: 'M1',
-          subtitle: '6 Pontas (Partida Direta)',
         },
       ],
     },
@@ -146,15 +140,19 @@ export default function Header({
       items: [
         {
           type: 'din_rail',
-          name: 'Trilho DIN TS-35',
+          name: 'Trilho DIN',
           tag: 'TRILHO',
-          subtitle: 'Fixação e alinhamento de componentes (35mm)',
+        },
+        {
+          type: 'terminal_block',
+          name: 'Borneira',
+          tag: 'XT1',
         },
       ],
     },
   ];
 
-  // Technical IEC 60617 schematic symbols catalog
+  // Technical IEC 60617 schematic symbols catalog (Nomes simplificados)
   const COMPONENT_CATEGORIES_SCHEMATIC = [
     {
       id: 'sources_schematic',
@@ -163,9 +161,8 @@ export default function Header({
       items: [
         {
           type: 'power_source',
-          name: 'Barramento Esquemático',
+          name: 'Rede',
           tag: '-X1',
-          subtitle: 'Rede L1, L2, L3, N, PE',
         },
       ],
     },
@@ -176,15 +173,18 @@ export default function Header({
       items: [
         {
           type: 'circuit_breaker',
-          name: 'Símbolo Disjuntor Tripolar Q1',
+          name: 'Disjuntor Q1',
           tag: '-Q1',
-          subtitle: 'Força • Contatos 1-2, 3-4, 5-6 com Disparo',
+        },
+        {
+          type: 'fuse_holder',
+          name: 'Porta-Fusível F1',
+          tag: '-F1',
         },
         {
           type: 'thermal_relay',
-          name: 'Símbolo Relé Térmico',
+          name: 'Relé Térmico RT1',
           tag: '-RT1',
-          subtitle: 'Bimetálicos + Contatos 95-96/97-98',
         },
       ],
     },
@@ -195,21 +195,18 @@ export default function Header({
       items: [
         {
           type: 'contactor',
-          name: 'Contator KM1 (Contatos de Força)',
+          name: 'Contator KM1',
           tag: '-KM1',
-          subtitle: 'Circuito de Força • Polos 1-2, 3-4, 5-6',
         },
         {
           type: 'contactor_coil',
-          name: 'Bobina de Contator KM1 (A1-A2)',
+          name: 'Bobina KM1',
           tag: '-KM1',
-          subtitle: 'Circuito de Comando • Terminais A1 e A2',
         },
         {
           type: 'timer_relay',
-          name: 'Símbolo Relé Temporizador',
+          name: 'Temporizador KT1',
           tag: '-KT1',
-          subtitle: 'Bobina Temporizada RE/RD e Contatos',
         },
       ],
     },
@@ -220,21 +217,18 @@ export default function Header({
       items: [
         {
           type: 'button_start',
-          name: 'Símbolo Botoeira Liga (NA)',
+          name: 'Botoeira Liga (NA)',
           tag: '-S1',
-          subtitle: 'Contato 13-14 Normalmente Aberto',
         },
         {
           type: 'button_stop',
-          name: 'Símbolo Botoeira Desliga (NF)',
+          name: 'Botoeira Desliga (NF)',
           tag: '-S0',
-          subtitle: 'Contato 11-12 Normalmente Fechado',
         },
         {
           type: 'button_emergency',
-          name: 'Símbolo Emergência (NF)',
+          name: 'Botoeira Emergência',
           tag: '-S00',
-          subtitle: 'Cogumelo com retenção mecânica',
         },
       ],
     },
@@ -245,9 +239,8 @@ export default function Header({
       items: [
         {
           type: 'motor_6p',
-          name: 'Símbolo Motor Trifásico',
+          name: 'Motor Trifásico',
           tag: '-M1',
-          subtitle: 'Símbolo IEC M 3~ (6 Pontas + PE)',
         },
       ],
     },
@@ -274,11 +267,6 @@ export default function Header({
   const handleSelectAdd = (type) => {
     if (onAddComponent) {
       onAddComponent(type, undefined, undefined, drawerTab);
-      try {
-        sounds.playSwitch();
-      } catch {
-        // Ignore sound error
-      }
     }
     // Note: Do NOT close menu here. The user requested:
     // "o menu de componentes não pode fechar quando eu clicar em uma peça ele so deve fechar se eu clicar em uma área fora dele"
@@ -306,7 +294,11 @@ export default function Header({
 
           <div className="app-branding">
             <div className="logo-badge">
-              <Zap className="logo-zap" />
+              <img
+                src="/assets/logo.png"
+                alt="Simulador de Comandos Elétricos"
+                className="app-logo-img"
+              />
             </div>
             <div className="branding-text">
               <h1 className="app-title">SimuFC Pro</h1>
@@ -374,91 +366,6 @@ export default function Header({
         </div>
 
         <div className="header-right">
-          {/* Quick Presets Dropdown */}
-          <div className="presets-dropdown-wrapper">
-            <button
-              type="button"
-              disabled={isSimulationMode}
-              className={`btn-toolbar btn-presets-toggle ${isPresetsOpen ? 'active' : ''} ${
-                isSimulationMode ? 'btn-disabled' : ''
-              }`}
-              onClick={() => !isSimulationMode && setIsPresetsOpen(!isPresetsOpen)}
-              title={
-                isSimulationMode
-                  ? 'Pause a simulação para carregar exemplos'
-                  : 'Ver lista de comandos de exemplo prontos para simular'
-              }
-            >
-              <Sparkles size={16} className="text-amber" />
-              <span>Exemplos de Comandos</span>
-              <ChevronDown size={14} className={`dropdown-chevron ${isPresetsOpen ? 'rotated' : ''}`} />
-            </button>
-
-            {isPresetsOpen && !isSimulationMode && (
-              <>
-                <div
-                  className="presets-dropdown-backdrop"
-                  onClick={() => setIsPresetsOpen(false)}
-                  aria-hidden="true"
-                />
-                <div className="presets-dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                  <div className="presets-menu-header">
-                    <div className="presets-header-title">
-                      <Sparkles size={16} className="text-amber" />
-                      <span>Circuitos Industriais Prontos</span>
-                    </div>
-                    <span className="presets-header-subtitle">
-                      Selecione um comando pronto com todos os componentes e fios conectados:
-                    </span>
-                  </div>
-
-                  <div className="presets-list">
-                    {PRESETS.map((preset) => {
-                      const isStarDelta = preset.id === 'star_delta';
-                      return (
-                        <div
-                          key={preset.id}
-                          className={`preset-card ${isStarDelta ? 'preset-featured' : ''}`}
-                          onClick={() => {
-                            onLoadPreset(preset.id);
-                            setIsPresetsOpen(false);
-                          }}
-                        >
-                          <div className="preset-card-top">
-                            <span className="preset-badge">{preset.badge}</span>
-                            {preset.isFeatured && (
-                              <span className="preset-star-badge">★ Recomendado</span>
-                            )}
-                          </div>
-
-                          <div className="preset-card-body">
-                            <div className="preset-title-row">
-                              <span className="preset-icon-wrapper">
-                                {preset.id === 'star_delta' && <Zap size={18} className="text-amber" />}
-                                {preset.id === 'direct_starter_motor' && <Play size={18} className="text-success" />}
-                                {preset.id === 'reversing_starter' && <RotateCw size={18} className="text-primary" />}
-                                {preset.id === 'empty_circuit' && <Trash2 size={18} className="text-danger" />}
-                              </span>
-                              <h4 className="preset-title">{preset.title}</h4>
-                            </div>
-                            <p className="preset-desc">{preset.description}</p>
-                          </div>
-
-                          <div className="preset-card-footer">
-                            <span className="btn-load-preset">
-                              <span>Carregar Comando</span>
-                              <ArrowRight size={14} />
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
           <button
             type="button"
             disabled={isSimulationMode}
@@ -522,6 +429,92 @@ export default function Header({
           >
             {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
           </button>
+
+          {/* Sininho de Notificações / Avisos Discretos */}
+          <div className="notification-bell-container">
+            <button
+              type="button"
+              className={`btn-toolbar btn-icon-only btn-bell ${shortCircuit ? 'has-alert' : ''}`}
+              onClick={() => setIsNotifOpen((prev) => !prev)}
+              title={
+                shortCircuit
+                  ? 'Aviso crítico: Curto-circuito detectado! Clique para detalhes'
+                  : 'Avisos e Notificações do Sistema'
+              }
+            >
+              <Bell size={18} />
+              {shortCircuit && <span className="bell-badge-pulse" />}
+            </button>
+
+            {/* Popover Discreto com os Avisos do Sistema */}
+            {isNotifOpen && (
+              <>
+                <div
+                  className="notif-popover-backdrop"
+                  onClick={() => setIsNotifOpen(false)}
+                />
+                <div
+                  className="notification-popover"
+                  role="dialog"
+                  aria-label="Avisos do Sistema"
+                >
+                  <div className="notif-header">
+                    <div className="notif-header-title">
+                      <Bell size={15} />
+                      <span>Avisos do Sistema</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-notif-close"
+                      onClick={() => setIsNotifOpen(false)}
+                      title="Fechar"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="notif-body">
+                    {shortCircuit ? (
+                      <div className="notif-card notif-card-danger">
+                        <div className="notif-card-header">
+                          <span className="notif-alert-badge">⚡ ALERTA</span>
+                          <span className="notif-time">Agora</span>
+                        </div>
+                        <h4 className="notif-card-title">Curto-Circuito Detectado!</h4>
+                        <p className="notif-card-text">
+                          {shortCircuitDetails?.description ||
+                            'Houve uma ligação direta entre Fase e Neutro (ou entre Fases) sem carga intermediária. Verifique a fiação.'}
+                        </p>
+                        {onClearShortWires && (
+                          <div className="notif-card-actions">
+                            <button
+                              type="button"
+                              className="btn-notif-clear-short"
+                              onClick={() => {
+                                onClearShortWires();
+                                setIsNotifOpen(false);
+                              }}
+                              title="Desconectar imediatamente o fio em curto"
+                            >
+                              Desfazer Curto
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="notif-card notif-card-empty">
+                        <CheckCircle2 size={22} className="notif-empty-icon" />
+                        <div>
+                          <div className="notif-empty-title">Nenhum aviso pendente</div>
+                          <div className="notif-empty-text">A bancada está operando normalmente sem erros.</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -647,9 +640,6 @@ export default function Header({
                             <span className="thumb-name">{item.name}</span>
                             <div className="thumb-badge-row">
                               <span className="thumb-tag-badge">{item.tag}</span>
-                              {item.subtitle && (
-                                <span className="thumb-subtitle">{item.subtitle}</span>
-                              )}
                             </div>
                           </div>
                         </button>

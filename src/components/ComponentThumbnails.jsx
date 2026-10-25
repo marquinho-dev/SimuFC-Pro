@@ -15,12 +15,44 @@ import React from 'react';
    ========================================================== */
 export function PowerSourceThumbnail() {
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px' }}>
-      <img
-        src="/assets/transformer.png"
-        alt="Transformador de Tensão"
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-      />
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px', background: 'transparent' }}>
+      <svg viewBox="0 0 800 980" style={{ width: '92%', height: '92%', display: 'block' }}>
+        {/* Corpo principal */}
+        <rect x="40" y="30" width="720" height="440" rx="30" fill="#f3f5f8" stroke="#94a3b8" strokeWidth="12" />
+        <rect x="60" y="440" width="680" height="250" rx="22" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="12" />
+        <rect x="70" y="70" width="660" height="330" rx="18" fill="#ffffff" stroke="#cbd5e1" strokeWidth="6" />
+        {/* Display LCD */}
+        <rect x="245" y="135" width="310" height="100" rx="12" fill="#1e293b" />
+        <rect x="255" y="145" width="290" height="80" rx="6" fill="#a9bf79" />
+        <text x="520" y="198" fontFamily="monospace" fontSize="42" fontWeight="800" fill="#1d2a14" textAnchor="end">004827</text>
+        {/* Marca */}
+        <text x="400" y="112" fontSize="36" fontWeight="900" letterSpacing="4" fill="#0b4f8a" textAnchor="middle">VOLTEX</text>
+        {/* LED Ligado */}
+        <circle cx="120" cy="190" r="16" fill="#22c55e" />
+        {/* Botão DISPLAY */}
+        <circle cx="188" cy="185" r="16" fill="#334155" stroke="#94a3b8" strokeWidth="3" />
+        <text x="188" y="218" fontSize="16" fontWeight="bold" fill="#334155" textAnchor="middle">DISP</text>
+        {/* 8 Bornes com parafuso */}
+        {[131, 208, 285, 362, 439, 516, 593, 670].map((x, i) => (
+          <circle key={i} cx={x} cy="535" r="22" fill="#d97706" stroke="#451a03" strokeWidth="6" />
+        ))}
+        {/* Arruela de conduíte inferior central */}
+        <circle cx="400" cy="838" r="80" fill="#94a3b8" stroke="#475569" strokeWidth="6" />
+        <circle cx="400" cy="838" r="50" fill="#0f172a" />
+
+        {/* Cabos de entrada vindo do fundo do conduíte inferior até os bornes 1..4 */}
+        <g strokeLinecap="butt" fill="none">
+          <path d="M368 876 C358 790 131 690 131 608" stroke="#0b0c0e" strokeWidth="20" />
+          <path d="M382 885 C376 790 208 690 208 608" stroke="#0b0c0e" strokeWidth="20" />
+          <path d="M396 888 C394 790 285 690 285 608" stroke="#0b0c0e" strokeWidth="20" />
+          <path d="M410 888 C410 790 362 690 362 608" stroke="#0b0c0e" strokeWidth="20" />
+
+          <path d="M368 876 C358 790 131 690 131 608" stroke="#7a4a24" strokeWidth="15" />
+          <path d="M382 885 C376 790 208 690 208 608" stroke="#26282c" strokeWidth="15" />
+          <path d="M396 888 C394 790 285 690 285 608" stroke="#9aa0a8" strokeWidth="15" />
+          <path d="M410 888 C410 790 362 690 362 608" stroke="#3fa5e3" strokeWidth="15" />
+        </g>
+      </svg>
       <span style={{
         position: 'absolute',
         bottom: '2px',
@@ -33,7 +65,7 @@ export function PowerSourceThumbnail() {
         padding: '0 4px',
         borderRadius: '3px',
       }}>
-        +PE
+        3Ø+N
       </span>
     </div>
   );
@@ -166,14 +198,14 @@ export function ContactorThumbnail() {
       <rect x="6" y="4" width="72" height="88" rx="4" fill="url(#contPlateGrad)" stroke="#85929e" strokeWidth="1.2" />
 
       {/* Top terminal block notches */}
-      <rect x="15" y="4" width="11" height="3" rx="0 0 1.5 1.5" fill="#1e293b" />
-      <rect x="36.5" y="4" width="11" height="3" rx="0 0 1.5 1.5" fill="#1e293b" />
-      <rect x="58" y="4" width="11" height="3" rx="0 0 1.5 1.5" fill="#1e293b" />
+      <rect x="15" y="4" width="11" height="3" rx="1.5" fill="#1e293b" />
+      <rect x="36.5" y="4" width="11" height="3" rx="1.5" fill="#1e293b" />
+      <rect x="58" y="4" width="11" height="3" rx="1.5" fill="#1e293b" />
 
       {/* Bottom terminal block notches */}
-      <rect x="15" y="89" width="11" height="3" rx="1.5 1.5 0 0" fill="#1e293b" />
-      <rect x="36.5" y="89" width="11" height="3" rx="1.5 1.5 0 0" fill="#1e293b" />
-      <rect x="58" y="89" width="11" height="3" rx="1.5 1.5 0 0" fill="#1e293b" />
+      <rect x="15" y="89" width="11" height="3" rx="1.5" fill="#1e293b" />
+      <rect x="36.5" y="89" width="11" height="3" rx="1.5" fill="#1e293b" />
+      <rect x="58" y="89" width="11" height="3" rx="1.5" fill="#1e293b" />
 
       {/* Top & Bottom Horizontal Divider Ribs */}
       <rect x="7" y="22" width="70" height="2" fill="#b5c2cf" stroke="#9aa8b7" strokeWidth="0.4" />
@@ -439,7 +471,7 @@ export function TimerRelayThumbnail() {
       <text x="37" y="73" fill="#94a3b8" fontSize="2.2" textAnchor="middle" fontFamily="sans-serif">16</text>
 
       {/* Bottom Tier Lower: Screws 28, 26, A2 */}
-      <rect x="9" y="80" width="56" height="10" rx="0 0 2 2" fill="#0f172a" />
+      <rect x="9" y="80" width="56" height="10" rx="2" fill="#0f172a" />
       <circle cx="19" cy="85" r="2.2" fill="#cbd5e1" stroke="#475569" strokeWidth="0.4" />
       <text x="19" y="83.5" fill="#94a3b8" fontSize="2.2" textAnchor="middle" fontFamily="sans-serif">28</text>
 
@@ -461,166 +493,225 @@ export function TimerRelayThumbnail() {
    ========================================================== */
 export function ButtonStartThumbnail() {
   return (
-    <svg viewBox="0 0 88 96" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 640 700" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <radialGradient id="btnStartGreenGrad" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#4ade80" />
-          <stop offset="45%" stopColor="#22c55e" />
-          <stop offset="85%" stopColor="#16a34a" />
-          <stop offset="100%" stopColor="#14532d" />
-        </radialGradient>
-        <radialGradient id="btnBezelGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="68%" stopColor="#f3f4f6" />
-          <stop offset="88%" stopColor="#9ca3af" />
-          <stop offset="100%" stopColor="#4b5563" />
-        </radialGradient>
-        <linearGradient id="btnTermGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#6b7280" />
-          <stop offset="50%" stopColor="#9ca3af" />
-          <stop offset="100%" stopColor="#4b5563" />
+        <linearGradient id="thumbBaseGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#414653" />
+          <stop offset="0.5" stopColor="#171a22" />
+          <stop offset="1" stopColor="#303541" />
         </linearGradient>
+        <linearGradient id="thumbGreenGrad" x1="0" y1="0" x2="0.85" y2="1">
+          <stop offset="0" stopColor="#19c7a2" />
+          <stop offset="0.55" stopColor="#00a985" />
+          <stop offset="1" stopColor="#00866d" />
+        </linearGradient>
+        <linearGradient id="thumbMetalGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f5f7fa" />
+          <stop offset="1" stopColor="#a2a8b3" />
+        </linearGradient>
+        <filter id="thumbShadow" x="-25%" y="-25%" width="150%" height="160%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
       </defs>
 
-      {/* Screw Terminals (Top Left 13, Top Right 14) */}
-      <rect x="20" y="5" width="12" height="14" rx="1.5" fill="url(#btnTermGrad)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="26" cy="12" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="24.2" y1="10.2" x2="27.8" y2="13.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="24.2" y1="13.8" x2="27.8" y2="10.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="26" y="4" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">13</text>
+      <ellipse cx="320" cy="640" rx="195" ry="16" fill="#000" opacity="0.2" filter="url(#thumbShadow)" />
 
-      <rect x="56" y="5" width="12" height="14" rx="1.5" fill="url(#btnTermGrad)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="62" cy="12" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="60.2" y1="10.2" x2="63.8" y2="13.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="60.2" y1="13.8" x2="63.8" y2="10.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="62" y="4" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">14</text>
+      {/* Four integrated terminal blocks */}
+      {/* Molded base chambers */}
+      <g fill="url(#thumbBaseGrad)" stroke="#10131a" strokeWidth="6">
+        <rect x="142" y="80" width="118" height="96" rx="14" />
+        <rect x="380" y="80" width="118" height="96" rx="14" />
+        <rect x="142" y="524" width="118" height="96" rx="14" />
+        <rect x="380" y="524" width="118" height="96" rx="14" />
+      </g>
+      {/* Metallic conductor plates */}
+      <g fill="url(#thumbMetalGrad)" stroke="#20242d" strokeWidth="3.5">
+        <rect x="148" y="86" width="106" height="72" rx="8" />
+        <rect x="386" y="86" width="106" height="72" rx="8" />
+        <rect x="148" y="542" width="106" height="72" rx="8" />
+        <rect x="386" y="542" width="106" height="72" rx="8" />
+      </g>
+      <g fill="#242936">
+        <circle cx="201" cy="122" r="18" />
+        <circle cx="439" cy="122" r="18" />
+        <circle cx="201" cy="578" r="18" />
+        <circle cx="439" cy="578" r="18" />
+      </g>
 
-      {/* Screw Terminals (Bottom Left 13, Bottom Right 14) */}
-      <rect x="20" y="77" width="12" height="14" rx="1.5" fill="url(#btnTermGrad)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="26" cy="84" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="24.2" y1="82.2" x2="27.8" y2="85.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="24.2" y1="85.8" x2="27.8" y2="82.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="26" y="95" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">13</text>
+      {/* Square housing */}
+      <rect x="108" y="138" width="424" height="424" rx="34" fill="url(#thumbBaseGrad)" stroke="#10131a" strokeWidth="7" />
+      <rect x="128" y="158" width="384" height="384" rx="24" fill="none" stroke="#555b68" strokeWidth="4" opacity="0.8" />
 
-      <rect x="56" y="77" width="12" height="14" rx="1.5" fill="url(#btnTermGrad)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="62" cy="84" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="60.2" y1="82.2" x2="63.8" y2="85.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="60.2" y1="85.8" x2="63.8" y2="82.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="62" y="95" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">14</text>
+      {/* Mounting holes */}
+      <g fill="#090b10" stroke="#555b68" strokeWidth="4">
+        <circle cx="151" cy="181" r="13" />
+        <circle cx="489" cy="181" r="13" />
+        <circle cx="151" cy="519" r="13" />
+        <circle cx="489" cy="519" r="13" />
+      </g>
 
-      {/* Main Dark Enclosure Plate */}
-      <rect x="14" y="14" width="60" height="68" rx="4" fill="#374151" stroke="#111827" strokeWidth="1.2" />
-      <rect x="17" y="17" width="54" height="62" rx="3" fill="none" stroke="#4b5563" strokeWidth="0.8" />
+      {/* Button bezel and green actuator */}
+      <circle cx="320" cy="350" r="177" fill="#080a0f" stroke="#565c68" strokeWidth="8" />
+      <circle cx="320" cy="350" r="161" fill="#20242e" stroke="#0a0c12" strokeWidth="5" />
+      <circle cx="320" cy="350" r="148" fill="url(#thumbGreenGrad)" stroke="#05080c" strokeWidth="5" />
+      <path d="M220 245 A146 146 0 0 1 321 203" fill="none" stroke="#8bf0d8" strokeWidth="5" opacity="0.3" strokeLinecap="round" />
 
-      {/* Chrome Metal Bezel Ring */}
-      <circle cx="44" cy="48" r="23" fill="url(#btnBezelGrad)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="44" cy="48" r="19" fill="#111827" />
-
-      {/* Green Actuator Surface */}
-      <circle cx="44" cy="48" r="17.5" fill="url(#btnStartGreenGrad)" stroke="#14532d" strokeWidth="0.6" />
-
-      {/* Glossy Specular Reflection Ellipse */}
-      <ellipse cx="38" cy="41" rx="7" ry="4" fill="#ffffff" opacity="0.4" transform="rotate(-25 38 41)" />
-
-      {/* Centered Actuator Text "ON" */}
       <text
-        x="44"
-        y="51.5"
-        fontFamily="sans-serif"
-        fontWeight="900"
-        fontSize="9.5"
+        x="320"
+        y="328"
         fill="#ffffff"
+        fontFamily="'Segoe UI', Arial, sans-serif"
+        fontWeight="900"
+        fontSize="52"
         textAnchor="middle"
-        letterSpacing="0.5"
-        style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.7))' }}
+        style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.7))' }}
       >
-        ON
+        I
       </text>
+
+      <text
+        x="320"
+        y="386"
+        fill="#ffffff"
+        fontFamily="'Segoe UI', Arial, sans-serif"
+        fontWeight="900"
+        fontSize="48"
+        letterSpacing="5"
+        textAnchor="middle"
+        style={{ filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.8))' }}
+      >
+        LIGA
+      </text>
+
+      {/* Terminal labels: 13/14 on top, 13/14 on bottom */}
+      <g
+        fill="#ffffff"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="32"
+        fontWeight="800"
+        textAnchor="middle"
+        style={{ paintOrder: 'stroke fill', stroke: '#0f172a', strokeWidth: '6px', strokeLinejoin: 'round' }}
+      >
+        <text x="201" y="60">13</text>
+        <text x="439" y="60">14</text>
+        <text x="201" y="662">13</text>
+        <text x="439" y="662">14</text>
+      </g>
     </svg>
   );
 }
 
 /* ==========================================================
    7. BUTTON STOP THUMBNAIL (BOTOEIRA DESLIGA S0 NF 11-12)
-   Matching ButtonStopElement: identical dark enclosure,
-   terminals 11 and 12, chrome bezel, and vibrant red actuator
-   with specular highlight and bold text "OFF".
+   Matching ButtonStopElement: identical dark square housing,
+   terminals 11 and 12 top/bottom, and vibrant red actuator.
    ========================================================== */
 export function ButtonStopThumbnail() {
   return (
-    <svg viewBox="0 0 88 96" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 640 700" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <radialGradient id="btnStopRedGrad" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#f87171" />
-          <stop offset="45%" stopColor="#ef4444" />
-          <stop offset="85%" stopColor="#dc2626" />
-          <stop offset="100%" stopColor="#7f1d1d" />
-        </radialGradient>
-        <radialGradient id="btnBezelGrad2" cx="50%" cy="50%" r="50%">
-          <stop offset="68%" stopColor="#f3f4f6" />
-          <stop offset="88%" stopColor="#9ca3af" />
-          <stop offset="100%" stopColor="#4b5563" />
-        </radialGradient>
-        <linearGradient id="btnTermGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#6b7280" />
-          <stop offset="50%" stopColor="#9ca3af" />
-          <stop offset="100%" stopColor="#4b5563" />
+        <linearGradient id="thumbStopBaseGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#414653" />
+          <stop offset="0.5" stopColor="#171a22" />
+          <stop offset="1" stopColor="#303541" />
         </linearGradient>
+        <linearGradient id="thumbRedGrad" x1="0" y1="0" x2="0.85" y2="1">
+          <stop offset="0" stopColor="#ff4b4b" />
+          <stop offset="0.55" stopColor="#d61a1a" />
+          <stop offset="1" stopColor="#8c0b0b" />
+        </linearGradient>
+        <linearGradient id="thumbStopMetalGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f5f7fa" />
+          <stop offset="1" stopColor="#a2a8b3" />
+        </linearGradient>
+        <filter id="thumbStopShadow" x="-25%" y="-25%" width="150%" height="160%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
       </defs>
 
-      {/* Screw Terminals (Top Left 11, Top Right 12) */}
-      <rect x="20" y="5" width="12" height="14" rx="1.5" fill="url(#btnTermGrad2)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="26" cy="12" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="24.2" y1="10.2" x2="27.8" y2="13.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="24.2" y1="13.8" x2="27.8" y2="10.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="26" y="4" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">11</text>
+      <ellipse cx="320" cy="640" rx="195" ry="16" fill="#000" opacity="0.2" filter="url(#thumbStopShadow)" />
 
-      <rect x="56" y="5" width="12" height="14" rx="1.5" fill="url(#btnTermGrad2)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="62" cy="12" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="60.2" y1="10.2" x2="63.8" y2="13.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="60.2" y1="13.8" x2="63.8" y2="10.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="62" y="4" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">12</text>
+      {/* Four integrated terminal blocks */}
+      {/* Molded base chambers */}
+      <g fill="url(#thumbStopBaseGrad)" stroke="#10131a" strokeWidth="6">
+        <rect x="142" y="80" width="118" height="96" rx="14" />
+        <rect x="380" y="80" width="118" height="96" rx="14" />
+        <rect x="142" y="524" width="118" height="96" rx="14" />
+        <rect x="380" y="524" width="118" height="96" rx="14" />
+      </g>
+      {/* Metallic conductor plates */}
+      <g fill="url(#thumbStopMetalGrad)" stroke="#20242d" strokeWidth="3.5">
+        <rect x="148" y="86" width="106" height="72" rx="8" />
+        <rect x="386" y="86" width="106" height="72" rx="8" />
+        <rect x="148" y="542" width="106" height="72" rx="8" />
+        <rect x="386" y="542" width="106" height="72" rx="8" />
+      </g>
+      <g fill="#242936">
+        <circle cx="201" cy="122" r="18" />
+        <circle cx="439" cy="122" r="18" />
+        <circle cx="201" cy="578" r="18" />
+        <circle cx="439" cy="578" r="18" />
+      </g>
 
-      {/* Screw Terminals (Bottom Left 11, Bottom Right 12) */}
-      <rect x="20" y="77" width="12" height="14" rx="1.5" fill="url(#btnTermGrad2)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="26" cy="84" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="24.2" y1="82.2" x2="27.8" y2="85.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="24.2" y1="85.8" x2="27.8" y2="82.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="26" y="95" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">11</text>
+      {/* Square housing */}
+      <rect x="108" y="138" width="424" height="424" rx="34" fill="url(#thumbStopBaseGrad)" stroke="#10131a" strokeWidth="7" />
+      <rect x="128" y="158" width="384" height="384" rx="24" fill="none" stroke="#555b68" strokeWidth="4" opacity="0.8" />
 
-      <rect x="56" y="77" width="12" height="14" rx="1.5" fill="url(#btnTermGrad2)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="62" cy="84" r="3.2" fill="#e5e7eb" stroke="#374151" strokeWidth="0.5" />
-      <line x1="60.2" y1="82.2" x2="63.8" y2="85.8" stroke="#1f2937" strokeWidth="0.8" />
-      <line x1="60.2" y1="85.8" x2="63.8" y2="82.2" stroke="#1f2937" strokeWidth="0.8" />
-      <text x="62" y="95" fill="#374151" fontSize="3.8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">12</text>
+      {/* Mounting holes */}
+      <g fill="#090b10" stroke="#555b68" strokeWidth="4">
+        <circle cx="151" cy="181" r="13" />
+        <circle cx="489" cy="181" r="13" />
+        <circle cx="151" cy="519" r="13" />
+        <circle cx="489" cy="519" r="13" />
+      </g>
 
-      {/* Main Dark Enclosure Plate */}
-      <rect x="14" y="14" width="60" height="68" rx="4" fill="#374151" stroke="#111827" strokeWidth="1.2" />
-      <rect x="17" y="17" width="54" height="62" rx="3" fill="none" stroke="#4b5563" strokeWidth="0.8" />
+      {/* Button bezel and red actuator */}
+      <circle cx="320" cy="350" r="177" fill="#080a0f" stroke="#565c68" strokeWidth="8" />
+      <circle cx="320" cy="350" r="161" fill="#20242e" stroke="#0a0c12" strokeWidth="5" />
+      <circle cx="320" cy="350" r="148" fill="url(#thumbRedGrad)" stroke="#05080c" strokeWidth="5" />
+      <path d="M220 245 A146 146 0 0 1 321 203" fill="none" stroke="#ffa8a8" strokeWidth="5" opacity="0.3" strokeLinecap="round" />
 
-      {/* Chrome Metal Bezel Ring */}
-      <circle cx="44" cy="48" r="23" fill="url(#btnBezelGrad2)" stroke="#1f2937" strokeWidth="0.8" />
-      <circle cx="44" cy="48" r="19" fill="#111827" />
-
-      {/* Red Actuator Surface */}
-      <circle cx="44" cy="48" r="17.5" fill="url(#btnStopRedGrad)" stroke="#7f1d1d" strokeWidth="0.6" />
-
-      {/* Glossy Specular Reflection Ellipse */}
-      <ellipse cx="38" cy="41" rx="7" ry="4" fill="#ffffff" opacity="0.4" transform="rotate(-25 38 41)" />
-
-      {/* Centered Actuator Text "OFF" */}
       <text
-        x="44"
-        y="51.5"
-        fontFamily="sans-serif"
-        fontWeight="900"
-        fontSize="9.5"
+        x="320"
+        y="328"
         fill="#ffffff"
+        fontFamily="'Segoe UI', Arial, sans-serif"
+        fontWeight="900"
+        fontSize="50"
         textAnchor="middle"
-        letterSpacing="0.5"
-        style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.7))' }}
+        style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.7))' }}
       >
-        OFF
+        O
       </text>
+
+      <text
+        x="320"
+        y="386"
+        fill="#ffffff"
+        fontFamily="'Segoe UI', Arial, sans-serif"
+        fontWeight="900"
+        fontSize="40"
+        letterSpacing="3"
+        textAnchor="middle"
+        style={{ filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.8))' }}
+      >
+        DESLIGA
+      </text>
+
+      {/* Terminal labels: 11/12 on top, 11/12 on bottom */}
+      <g
+        fill="#ffffff"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="32"
+        fontWeight="800"
+        textAnchor="middle"
+        style={{ paintOrder: 'stroke fill', stroke: '#0f172a', strokeWidth: '6px', strokeLinejoin: 'round' }}
+      >
+        <text x="201" y="60">11</text>
+        <text x="439" y="60">12</text>
+        <text x="201" y="662">11</text>
+        <text x="439" y="662">12</text>
+      </g>
     </svg>
   );
 }
@@ -630,8 +721,12 @@ export function ButtonStopThumbnail() {
    Matching RealisticEmergencyButtonSvg: Square yellow safety plate,
    top red circular socket (11 NF), bottom socket (12 NF),
    yellow circular disc, curved arched text "EMERGENCY",
-   and red mushroom actuator head with 3 curved white arrows.
+   and realistic industrial red mushroom actuator with serrated grip
+   and 3 clockwise debossed arrows (twist-to-release).
    ========================================================== */
+const THUMB_DEBOSSED_ARROW_PATH =
+  'M 43.67 -27.29 L 51.31 -32.06 A 60.5 60.5 0 0 1 58.16 16.68 L 63.75 17.08 L 45.87 32.12 L 44.43 11.91 L 49.5 14.2 A 51.5 51.5 0 0 0 43.67 -27.29 Z';
+
 export function ButtonEmergencyThumbnail() {
   return (
     <svg viewBox="0 0 88 94" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
@@ -642,12 +737,22 @@ export function ButtonEmergencyThumbnail() {
           <stop offset="85%" stopColor="#eab308" />
           <stop offset="100%" stopColor="#ca8a04" />
         </linearGradient>
-        <radialGradient id="emMushroomGrad" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="#f87171" />
-          <stop offset="35%" stopColor="#ef4444" />
-          <stop offset="70%" stopColor="#dc2626" />
-          <stop offset="92%" stopColor="#991b1b" />
-          <stop offset="100%" stopColor="#450a0a" />
+        <radialGradient id="emBevelGrad" cx="38%" cy="32%" r="68%">
+          <stop offset="0%" stopColor="#bf2222" />
+          <stop offset="50%" stopColor="#991515" />
+          <stop offset="85%" stopColor="#6e0b0b" />
+          <stop offset="100%" stopColor="#450606" />
+        </radialGradient>
+        <radialGradient id="emTopFaceGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#c72828" />
+          <stop offset="45%" stopColor="#a81a1a" />
+          <stop offset="85%" stopColor="#821010" />
+          <stop offset="100%" stopColor="#5c0808" />
+        </radialGradient>
+        <radialGradient id="emCenterDomeGrad" cx="42%" cy="36%" r="60%">
+          <stop offset="0%" stopColor="#c02424" />
+          <stop offset="60%" stopColor="#9c1616" />
+          <stop offset="100%" stopColor="#7a0e0e" />
         </radialGradient>
         <path id="emThumbArc" d="M 21 47 A 23 23 0 0 1 67 47" fill="none" />
       </defs>
@@ -673,17 +778,34 @@ export function ButtonEmergencyThumbnail() {
         </textPath>
       </text>
 
-      {/* Red Mushroom Actuator Head */}
-      <circle cx="44" cy="46" r="16.5" fill="url(#emMushroomGrad)" stroke="#7f1d1d" strokeWidth="1" />
-      <ellipse cx="39" cy="40" rx="6" ry="3" fill="#ffffff" opacity="0.45" transform="rotate(-20 39 40)" />
+      {/* Red Mushroom Actuator Head (Serrated border, debossed arrows, central dome) */}
+      <g transform="translate(44, 46) scale(0.2)">
+        {/* Base escura do perímetro serrilhado */}
+        <circle cx="0" cy="0" r="88" fill="#3c0606" />
 
-      {/* 3 White Curved Arrows (Twist to reset) */}
-      {[0, 120, 240].map((angle) => (
-        <g key={`arr-${angle}`} transform={`rotate(${angle} 44 46)`}>
-          <path d="M 37 40 A 10 10 0 0 1 45 37" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
-          <polygon points="45,35 48,38 44.5,39.5" fill="#ffffff" />
-        </g>
-      ))}
+        {/* Estrias serrilhadas antiderrapantes ao redor do bordo */}
+        <circle cx="0" cy="0" r="86" fill="none" stroke="#6e0c0c" strokeWidth="4.5" strokeDasharray="3.4 2.4" />
+        <circle cx="0" cy="0" r="85" fill="none" stroke="#941414" strokeWidth="2.5" strokeDasharray="3.4 2.4" />
+
+        {/* Corpo do cogumelo: bisel de transição chanfrado */}
+        <circle cx="0" cy="0" r="83" fill="url(#emBevelGrad)" stroke="#450707" strokeWidth="2" />
+
+        {/* Superfície do platô do botão */}
+        <circle cx="0" cy="0" r="76" fill="url(#emTopFaceGrad)" />
+
+        {/* 3 Setas entalhadas em baixo-relevo no próprio plástico vermelho */}
+        {[-75, 45, 165].map((angle) => (
+          <g key={`arr-${angle}`} transform={`rotate(${angle})`}>
+            {/* Filete de luz */}
+            <path d={THUMB_DEBOSSED_ARROW_PATH} fill="none" stroke="rgba(255, 140, 140, 0.45)" strokeWidth="2.2" transform="translate(1, 1)" />
+            {/* Vala escura do entalhe */}
+            <path d={THUMB_DEBOSSED_ARROW_PATH} fill="#3b0505" stroke="#250303" strokeWidth="1" />
+          </g>
+        ))}
+
+        {/* Domo circular central */}
+        <circle cx="0" cy="0" r="42" fill="url(#emCenterDomeGrad)" stroke="#5c0a0a" strokeWidth="1.5" />
+      </g>
 
       {/* Bottom Red Socket Terminal (12 NF) */}
       <circle cx="44" cy="86" r="5.5" fill="#dc2626" stroke="#991b1b" strokeWidth="1" />
@@ -953,38 +1075,117 @@ export function PilotLightThumbnail() {
   return (
     <svg viewBox="0 0 100 84" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <radialGradient id="thumbBulbGrad" cx="40%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="60%" stopColor="#f1f5f9" />
-          <stop offset="100%" stopColor="#cbd5e1" />
+        <radialGradient id="thumbPilotLensGrad" cx="44%" cy="40%" r="58%">
+          <stop offset="0%" stopColor="#fca5a5" />
+          <stop offset="25%" stopColor="#ef4444" />
+          <stop offset="75%" stopColor="#b91c1c" />
+          <stop offset="100%" stopColor="#450a0a" />
         </radialGradient>
-        <linearGradient id="thumbThreadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#cbd5e1" />
-          <stop offset="40%" stopColor="#ffffff" />
-          <stop offset="80%" stopColor="#94a3b8" />
-          <stop offset="100%" stopColor="#64748b" />
+        <linearGradient id="thumbPilotBarrel" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#1e2229" />
+          <stop offset="40%" stopColor="#3d4450" />
+          <stop offset="100%" stopColor="#15181d" />
         </linearGradient>
       </defs>
 
-      {/* Globo superior fosco */}
-      <circle cx="50" cy="25" r="19" fill="url(#thumbBulbGrad)" stroke="#cbd5e1" strokeWidth="0.8" />
-      {/* Brilho da cúpula */}
-      <ellipse cx="44" cy="18" rx="6" ry="4" fill="rgba(255,255,255,0.6)" />
+      {/* Corpo cilíndrico traseiro com aletas */}
+      <path d="M 22 24 Q 20 40 22 56 L 46 60 Q 44 40 46 20 Z" fill="url(#thumbPilotBarrel)" stroke="#121518" strokeWidth="0.8" />
+      <line x1="26" y1="30" x2="40" y2="33" stroke="#4a5568" strokeWidth="1.6" strokeLinecap="round" />
+      <line x1="25" y1="40" x2="40" y2="43" stroke="#4a5568" strokeWidth="1.6" strokeLinecap="round" />
+      <line x1="26" y1="50" x2="40" y2="53" stroke="#4a5568" strokeWidth="1.6" strokeLinecap="round" />
 
-      {/* Dissipador branco cônico */}
-      <path d="M 33 30 L 67 30 L 61 54 L 39 54 Z" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="0.8" />
+      {/* Aro preto frontal e chanfro */}
+      <ellipse cx="58" cy="40" rx="26" ry="26" fill="#14171c" stroke="#2d333d" strokeWidth="1.2" />
+      <ellipse cx="58" cy="40" rx="24" ry="24" fill="#b91c1c" stroke="#450a0a" strokeWidth="1" />
 
-      {/* Rosca metálica E27 */}
-      <rect x="41" y="55" width="18" height="15" rx="1" fill="url(#thumbThreadGrad)" stroke="#475569" strokeWidth="0.8" />
-      <line x1="41" y1="58" x2="59" y2="58" stroke="#334155" strokeWidth="0.8" />
-      <line x1="41" y1="62" x2="59" y2="62" stroke="#334155" strokeWidth="0.8" />
-      <line x1="41" y1="66" x2="59" y2="66" stroke="#334155" strokeWidth="0.8" />
+      {/* Lente circular frontal translúcida */}
+      <circle cx="58" cy="40" r="22" fill="url(#thumbPilotLensGrad)" stroke="#ef4444" strokeWidth="0.8" />
+      {/* Anel concêntrico difusor */}
+      <circle cx="58" cy="40" r="16" fill="none" stroke="#fca5a5" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+      {/* Brilho especular */}
+      <path d="M 42 35 C 45 25 66 22 74 30 C 69 26 50 28 42 35 Z" fill="#ffffff" opacity="0.55" />
 
-      {/* Pé de contato */}
-      <polygon points="44,70 56,70 52,75 48,75" fill="#1e293b" />
+      {/* Mini base de bornes traseira */}
+      <rect x="22" y="66" width="56" height="11" rx="2.5" fill="#181c22" stroke="#2d333e" strokeWidth="0.7" />
+      <circle cx="36" cy="71.5" r="3.2" fill="#334155" stroke="#94a3b8" strokeWidth="0.6" />
+      <circle cx="64" cy="71.5" r="3.2" fill="#334155" stroke="#94a3b8" strokeWidth="0.6" />
 
       {/* Identificação */}
-      <text x="50" y="82" fill="#38bdf8" fontSize="6.5" fontWeight="bold" textAnchor="middle">LED E27</text>
+      <text x="50" y="82" fill="#38bdf8" fontSize="6.5" fontWeight="bold" textAnchor="middle">SINALEIRA 22mm</text>
+    </svg>
+  );
+}
+
+export function FuseHolderThumbnail() {
+  return (
+    <svg viewBox="0 0 46 92" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
+      {/* Corpo principal */}
+      <rect x="5" y="2" width="36" height="88" rx="3" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1" />
+      {/* Degraus DIN superior e inferior */}
+      <rect x="5" y="2" width="36" height="18" fill="#e2e8f0" />
+      <rect x="5" y="72" width="36" height="18" fill="#e2e8f0" />
+      {/* Borne Parafuso Top */}
+      <circle cx="23" cy="11" r="5" fill="#0f172a" />
+      <circle cx="23" cy="11" r="3.2" fill="#cbd5e1" />
+      <line x1="21" y1="11" x2="25" y2="11" stroke="#334155" strokeWidth="1" />
+      {/* Borne Parafuso Bot */}
+      <circle cx="23" cy="81" r="5" fill="#0f172a" />
+      <circle cx="23" cy="81" r="3.2" fill="#cbd5e1" />
+      <line x1="21" y1="81" x2="25" y2="81" stroke="#334155" strokeWidth="1" />
+      {/* Gaveta frontal */}
+      <rect x="7" y="22" width="32" height="48" rx="2" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.8" />
+      {/* Logo ZBENY */}
+      <text x="23" y="30" fontSize="4.5" fontWeight="900" fill="#0f172a" textAnchor="middle" letterSpacing="0.4">ZBENY</text>
+      <text x="23" y="36" fontSize="4" fontWeight="bold" fill="#334155" textAnchor="middle">BR-30</text>
+      <text x="23" y="41" fontSize="3" fontWeight="bold" fill="#64748b" textAnchor="middle">10x38 30A</text>
+      {/* Lente Vermelha Indicadora */}
+      <rect x="15" y="45" width="16" height="5" rx="2.5" fill="#dc2626" stroke="#991b1b" strokeWidth="0.6" />
+      <ellipse cx="21" cy="46.5" rx="3" ry="1" fill="#ffffff" opacity="0.6" />
+      {/* Cavidade puxador de dedo */}
+      <rect x="11" y="55" width="24" height="11" rx="1.5" fill="#0f172a" />
+      <rect x="12" y="61" width="22" height="4" rx="1" fill="#334155" />
+    </svg>
+  );
+}
+
+export function TerminalBlockThumbnail() {
+  return (
+    <svg viewBox="0 0 100 84" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="tbThumbPlast" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#22262d" />
+          <stop offset="50%" stopColor="#373e48" />
+          <stop offset="100%" stopColor="#22262d" />
+        </linearGradient>
+      </defs>
+      {/* 3 Bornes acoplados lado a lado */}
+      {[0, 1, 2].map((idx) => {
+        const bx = 23 + idx * 18;
+        return (
+          <g key={idx}>
+            <rect x={bx} y="8" width="18" height="66" rx="2" fill="url(#tbThumbPlast)" stroke="#111317" strokeWidth="0.8" />
+            {/* Grampo superior */}
+            <rect x={bx + 3} y="6" width="12" height="4" rx="1" fill="#4b5563" />
+            {/* Parafuso superior */}
+            <circle cx={bx + 9} cy="18" r="4.5" fill="#0f1115" />
+            <circle cx={bx + 9} cy="18" r="3.2" fill="#64748b" stroke="#334155" strokeWidth="0.5" />
+            <line x1={bx + 7} y1="18" x2={bx + 11} y2="18" stroke="#0f172a" strokeWidth="0.8" />
+            {/* Plaqueta superior */}
+            <rect x={bx + 2} y="26" width="14" height="8" rx="1" fill="#333a44" stroke="#1c2026" strokeWidth="0.5" />
+            <text x={bx + 9} y="32" fill="#ffffff" fontSize="5" fontWeight="bold" textAnchor="middle">{idx + 1}</text>
+            {/* Câmara vermelha */}
+            <rect x={bx + 3} y="36" width="12" height="7" rx="0.5" fill="#8a1c1c" />
+            {/* Plaqueta inferior */}
+            <rect x={bx + 2} y="45" width="14" height="8" rx="1" fill="#333a44" stroke="#1c2026" strokeWidth="0.5" />
+            <text x={bx + 9} y="51" fill="#ffffff" fontSize="5" fontWeight="bold" textAnchor="middle">{idx + 1}'</text>
+            {/* Parafuso inferior */}
+            <circle cx={bx + 9} cy="60" r="4.5" fill="#0f1115" />
+            <circle cx={bx + 9} cy="60" r="3.2" fill="#64748b" stroke="#334155" strokeWidth="0.5" />
+            <line x1={bx + 7} y1="60" x2={bx + 11} y2="60" stroke="#0f172a" strokeWidth="0.8" />
+          </g>
+        );
+      })}
+      <text x="50" y="81" fill="#38bdf8" fontSize="6.5" fontWeight="bold" textAnchor="middle">BORNEIRA</text>
     </svg>
   );
 }
@@ -992,6 +1193,7 @@ export function PilotLightThumbnail() {
 export const COMPONENT_THUMBNAILS = {
   power_source: PowerSourceThumbnail,
   circuit_breaker: BreakerThumbnail,
+  fuse_holder: FuseHolderThumbnail,
   contactor: ContactorThumbnail,
   thermal_relay: ThermalRelayThumbnail,
   timer_relay: TimerRelayThumbnail,
@@ -1001,6 +1203,7 @@ export const COMPONENT_THUMBNAILS = {
   motor_6p: Motor6PThumbnail,
   pilot_light: PilotLightThumbnail,
   din_rail: DinRailThumbnail,
+  terminal_block: TerminalBlockThumbnail,
 };
 
 /* ==========================================================
@@ -1163,9 +1366,25 @@ export function SchematicMotorThumbnail() {
   );
 }
 
+export function SchematicFuseHolderThumbnail() {
+  return (
+    <svg viewBox="0 0 100 70" className="comp-thumb-svg">
+      <circle cx="30" cy="35" r="3" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="33" y1="35" x2="45" y2="35" stroke="#38bdf8" strokeWidth="1.8" />
+      {/* Símbolo do Elo Fusível */}
+      <rect x="45" y="27" width="24" height="16" fill="rgba(15, 23, 42, 0.6)" stroke="#38bdf8" strokeWidth="1.8" rx="1" />
+      <line x1="41" y1="35" x2="73" y2="35" stroke="#38bdf8" strokeWidth="1.8" />
+      <line x1="69" y1="35" x2="81" y2="35" stroke="#38bdf8" strokeWidth="1.8" />
+      <circle cx="84" cy="35" r="3" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <text x="57" y="22" fill="#ffffff" fontSize="8.5" fontWeight="bold" textAnchor="middle">F1</text>
+    </svg>
+  );
+}
+
 export const SCHEMATIC_THUMBNAILS = {
   power_source: SchematicPowerSourceThumbnail,
   circuit_breaker: SchematicBreakerThumbnail,
+  fuse_holder: SchematicFuseHolderThumbnail,
   contactor: SchematicContactorThumbnail,
   thermal_relay: SchematicThermalRelayThumbnail,
   timer_relay: SchematicTimerRelayThumbnail,

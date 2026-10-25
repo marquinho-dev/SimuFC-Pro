@@ -57,9 +57,10 @@ export default function BreakerElement({
   const toggleBreaker = (e) => {
     if (!isSimulationMode) return;
     e.stopPropagation();
-    sounds.playSwitch();
+    const willClose = !isClosed;
+    sounds.playBreakerToggle(willClose);
     if (onUpdateComponentState) {
-      onUpdateComponentState(component.id, { closed: !isClosed });
+      onUpdateComponentState(component.id, { closed: willClose });
     }
   };
 

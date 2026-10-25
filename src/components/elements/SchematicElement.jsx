@@ -456,6 +456,173 @@ function SchematicBreaker({
 }
 
 /**
+ * 2B. Seccionadora Porta-Fusível Esquemática (-F1)
+ * IEC 60617 Standard: Seccionador com fusível cartucho 10x38mm
+ */
+function SchematicFuseHolder({
+  component,
+  terminalVoltages,
+  activeTerminal,
+  wires = [],
+  onTerminalClick,
+  onUpdateComponentState,
+  isSimulationMode = false,
+}) {
+  const isClosed = component.state?.closed !== false;
+  const isBlown = Boolean(component.state?.fuseBlown);
+  const displayTag = component.tag || 'F1';
+  const rating = component.state?.currentRating || 30;
+
+  const topVolt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:1`) : undefined;
+  const botVolt = terminalVoltages?.get ? terminalVoltages.get(`${component.id}:2`) : undefined;
+  const topWireColor = getConnectedWireColor(component.id, '1', wires, null, topVolt, terminalVoltages);
+  const botWireColor = getConnectedWireColor(component.id, '2', wires, null, botVolt, terminalVoltages);
+  const wireColor = topWireColor || '#38bdf8';
+
+  const handleToggle = (e) => {
+    if (!isSimulationMode) return;
+    e.stopPropagation();
+    try {
+      sounds.playButtonClick();
+    } catch {}
+    if (onUpdateComponentState) {
+      onUpdateComponentState(component.id, { closed: !isClosed });
+    }
+  };
+
+  const xc = 26;
+
+  return (
+    <div
+      className={`schematic-device-card schematic-fuse ${isClosed ? 'state-closed' : 'state-open'} ${isBlown ? 'state-blown' : ''}`}
+      style={{ width: '52px', height: '218px', background: 'transparent', border: 'none', position: 'relative', userSelect: 'none' }}
+      title={isSimulationMode ? `Porta-Fusível ${displayTag}: ${isBlown ? 'QUEIMADO' : isClosed ? 'FECHADO (Conectado)' : 'ABERTO (Seccionado)'}. Clique para alternar.` : undefined}
+    >
+      <svg
+        className="schematic-svg-canvas"
+        viewBox="0 0 52 218"
+        style={{ width: '100%', height: '100%', display: 'block', background: 'transparent' }}
+      >
+        {/* Terminal 1 Superior */}
+        <circle
+          cx={xc}
+          cy="21"
+          r="4.5"
+          fill={topWireColor || 'rgba(30, 41, 59, 0.85)'}
+          stroke={topWireColor || '#38bdf8'}
+          strokeWidth="2"
+        />
+        <text x={xc + 9} y="25" fill="#ffffff" fontSize="11" fontWeight="bold" fontFamily="monospace">
+          1
+        </text>
+        <line x1={xc} y1="25.5" x2={xc} y2="52" stroke={topWireColor || '#38bdf8'} strokeWidth="2" />
+
+        {/* Palheta Móvel do Seccionador */}
+        <line
+          x1={xc}
+          y1="52"
+          x2={isClosed ? xc : xc - 14}
+          y2={isClosed ? "86" : "78"}
+          stroke={wireColor}
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          style={{ transition: 'all 0.16s ease' }}
+        />
+        {/* Arco de contato fixo */}
+        <path d={`M ${xc} 52 A 5 5 0 0 0 ${xc} 62`} fill="none" stroke={wireColor} strokeWidth="2" />
+
+        {/* Símbolo do Elo Fusível IEC 60617 (Retângulo com elo condutor) */}
+        <g transform={`translate(${xc - 9}, 90)`}>
+          <rect
+            x="0"
+            y="0"
+            width="18"
+            height="38"
+            fill={isBlown ? 'rgba(239, 68, 68, 0.25)' : 'rgba(15, 23, 42, 0.65)'}
+            stroke={isBlown ? '#ef4444' : wireColor}
+            strokeWidth="2"
+            rx="1.5"
+          />
+          {/* Fio interno do elo fusível */}
+          {!isBlown ? (
+            <line x1="9" y1="-6" x2="9" y2="44" stroke={wireColor} strokeWidth="2" />
+          ) : (
+            <>
+              <line x1="9" y1="-6" x2="9" y2="12" stroke="#ef4444" strokeWidth="2" />
+              <line x1="9" y1="26" x2="9" y2="44" stroke="#ef4444" strokeWidth="2" />
+              <path d="M 4 14 L 14 24 M 14 14 L 4 24" stroke="#ef4444" strokeWidth="2.2" strokeLinecap="round" />
+            </>
+          )}
+        </g>
+
+        {/* Condutor vertical inferior até terminal 2 */}
+        <line x1={xc} y1="134" x2={xc} y2="192.5" stroke={botWireColor || '#38bdf8'} strokeWidth="2" />
+
+        {/* Terminal 2 Inferior */}
+        <circle
+          cx={xc}
+          cy="197"
+          r="4.5"
+          fill={botWireColor || 'rgba(30, 41, 59, 0.85)'}
+          stroke={botWireColor || '#38bdf8'}
+          strokeWidth="2"
+        />
+        <text x={xc + 9} y="201" fill="#ffffff" fontSize="11" fontWeight="bold" fontFamily="monospace">
+          2
+        </text>
+
+        {/* Tag e Corrente Nominal */}
+        <text x={xc - 14} y="76" fill="#f8fafc" fontSize="11" fontWeight="900" fontFamily="sans-serif" textAnchor="end">
+          {displayTag}
+        </text>
+        <text x={xc + 14} y="114" fill="#94a3b8" fontSize="8.5" fontWeight="bold" fontFamily="sans-serif">
+          {rating}A
+        </text>
+      </svg>
+
+      {/* Alça interativa de clique para abrir/fechar */}
+      <div
+        className="schematic-breaker-toggle-btn"
+        onClick={handleToggle}
+        style={{
+          position: 'absolute',
+          left: '4px',
+          top: '48px',
+          width: '44px',
+          height: '100px',
+          cursor: isSimulationMode ? 'pointer' : 'grab',
+          pointerEvents: isSimulationMode ? 'auto' : 'none',
+          zIndex: 15,
+        }}
+        title={isSimulationMode ? `Porta-Fusível ${displayTag} (${isClosed ? 'Fechado' : 'Aberto'}). Clique para alternar.` : undefined}
+      />
+
+      {/* Pontos de Conexão Interativos */}
+      <SchematicTerminalPoint
+        componentId={component.id}
+        terminal={{ id: '1', label: '1', x: xc, y: 21, hideLabel: true }}
+        voltage={topVolt}
+        wireColor={topWireColor}
+        isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === '1'}
+        isConnecting={Boolean(activeTerminal)}
+        onTerminalClick={onTerminalClick}
+        labelPosition="top"
+      />
+      <SchematicTerminalPoint
+        componentId={component.id}
+        terminal={{ id: '2', label: '2', x: xc, y: 197, hideLabel: true }}
+        voltage={botVolt}
+        wireColor={botWireColor}
+        isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === '2'}
+        isConnecting={Boolean(activeTerminal)}
+        onTerminalClick={onTerminalClick}
+        labelPosition="bottom"
+      />
+    </div>
+  );
+}
+
+/**
  * 3. Contator Esquemático (Contactor K1/KM1 - Contatos de Força)
  * Representação fiel ao padrão de desenho esquemático industrial:
  * - Fundo 100% transparente (sem moldura ou caixa de card)
@@ -1608,6 +1775,19 @@ export default function SchematicElement({
           onTerminalClick={onTerminalClick}
           onUpdateComponentState={onUpdateComponentState}
           onOpenSettings={isSelected ? onOpenBreakerSettings : undefined}
+          isSimulationMode={isSimulationMode}
+        />
+      );
+
+    case 'fuse_holder':
+      return (
+        <SchematicFuseHolder
+          component={component}
+          terminalVoltages={terminalVoltages}
+          activeTerminal={activeTerminal}
+          wires={wires}
+          onTerminalClick={onTerminalClick}
+          onUpdateComponentState={onUpdateComponentState}
           isSimulationMode={isSimulationMode}
         />
       );

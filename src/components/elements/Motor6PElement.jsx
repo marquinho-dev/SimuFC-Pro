@@ -180,17 +180,9 @@ export default function Motor6PElement({
   const isStalled = rotorState === 'STALLED_HUM';
   const isBiphasic = rotorState === 'BIPHASIC_RUN';
 
-  // Configurações e Controles demonstrados no motor_ac_painel_v2_demo.html
-  const [targetRotorSetting, setTargetRotorSetting] = useState(
-    component.state?.targetRotorSetting ?? 1672
-  );
-  const [lentoSetting, setLentoSetting] = useState(
-    component.state?.lentoSetting ?? 60
-  );
-  const [currentRpm, setCurrentRpm] = useState(0);
-
-  const targetRotorSettingRef = useRef(targetRotorSetting);
-  const lentoSettingRef = useRef(lentoSetting);
+  // Velocidade síncrona/nominal e visualização suave realista do motor AC
+  const targetRotorSettingRef = useRef(1672);
+  const lentoSettingRef = useRef(60);
   const rotorDomRef = useRef(null);
 
   const rotorAngleRef = useRef(0);
@@ -203,19 +195,7 @@ export default function Motor6PElement({
 
   const effectiveDirection = isRunning ? direction : (lastActiveDirectionRef.current || 'CW');
 
-  const handleRotorChange = (val) => {
-    setTargetRotorSetting(val);
-    targetRotorSettingRef.current = val;
-    onUpdateComponentState?.(component.id, { targetRotorSetting: val });
-  };
-
-  const handleLentoChange = (val) => {
-    setLentoSetting(val);
-    lentoSettingRef.current = val;
-    onUpdateComponentState?.(component.id, { lentoSetting: val });
-  };
-
-  // Detected connection topology from simulationEngine or wired bridges
+  // Topologia de ligação detectada (Estrela Y / Triângulo Delta)
   const wiredClosure = React.useMemo(() => {
     return detectMotorClosure(component.id, wires);
   }, [component.id, wires]);
@@ -231,23 +211,12 @@ export default function Motor6PElement({
             ? wiredClosure
             : component.state?.connectionType || 'NONE';
 
-  const connectionLabel =
-    detectedConnection === 'Y'
-      ? 'Y ESTRELA (380V)'
-      : detectedConnection === 'DELTA'
-        ? 'Δ TRIÂNGULO (220V)'
-        : 'S/ FECHAMENTO';
-
   const directionLabel =
     !isRunning
       ? 'PARADO'
       : effectiveDirection === 'CW'
         ? 'HORÁRIO (CW ↻)'
-        : 'ANTI-HOR. (CCW ↺)';
-
-  const calculatedSlip = (((1800 - targetRotorSetting) / 1800) * 100).toFixed(1);
-  const rotorPct = Math.max(0, Math.min(100, (targetRotorSetting / 1800) * 100));
-  const lentoPct = Math.max(0, Math.min(100, ((lentoSetting - 1) / (200 - 1)) * 100));
+        : 'ANTI-HORÁRIO (CCW ↺)';
 
   // Rotational physics animation loop (conforme motor_ac_painel_v2_demo.html com inércia e câmera lenta)
   useEffect(() => {
@@ -281,12 +250,6 @@ export default function Motor6PElement({
       // Atualização direta do DOM via ref do rotor (único eixo girante)
       if (rotorDomRef.current) {
         rotorDomRef.current.setAttribute('transform', `rotate(${rotorAngleRef.current} 200 200)`);
-      }
-
-      // Atualiza o display numérico de RPM a cada 100ms
-      if (now - lastUiUpdate > 100) {
-        lastUiUpdate = now;
-        setCurrentRpm(Math.round(rpmRef.current));
       }
 
       try {
@@ -822,106 +785,7 @@ export default function Motor6PElement({
         </svg>
       </div>
 
-      {/* ========================================================
-          PAINEL DE CONTROLES ORGANIZADO CONFORME A IMAGEM / DEMO
-          ======================================================== */}
-      <div
-        className="motor-controls-panel flex flex-col items-center select-none w-full"
-        style={{
-          marginTop: '14px',
-          gap: '8px',
-          pointerEvents: 'auto',
-          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        }}
-        onPointerDown={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-        onTouchStart={(e) => e.stopPropagation()}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'auto 1fr auto',
-            gap: '8px 12px',
-            alignItems: 'center',
-            width: '100%',
-            fontSize: '14px',
-            color: '#e6e9ef',
-          }}
-        >
-          <label htmlFor={`nRotor-${component.id}`} style={{ cursor: 'pointer', color: '#e6e9ef', fontWeight: 400 }}>
-            Rotor
-          </label>
-          <input
-            id={`nRotor-${component.id}`}
-            type="range"
-            min="0"
-            max="1800"
-            step="1"
-            value={targetRotorSetting}
-            onChange={(e) => handleRotorChange(Number(e.target.value))}
-            style={{
-              width: '100%',
-              height: '6px',
-              borderRadius: '9999px',
-              outline: 'none',
-              cursor: 'pointer',
-              accentColor: '#1d6ff2',
-              background: `linear-gradient(to right, #1d6ff2 0%, #1d6ff2 ${rotorPct}%, #e2e8f0 ${rotorPct}%, #e2e8f0 100%)`,
-            }}
-          />
-          <output
-            style={{
-              minWidth: '80px',
-              textAlign: 'right',
-              fontVariantNumeric: 'tabular-nums',
-              color: '#e6e9ef',
-              fontWeight: 400,
-            }}
-          >
-            {targetRotorSetting} rpm
-          </output>
-
-          <label
-            htmlFor={`lento-${component.id}`}
-            style={{ cursor: 'pointer', color: '#e6e9ef', whiteSpace: 'nowrap', fontWeight: 400 }}
-          >
-            Câmera lenta
-          </label>
-          <input
-            id={`lento-${component.id}`}
-            type="range"
-            min="1"
-            max="200"
-            step="1"
-            value={lentoSetting}
-            onChange={(e) => handleLentoChange(Number(e.target.value))}
-            style={{
-              width: '100%',
-              height: '6px',
-              borderRadius: '9999px',
-              outline: 'none',
-              cursor: 'pointer',
-              accentColor: '#1d6ff2',
-              background: `linear-gradient(to right, #1d6ff2 0%, #1d6ff2 ${lentoPct}%, #e2e8f0 ${lentoPct}%, #e2e8f0 100%)`,
-            }}
-          />
-          <output
-            style={{
-              minWidth: '80px',
-              textAlign: 'right',
-              fontVariantNumeric: 'tabular-nums',
-              color: '#e6e9ef',
-              fontWeight: 400,
-            }}
-          >
-            1/{lentoSetting}
-          </output>
-        </div>
-
-        <div style={{ fontSize: '14px', color: '#aab2c0', textAlign: 'center', marginTop: '4px' }}>
-          Campo: 1800 rpm | escorregamento: {calculatedSlip} %
-        </div>
-      </div>
     </div>
   );
 }
+

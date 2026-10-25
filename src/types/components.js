@@ -23,6 +23,8 @@ export const COMPONENT_TYPES = {
   BUTTON_EMERGENCY: 'button_emergency',
   PILOT_LIGHT: 'pilot_light',
   DIN_RAIL: 'din_rail',
+  FUSE_HOLDER: 'fuse_holder',
+  TERMINAL_BLOCK: 'terminal_block',
 };
 
 // Range scale values matching the physical relay dial in the reference photo
@@ -155,49 +157,75 @@ export function getBreakerTerminals(poles = 3) {
   return terminals;
 }
 
+export function getFuseHolderTerminals() {
+  return [
+    {
+      id: '1',
+      label: '1 (Entrada)',
+      x: 26,
+      y: 21,
+      type: 'fuse_in',
+    },
+    {
+      id: '2',
+      label: '2 (Saída)',
+      x: 26,
+      y: 197,
+      type: 'fuse_out',
+    },
+  ];
+}
+
 
 export const POWER_MODES = {
   '3P_N_PE': {
     id: '3P_N_PE',
-    badge: '3Ø + N + PE',
-    description: 'Transformador Trifásico com Neutro e Aterramento PE',
+    badge: '3Ø + N',
+    description: 'Medidor Trifásico com Neutro (Entrada: L1, L2, L3, N | Saída: N, L1, L2, L3)',
     terminals: [
-      { id: 'N', label: 'N', x: 134, y: 156, color: '#2563eb', type: 'source_n' },
-      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
-      { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
-      { id: 'L3', label: 'L3', x: 285, y: 156, color: '#ef4444', type: 'source_l3' },
-      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
+      { id: '1',  label: '1 (L1 in)',  x: 66,  y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: '2',  label: '2 (L2 in)',  x: 104, y: 268, color: '#26282c', type: 'source_l2' },
+      { id: '3',  label: '3 (L3 in)',  x: 143, y: 268, color: '#9aa0a8', type: 'source_l3' },
+      { id: '4',  label: '4 (N in)',   x: 181, y: 268, color: '#3fa5e3', type: 'source_n' },
+      { id: 'N',  label: '5 (N sai)',  x: 220, y: 268, color: '#3fa5e3', type: 'source_n' },
+      { id: 'L1', label: '6 (L1 sai)', x: 258, y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: 'L2', label: '7 (L2 sai)', x: 297, y: 268, color: '#26282c', type: 'source_l2' },
+      { id: 'L3', label: '8 (L3 sai)', x: 335, y: 268, color: '#9aa0a8', type: 'source_l3' },
     ],
   },
   '3P': {
     id: '3P',
     badge: '3Ø',
-    description: 'Trifásico sem Neutro (L1, L2, L3, PE)',
+    description: 'Trifásico sem Neutro (L1, L2, L3)',
     terminals: [
-      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
-      { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
-      { id: 'L3', label: 'L3', x: 285, y: 156, color: '#ef4444', type: 'source_l3' },
-      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
+      { id: '1',  label: '1 (L1 in)',  x: 66,  y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: '2',  label: '2 (L2 in)',  x: 104, y: 268, color: '#26282c', type: 'source_l2' },
+      { id: '3',  label: '3 (L3 in)',  x: 143, y: 268, color: '#9aa0a8', type: 'source_l3' },
+      { id: 'L1', label: '6 (L1 sai)', x: 258, y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: 'L2', label: '7 (L2 sai)', x: 297, y: 268, color: '#26282c', type: 'source_l2' },
+      { id: 'L3', label: '8 (L3 sai)', x: 335, y: 268, color: '#9aa0a8', type: 'source_l3' },
     ],
   },
   '2P': {
     id: '2P',
     badge: '2Ø',
-    description: 'Bifásico (L1, L2, PE)',
+    description: 'Bifásico (L1, L2)',
     terminals: [
-      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
-      { id: 'L2', label: 'L2', x: 234, y: 156, color: '#ffffff', type: 'source_l2' },
-      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
+      { id: '1',  label: '1 (L1 in)',  x: 66,  y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: '2',  label: '2 (L2 in)',  x: 104, y: 268, color: '#26282c', type: 'source_l2' },
+      { id: 'L1', label: '6 (L1 sai)', x: 258, y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: 'L2', label: '7 (L2 sai)', x: 297, y: 268, color: '#26282c', type: 'source_l2' },
     ],
   },
   '1P_N_PE': {
     id: '1P_N_PE',
-    badge: '1Ø + N + PE',
-    description: 'Monofásico com Neutro e Aterramento PE',
+    badge: '1Ø + N',
+    description: 'Monofásico com Neutro (L1, N)',
     terminals: [
-      { id: 'N', label: 'N', x: 134, y: 156, color: '#2563eb', type: 'source_n' },
-      { id: 'L1', label: 'L1', x: 185, y: 156, color: '#a855f7', type: 'source_l1' },
-      { id: 'PE', label: 'PE', x: 72, y: 375, color: '#16a34a', type: 'source_pe' },
+      { id: '1',  label: '1 (L1 in)',  x: 66,  y: 268, color: '#7a4a24', type: 'source_l1' },
+      { id: '4',  label: '4 (N in)',   x: 181, y: 268, color: '#3fa5e3', type: 'source_n' },
+      { id: 'N',  label: '5 (N sai)',  x: 220, y: 268, color: '#3fa5e3', type: 'source_n' },
+      { id: 'L1', label: '6 (L1 sai)', x: 258, y: 268, color: '#7a4a24', type: 'source_l1' },
     ],
   },
 };
@@ -260,7 +288,7 @@ export const INITIAL_COMPONENTS = [
   {
     id: 'source-1',
     type: COMPONENT_TYPES.POWER_SOURCE,
-    name: 'Transformador / Fonte de Tensão',
+    name: 'Medidor de Energia Trifásico / Rede',
     tag: 'REDE',
     x: 40,
     y: 30,
@@ -282,8 +310,8 @@ export const INITIAL_COMPONENTS = [
     type: COMPONENT_TYPES.CIRCUIT_BREAKER,
     name: 'Disjuntor Termomagnético (DIN)',
     tag: 'Q1',
-    x: 40,
-    y: 385,
+    x: 240,
+    y: 520,
     state: {
       closed: false,
       poles: 3,
@@ -342,10 +370,10 @@ export const INITIAL_COMPONENTS = [
     y: 40,
     state: { pressed: false },
     terminals: [
-      { id: '11', label: '11 (NF)', x: 46, y: 27, color: '#dc2626', type: 'btn_nc' },
-      { id: '12', label: '12 (NF)', x: 90, y: 27, color: '#dc2626', type: 'btn_nc' },
-      { id: '11_bot', label: '11 (NF)', x: 46, y: 143, color: '#dc2626', type: 'btn_nc' },
-      { id: '12_bot', label: '12 (NF)', x: 90, y: 143, color: '#dc2626', type: 'btn_nc' },
+      { id: '11', label: '11 (NF)', x: 45, y: 27, color: '#dc2626', type: 'btn_nc' },
+      { id: '12', label: '12 (NF)', x: 99, y: 27, color: '#dc2626', type: 'btn_nc' },
+      { id: '11_bot', label: '11 (NF)', x: 45, y: 130, color: '#dc2626', type: 'btn_nc' },
+      { id: '12_bot', label: '12 (NF)', x: 99, y: 130, color: '#dc2626', type: 'btn_nc' },
     ],
   },
   {
@@ -357,10 +385,10 @@ export const INITIAL_COMPONENTS = [
     y: 40,
     state: { pressed: false },
     terminals: [
-      { id: '13', label: '13 (NA)', x: 46, y: 27, color: '#16a34a', type: 'btn_no' },
-      { id: '14', label: '14 (NA)', x: 90, y: 27, color: '#16a34a', type: 'btn_no' },
-      { id: '13_bot', label: '13 (NA)', x: 46, y: 143, color: '#16a34a', type: 'btn_no' },
-      { id: '14_bot', label: '14 (NA)', x: 90, y: 143, color: '#16a34a', type: 'btn_no' },
+      { id: '13', label: '13 (NA)', x: 45, y: 27, color: '#16a34a', type: 'btn_no' },
+      { id: '14', label: '14 (NA)', x: 99, y: 27, color: '#16a34a', type: 'btn_no' },
+      { id: '13_bot', label: '13 (NA)', x: 45, y: 130, color: '#16a34a', type: 'btn_no' },
+      { id: '14_bot', label: '14 (NA)', x: 99, y: 130, color: '#16a34a', type: 'btn_no' },
     ],
   },
   {
@@ -452,17 +480,17 @@ export const INITIAL_COMPONENTS = [
   {
     id: 'h1-1',
     type: COMPONENT_TYPES.PILOT_LIGHT,
-    name: 'Lâmpada LED Bulbo E27 (220V)',
+    name: 'Sinaleira LED 22mm',
     tag: 'H1',
     x: 820,
     y: 180,
     state: {
       lit: false,
-      color: 'warm_white',
+      color: 'red',
     },
     terminals: [
-      { id: 'X1', label: 'Rosca (E27)', x: 20, y: 136, type: 'light_terminal' },
-      { id: 'X2', label: 'Pé Central', x: 45, y: 172, type: 'light_terminal' },
+      { id: 'X1', label: 'X1', x: 31, y: 117, type: 'light_terminal' },
+      { id: 'X2', label: 'X2', x: 73, y: 117, type: 'light_terminal' },
     ],
   },
   {
@@ -478,4 +506,56 @@ export const INITIAL_COMPONENTS = [
     },
     terminals: [],
   },
+  {
+    id: 'f1-1',
+    type: COMPONENT_TYPES.FUSE_HOLDER,
+    name: 'Seccionadora Porta-Fusível (10x38)',
+    tag: 'F1',
+    x: 480,
+    y: 40,
+    templateOnly: true,
+    state: {
+      closed: true,
+      fuseBlown: false,
+      currentRating: 30,
+    },
+    terminals: getFuseHolderTerminals(),
+  },
+  {
+    id: 'xt1-1',
+    type: COMPONENT_TYPES.TERMINAL_BLOCK,
+    name: 'Borneira de Passagem',
+    tag: 'XT1',
+    x: 380,
+    y: 280,
+    templateOnly: true,
+    state: {
+      poles: 4,
+    },
+    terminals: getTerminalBlockTerminals(4),
+  },
 ];
+
+export function getTerminalBlockTerminals(poles = 4) {
+  const count = Math.max(1, Math.min(24, Number(poles) || 4));
+  const terminals = [];
+  const MOD_W = 34;
+  for (let i = 1; i <= count; i++) {
+    const x = Math.round(17 + (i - 1) * MOD_W);
+    terminals.push({
+      id: `${i}`,
+      label: `${i}`,
+      x,
+      y: 28,
+      type: 'terminal_block_top',
+    });
+    terminals.push({
+      id: `${i}_bot`,
+      label: `${i}'`,
+      x,
+      y: 118,
+      type: 'terminal_block_bot',
+    });
+  }
+  return terminals;
+}

@@ -48,14 +48,15 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
     };
 
     // Add external wires (supports terminal-to-terminal, wire-to-terminal, and wire-to-wire connections)
+    const validWireIds = new Set(wires.map((w) => w.id));
     for (const w of wires) {
       const wireKey = `wire:${w.id}`;
-      const t1 = w.fromWireId
+      const t1 = w.fromWireId && validWireIds.has(w.fromWireId)
         ? `wire:${w.fromWireId}`
         : w.fromComponent && w.fromTerminal
         ? `${w.fromComponent}:${w.fromTerminal}`
         : null;
-      const t2 = w.toWireId
+      const t2 = w.toWireId && validWireIds.has(w.toWireId)
         ? `wire:${w.toWireId}`
         : w.toComponent && w.toTerminal
         ? `${w.toComponent}:${w.toTerminal}`
@@ -69,11 +70,17 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
     for (const comp of compMap.values()) {
       switch (comp.type) {
         case 'power_source': {
-          // Terminais do mesmo barramento de alimentação são eletricamente conectados
-          const barPrefixes = ['L1', 'L2', 'L3', 'N', 'PE'];
-          for (const prefix of barPrefixes) {
+          // Terminais do medidor conectados internamente (Entrada: 1=L1, 2=L2, 3=L3, 4=N; Saída: 5=N, 6=L1, 7=L2, 8=L3)
+          const phaseGroups = [
+            ['L1', '1', '6'],
+            ['L2', '2', '7'],
+            ['L3', '3', '8'],
+            ['N', '4', '5'],
+            ['PE'],
+          ];
+          for (const group of phaseGroups) {
             const barTerms = (comp.terminals || []).filter(
-              (t) => t.id === prefix || t.id.startsWith(`${prefix}_`)
+              (t) => group.includes(t.id) || group.some((g) => t.id.startsWith(`${g}_`))
             );
             for (let i = 0; i < barTerms.length - 1; i++) {
               addEdge(`${comp.id}:${barTerms[i].id}`, `${comp.id}:${barTerms[i + 1].id}`);
@@ -105,6 +112,22 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
             addEdge(`${comp.id}:1`, `${comp.id}:2`);
           }
           break;
+
+        case 'fuse_holder':
+          // Conduz se a gaveta estiver fechada e o fusível não estiver rompido/queimado
+          if (comp.state?.closed !== false && !comp.state?.fuseBlown) {
+            addEdge(`${comp.id}:1`, `${comp.id}:2`);
+          }
+          break;
+
+        case 'terminal_block': {
+          // Bornes de passagem modulares: conduzem diretamente entre o terminal superior e inferior de cada polo
+          const poles = Math.max(1, Math.min(24, Number(comp.state?.poles) || 4));
+          for (let i = 1; i <= poles; i++) {
+            addEdge(`${comp.id}:${i}`, `${comp.id}:${i}_bot`);
+          }
+          break;
+        }
 
         case 'contactor':
           if (comp.state.energized) {
@@ -254,13 +277,13 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
     for (const ps of powerSources) {
       const pEnabled = ps.state?.phasesEnabled || { L1: true, L2: true, L3: true };
       for (const t of ps.terminals || []) {
-        if ((t.id === 'L1' || t.id.startsWith('L1_') || t.id === 'X1') && pEnabled.L1 !== false) {
+        if ((t.id === 'L1' || t.id.startsWith('L1_') || t.id === 'X1' || t.id === '1' || t.id === '6') && pEnabled.L1 !== false) {
           sourceMap[`${ps.id}:${t.id}`] = 'L1';
-        } else if ((t.id === 'L2' || t.id.startsWith('L2_') || t.id === 'X2') && pEnabled.L2 !== false) {
+        } else if ((t.id === 'L2' || t.id.startsWith('L2_') || t.id === 'X2' || t.id === '2' || t.id === '7') && pEnabled.L2 !== false) {
           sourceMap[`${ps.id}:${t.id}`] = 'L2';
-        } else if ((t.id === 'L3' || t.id.startsWith('L3_') || t.id === 'X3') && pEnabled.L3 !== false) {
+        } else if ((t.id === 'L3' || t.id.startsWith('L3_') || t.id === 'X3' || t.id === '3' || t.id === '8') && pEnabled.L3 !== false) {
           sourceMap[`${ps.id}:${t.id}`] = 'L3';
-        } else if (t.id === 'N' || t.id.startsWith('N_') || t.id === 'X0') {
+        } else if (t.id === 'N' || t.id.startsWith('N_') || t.id === 'X0' || t.id === '4' || t.id === '5') {
           sourceMap[`${ps.id}:${t.id}`] = 'N';
         } else if (t.id === 'PE' || t.id.startsWith('PE_')) {
           sourceMap[`${ps.id}:${t.id}`] = 'PE';
@@ -269,17 +292,25 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
       // Garantir compatibilidade de fallback para identificadores padrão
       if (pEnabled.L1 !== false) {
         sourceMap[`${ps.id}:L1`] = 'L1';
+        sourceMap[`${ps.id}:1`] = 'L1';
+        sourceMap[`${ps.id}:6`] = 'L1';
         sourceMap[`${ps.id}:X1`] = 'L1';
       }
       if (pEnabled.L2 !== false) {
         sourceMap[`${ps.id}:L2`] = 'L2';
+        sourceMap[`${ps.id}:2`] = 'L2';
+        sourceMap[`${ps.id}:7`] = 'L2';
         sourceMap[`${ps.id}:X2`] = 'L2';
       }
       if (pEnabled.L3 !== false) {
         sourceMap[`${ps.id}:L3`] = 'L3';
+        sourceMap[`${ps.id}:3`] = 'L3';
+        sourceMap[`${ps.id}:8`] = 'L3';
         sourceMap[`${ps.id}:X3`] = 'L3';
       }
       sourceMap[`${ps.id}:N`] = 'N';
+      sourceMap[`${ps.id}:4`] = 'N';
+      sourceMap[`${ps.id}:5`] = 'N';
       sourceMap[`${ps.id}:X0`] = 'N';
       sourceMap[`${ps.id}:PE`] = 'PE';
     }
@@ -337,13 +368,14 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
             if (
               (comp.type === 'breaker_3p' ||
                 comp.type === 'breaker_1p' ||
-                comp.type === 'circuit_breaker') &&
-              comp.state?.closed
+                comp.type === 'circuit_breaker' ||
+                comp.type === 'fuse_holder') &&
+              (comp.type === 'fuse_holder' ? (comp.state?.closed !== false && !comp.state?.fuseBlown) : comp.state?.closed)
             ) {
               const hasBreakerTerminal = Array.from(net).some((t) => t.startsWith(`${comp.id}:`));
               if (hasBreakerTerminal) {
-                // Determine internal pole edges of this breaker
-                const poles = comp.type === 'breaker_1p' ? 1 : Number(comp.state?.poles) || 3;
+                // Determine internal pole edges of this protective device
+                const poles = (comp.type === 'breaker_1p' || comp.type === 'fuse_holder') ? 1 : Number(comp.state?.poles) || 3;
                 const internalEdges = new Set();
                 const addPole = (t1, t2) => {
                   internalEdges.add(`${t1}---${t2}`);

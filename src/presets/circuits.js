@@ -56,20 +56,20 @@ function createMotorTerminals() {
 // Helper to create stop button terminals
 function createStopButtonTerminals() {
   return [
-    { id: '11', label: '11 (NF)', x: 46, y: 27, color: '#dc2626', type: 'btn_nc' },
-    { id: '12', label: '12 (NF)', x: 90, y: 27, color: '#dc2626', type: 'btn_nc' },
-    { id: '11_bot', label: '11 (NF)', x: 46, y: 143, color: '#dc2626', type: 'btn_nc' },
-    { id: '12_bot', label: '12 (NF)', x: 90, y: 143, color: '#dc2626', type: 'btn_nc' },
+    { id: '11', label: '11 (NF)', x: 45, y: 27, color: '#dc2626', type: 'btn_nc' },
+    { id: '12', label: '12 (NF)', x: 99, y: 27, color: '#dc2626', type: 'btn_nc' },
+    { id: '11_bot', label: '11 (NF)', x: 45, y: 130, color: '#dc2626', type: 'btn_nc' },
+    { id: '12_bot', label: '12 (NF)', x: 99, y: 130, color: '#dc2626', type: 'btn_nc' },
   ];
 }
 
 // Helper to create start button terminals
 function createStartButtonTerminals() {
   return [
-    { id: '13', label: '13 (NA)', x: 46, y: 27, color: '#16a34a', type: 'btn_no' },
-    { id: '14', label: '14 (NA)', x: 90, y: 27, color: '#16a34a', type: 'btn_no' },
-    { id: '13_bot', label: '13 (NA)', x: 46, y: 143, color: '#16a34a', type: 'btn_no' },
-    { id: '14_bot', label: '14 (NA)', x: 90, y: 143, color: '#16a34a', type: 'btn_no' },
+    { id: '13', label: '13 (NA)', x: 45, y: 27, color: '#16a34a', type: 'btn_no' },
+    { id: '14', label: '14 (NA)', x: 99, y: 27, color: '#16a34a', type: 'btn_no' },
+    { id: '13_bot', label: '13 (NA)', x: 45, y: 130, color: '#16a34a', type: 'btn_no' },
+    { id: '14_bot', label: '14 (NA)', x: 99, y: 130, color: '#16a34a', type: 'btn_no' },
   ];
 }
 
@@ -255,8 +255,6 @@ export const STAR_DELTA_WIRES = [
   { id: 'sd-p19', fromComponent: 'k3-1', fromTerminal: '4', toComponent: 'k2-1', toTerminal: '4', color: '#7f4f24' },
   { id: 'sd-p20', fromComponent: 'k3-1', fromTerminal: '6', toComponent: 'k2-1', toTerminal: '6', color: '#5c677d' },
 
-  // --- ATERRAMENTO DE PROTEÇÃO ---
-  { id: 'sd-pe1', fromComponent: 'source-1', fromTerminal: 'PE', fromTerminalX: 110, toComponent: 'motor-1', toTerminal: 'PE', color: '#2d6a4f' },
 
   // --- CIRCUITO DE COMANDO: FASE L1 -> SEGURANÇA -> S0 -> S1 / SELO ---
   { id: 'sd-c1', fromComponent: 'source-1', fromTerminal: 'L1', fromTerminalX: 230, toComponent: 's00-1', toTerminal: '11', color: '#c1121f' },
@@ -402,7 +400,6 @@ export const DIRECT_STARTER_WIRES = [
   // Fechamento em Estrela no Motor (W2 - U2 - V2)
   { id: 'ds-star1', fromComponent: 'motor-1', fromTerminal: 'W2', toComponent: 'motor-1', toTerminal: 'U2', color: '#5c677d' },
   { id: 'ds-star2', fromComponent: 'motor-1', fromTerminal: 'U2', toComponent: 'motor-1', toTerminal: 'V2', color: '#5c677d' },
-  { id: 'ds-pe', fromComponent: 'source-1', fromTerminal: 'PE', fromTerminalX: 110, toComponent: 'motor-1', toTerminal: 'PE', color: '#2d6a4f' },
 
   // Comando: L1 -> S00 -> RT1(95-96) -> S0 -> S1 / Selo
   { id: 'ds-c1', fromComponent: 'source-1', fromTerminal: 'L1', fromTerminalX: 230, toComponent: 's00-1', toTerminal: '11', color: '#c1121f' },
@@ -556,7 +553,6 @@ export const REVERSING_WIRES = [
   // Fechamento em Estrela no Motor (W2-U2-V2)
   { id: 'rev-star1', fromComponent: 'motor-1', fromTerminal: 'W2', toComponent: 'motor-1', toTerminal: 'U2', color: '#5c677d' },
   { id: 'rev-star2', fromComponent: 'motor-1', fromTerminal: 'U2', toComponent: 'motor-1', toTerminal: 'V2', color: '#5c677d' },
-  { id: 'rev-pe', fromComponent: 'source-1', fromTerminal: 'PE', fromTerminalX: 110, toComponent: 'motor-1', toTerminal: 'PE', color: '#2d6a4f' },
 
   // Comando: L1 -> RT1 95-96 -> S0 (Desliga geral)
   { id: 'rev-c1', fromComponent: 'source-1', fromTerminal: 'L1', fromTerminalX: 230, toComponent: 'rt-1', toTerminal: '95', color: '#c1121f' },

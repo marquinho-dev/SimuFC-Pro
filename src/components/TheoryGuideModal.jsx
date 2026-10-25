@@ -145,7 +145,7 @@ export default function TheoryGuideModal({ isOpen, onClose }) {
               <div className="tutor-tip-item">
                 <div className="tutor-tip-header">🔍 Zoom & Navegação Estáveis</div>
                 <p>
-                  Gire a roda do mouse para aproximar ou afastar a bancada de forma centralizada e simétrica. Arraste com o botão do mouse sobre o fundo para deslocar a visualização.
+                  Gire a roda do mouse sobre qualquer área para aproximar ou afastar focando diretamente na ponta do cursor. Arraste com o botão do mouse sobre o fundo para deslocar a visualização.
                 </p>
               </div>
 
