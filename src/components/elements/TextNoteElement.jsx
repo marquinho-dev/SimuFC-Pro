@@ -1,26 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit3, Check } from 'lucide-react';
-
-const FONT_SIZES = {
-  small: { fontSize: 13, minWidth: 100, minHeight: 32, padding: '4px 10px' },
-  medium: { fontSize: 16, minWidth: 140, minHeight: 40, padding: '6px 14px' },
-  large: { fontSize: 22, minWidth: 180, minHeight: 48, padding: '8px 18px' },
-  xlarge: { fontSize: 30, minWidth: 220, minHeight: 58, padding: '10px 24px' },
-};
+import { Check } from 'lucide-react';
 
 const BG_STYLES = {
   badge: {
-    background: 'rgba(15, 23, 42, 0.82)',
+    background: 'rgba(15, 23, 42, 0.85)',
     backdropFilter: 'blur(8px)',
     border: '1px solid rgba(148, 163, 184, 0.3)',
     borderRadius: '8px',
     boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
+    padding: '8px 16px',
   },
   transparent: {
     background: 'transparent',
     border: '1px dashed rgba(148, 163, 184, 0.3)',
-    borderRadius: '6px',
+    borderRadius: '4px',
     textShadow: '0 2px 6px rgba(0, 0, 0, 0.95)',
+    padding: '4px 8px',
   },
   warning: {
     background: 'linear-gradient(135deg, #fef08a 0%, #facc15 100%)',
@@ -29,6 +24,7 @@ const BG_STYLES = {
     color: '#0f172a',
     boxShadow: '0 4px 16px rgba(234, 179, 8, 0.3)',
     textShadow: 'none',
+    padding: '8px 16px',
   },
   tag: {
     background: '#ffffff',
@@ -37,6 +33,7 @@ const BG_STYLES = {
     color: '#0f172a',
     boxShadow: '0 3px 8px rgba(0, 0, 0, 0.25)',
     textShadow: 'none',
+    padding: '6px 14px',
   },
   blueprint: {
     background: 'rgba(8, 47, 73, 0.88)',
@@ -44,6 +41,7 @@ const BG_STYLES = {
     borderRadius: '6px',
     color: '#38bdf8',
     boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+    padding: '8px 16px',
   },
 };
 
@@ -56,11 +54,26 @@ export default function TextNoteElement({
   const [isEditing, setIsEditing] = useState(false);
   const state = component.state || {};
   const currentText = state.text || 'Texto de Identificação';
-  const fontSizeKey = state.fontSize || 'medium';
-  const sizeConfig = FONT_SIZES[fontSizeKey] || FONT_SIZES.medium;
+
+  let resolvedFontSize = 16;
+  if (typeof state.fontSize === 'number') {
+    resolvedFontSize = state.fontSize;
+  } else if (state.fontSize === 'small') {
+    resolvedFontSize = 13;
+  } else if (state.fontSize === 'large') {
+    resolvedFontSize = 22;
+  } else if (state.fontSize === 'xlarge') {
+    resolvedFontSize = 30;
+  }
+
   const bgStyleKey = state.bgStyle || 'badge';
   const customColor = state.textColor || '#f8fafc';
   const isBold = state.bold !== false;
+  const isItalic = Boolean(state.italic);
+  const isUnderline = Boolean(state.underline);
+  const isStrike = Boolean(state.strike);
+  const align = state.align || 'left';
+  const fontFamilyKey = state.fontFamily || 'sans';
 
   const [editText, setEditText] = useState(currentText);
   const textareaRef = useRef(null);
@@ -98,6 +111,20 @@ export default function TextNoteElement({
   const currentBgStyle = BG_STYLES[bgStyleKey] || BG_STYLES.badge;
   const textColor = bgStyleKey === 'warning' || bgStyleKey === 'tag' ? '#0f172a' : customColor;
 
+  const computedFontFamily =
+    fontFamilyKey === 'monospace'
+      ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+      : fontFamilyKey === 'serif'
+      ? 'Georgia, Cambria, "Times New Roman", Times, serif'
+      : fontFamilyKey === 'display'
+      ? '"Arial Black", Impact, sans-serif'
+      : 'inherit';
+
+  const textDecorations = [
+    isUnderline ? 'underline' : '',
+    isStrike ? 'line-through' : '',
+  ].filter(Boolean).join(' ') || 'none';
+
   return (
     <div
       className={`text-note-element ${isSelected ? 'selected' : ''} ${isEditing ? 'editing' : ''}`}
@@ -112,16 +139,15 @@ export default function TextNoteElement({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: `${sizeConfig.minWidth}px`,
-        minHeight: `${sizeConfig.minHeight}px`,
-        padding: sizeConfig.padding,
-        fontSize: `${sizeConfig.fontSize}px`,
-        fontWeight: isBold ? 700 : 500,
+        fontSize: `${resolvedFontSize}px`,
+        fontWeight: isBold ? 700 : 400,
+        fontStyle: isItalic ? 'italic' : 'normal',
+        textDecoration: textDecorations,
+        fontFamily: computedFontFamily,
+        textAlign: align,
         color: textColor,
-        fontFamily: bgStyleKey === 'tag' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' : 'inherit',
         lineHeight: 1.35,
         whiteSpace: 'pre-wrap',
-        textAlign: 'left',
         transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
         ...currentBgStyle,
         ...(isSelected && {
@@ -140,14 +166,17 @@ export default function TextNoteElement({
             onKeyDown={handleKeyDown}
             rows={Math.max(1, editText.split('\n').length)}
             style={{
-              background: 'rgba(0, 0, 0, 0.4)',
+              background: 'rgba(0, 0, 0, 0.45)',
               color: textColor,
-              fontSize: `${sizeConfig.fontSize}px`,
-              fontWeight: isBold ? 700 : 500,
-              fontFamily: 'inherit',
+              fontSize: `${resolvedFontSize}px`,
+              fontWeight: isBold ? 700 : 400,
+              fontStyle: isItalic ? 'italic' : 'normal',
+              textDecoration: textDecorations,
+              fontFamily: computedFontFamily,
+              textAlign: align,
               border: '1px solid #38bdf8',
               borderRadius: '4px',
-              padding: '4px 6px',
+              padding: '4px 8px',
               outline: 'none',
               resize: 'none',
               width: '100%',
@@ -179,36 +208,9 @@ export default function TextNoteElement({
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}>
-          <span style={{ flex: 1, wordBreak: 'break-word' }}>
-            {currentText || 'Clique duas vezes para editar'}
-          </span>
-          {isSelected && !isSimulationMode && (
-            <button
-              type="button"
-              className="text-note-quick-edit"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(true);
-              }}
-              title="Editar Texto (ou clique duas vezes)"
-              style={{
-                background: 'rgba(2, 132, 199, 0.25)',
-                border: '1px solid rgba(56, 189, 248, 0.5)',
-                color: '#38bdf8',
-                borderRadius: '4px',
-                padding: '3px 5px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: 0.8,
-              }}
-            >
-              <Edit3 size={12} />
-            </button>
-          )}
-        </div>
+        <span style={{ width: '100%', wordBreak: 'break-word', display: 'block' }}>
+          {currentText || 'Clique duas vezes para editar'}
+        </span>
       )}
     </div>
   );

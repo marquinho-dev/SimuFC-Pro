@@ -7,6 +7,7 @@ import MultimeterModal from './components/MultimeterModal';
 import PowerSourceSettingsModal from './components/PowerSourceSettingsModal';
 import BreakerSettingsModal from './components/BreakerSettingsModal';
 import TerminalBlockSettingsModal from './components/TerminalBlockSettingsModal';
+import TextSettingsModal from './components/TextSettingsModal';
 import { INITIAL_COMPONENTS, WIRE_COLORS, TIMER_RELAY_TERMINALS, POWER_MODES, getTerminalBlockTerminals } from './types/components';
 import { PRESETS } from './presets/circuits';
 import { evaluateCircuit } from './services/simulationEngine';
@@ -228,6 +229,8 @@ export default function App() {
   const [selectedBreaker, setSelectedBreaker] = useState(null);
   const [isTerminalBlockSettingsOpen, setIsTerminalBlockSettingsOpen] = useState(false);
   const [selectedTerminalBlock, setSelectedTerminalBlock] = useState(null);
+  const [isTextSettingsOpen, setIsTextSettingsOpen] = useState(false);
+  const [selectedTextNote, setSelectedTextNote] = useState(null);
 
   // Sound mute sync
   useEffect(() => {
@@ -998,6 +1001,30 @@ export default function App() {
     });
   }, []);
 
+  // Handler to open text note settings
+  const handleOpenTextSettings = useCallback((comp) => {
+    if (isSimulationMode) return;
+    setSelectedTextNote(comp);
+    setIsTextSettingsOpen(true);
+  }, [isSimulationMode]);
+
+  // Handler to save text note settings
+  const handleSaveTextSettings = useCallback((compId, partialState) => {
+    setComponents((prev) =>
+      prev.map((c) => {
+        if (c.id === compId) {
+          return {
+            ...c,
+            state: { ...c.state, ...partialState },
+          };
+        }
+        return c;
+      })
+    );
+    setToastMessage('✅ Texto atualizado com sucesso.');
+    setTimeout(() => setToastMessage(null), 2500);
+  }, []);
+
   // Handler to add a new component to canvas (blocked in simulation)
   const handleAddComponent = useCallback((type, posX, posY, displayMode = 'real') => {
     if (isSimulationMode) {
@@ -1300,6 +1327,7 @@ export default function App() {
             onOpenPowerSettings={() => !isSimulationMode && setIsPowerSettingsOpen(true)}
             onOpenBreakerSettings={handleOpenBreakerSettings}
             onOpenTerminalBlockSettings={handleOpenTerminalBlockSettings}
+            onOpenTextSettings={handleOpenTextSettings}
             onRemoveComponent={handleRemoveComponent}
             onAddComponent={handleAddComponent}
             onLoadPreset={handleLoadPreset}
@@ -1340,6 +1368,18 @@ export default function App() {
           }}
           component={selectedTerminalBlock}
           onSaveSettings={handleSaveTerminalBlockSettings}
+        />
+      )}
+
+      {isTextSettingsOpen && selectedTextNote && (
+        <TextSettingsModal
+          isOpen={isTextSettingsOpen}
+          onClose={() => {
+            setIsTextSettingsOpen(false);
+            setSelectedTextNote(null);
+          }}
+          component={selectedTextNote}
+          onSaveSettings={handleSaveTextSettings}
         />
       )}
 

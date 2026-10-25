@@ -298,6 +298,7 @@ export default function Canvas({
   onOpenPowerSettings,
   onOpenBreakerSettings,
   onOpenTerminalBlockSettings,
+  onOpenTextSettings,
   onRemoveComponent,
   onAddComponent,
   onLoadPreset,
@@ -2242,61 +2243,22 @@ export default function Canvas({
                     </>
                   )}
 
-                  {/* Text Note Specific Actions: Font Size, Visual Style, Text Color */}
+                  {/* Text Note Specific Actions: Settings Modal */}
                   {comp.type === 'text_note' && (
-                    <>
-                      <button
-                        type="button"
-                        className="btn-action-lateral btn-lateral-size"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const sizes = ['small', 'medium', 'large', 'xlarge'];
-                          const curIdx = sizes.indexOf(comp.state?.fontSize || 'medium');
-                          const nextSize = sizes[(curIdx + 1) % sizes.length];
-                          try {
-                            sounds.playButtonClick();
-                          } catch {}
-                          onUpdateComponentState(comp.id, { fontSize: nextSize });
-                        }}
-                        title="Tamanho da fonte (Pequeno, Médio, Grande, Título)"
-                      >
-                        <Type size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-action-lateral btn-lateral-settings"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const styles = ['badge', 'transparent', 'warning', 'tag', 'blueprint'];
-                          const curIdx = styles.indexOf(comp.state?.bgStyle || 'badge');
-                          const nextStyle = styles[(curIdx + 1) % styles.length];
-                          try {
-                            sounds.playButtonClick();
-                          } catch {}
-                          onUpdateComponentState(comp.id, { bgStyle: nextStyle });
-                        }}
-                        title="Estilo visual da etiqueta (Placa, Transparente, Aviso, Etiqueta, Blueprint)"
-                      >
-                        <Layers size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-action-lateral btn-lateral-color"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const colors = ['#f8fafc', '#eab308', '#22c55e', '#ef4444', '#38bdf8', '#a855f7'];
-                          const curIdx = colors.indexOf(comp.state?.textColor || '#f8fafc');
-                          const nextColor = colors[(curIdx + 1) % colors.length];
-                          try {
-                            sounds.playButtonClick();
-                          } catch {}
-                          onUpdateComponentState(comp.id, { textColor: nextColor });
-                        }}
-                        title="Mudar cor do texto"
-                      >
-                        <Palette size={14} />
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      className="btn-action-lateral btn-lateral-settings"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        try {
+                          sounds.playButtonClick();
+                        } catch {}
+                        onOpenTextSettings?.(comp);
+                      }}
+                      title="Configurações de Texto (Fonte, Cor, Negrito, Sublinhado, etc.)"
+                    >
+                      <Settings size={14} />
+                    </button>
                   )}
 
                   {/* 3. Delete Button (Icon only) */}
