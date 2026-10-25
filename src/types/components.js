@@ -35,6 +35,7 @@ export const COMPONENT_TYPES = {
   DIN_RAIL: 'din_rail',
   FUSE_HOLDER: 'fuse_holder',
   TERMINAL_BLOCK: 'terminal_block',
+  TEXT_NOTE: 'text_note',
 };
 
 // Range scale values matching the physical relay dial in the reference photo
@@ -543,6 +544,23 @@ export const INITIAL_COMPONENTS = [
       poles: 4,
     },
     terminals: getTerminalBlockTerminals(4),
+  },
+  {
+    id: 'text-1',
+    type: COMPONENT_TYPES.TEXT_NOTE,
+    name: 'Caixa de Texto / Anotação',
+    tag: 'TXT1',
+    x: 400,
+    y: 100,
+    templateOnly: true,
+    state: {
+      text: 'Texto de Identificação',
+      fontSize: 'medium',
+      textColor: '#f8fafc',
+      bgStyle: 'badge',
+      bold: true,
+    },
+    terminals: [],
   },
 ];
 

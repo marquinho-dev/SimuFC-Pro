@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { Unlink, Sun, Moon, Zap, Settings, Trash2, AlignHorizontalJustifyStart, Plus, Minus, Boxes } from 'lucide-react';
+import { Unlink, Sun, Moon, Zap, Settings, Trash2, AlignHorizontalJustifyStart, Plus, Minus, Boxes, Type, Palette, Layers } from 'lucide-react';
 import PowerSourceElement from './elements/PowerSourceElement';
 import ContactorElement from './elements/ContactorElement';
 import ThermalRelayElement from './elements/ThermalRelayElement';
@@ -11,6 +11,7 @@ import { ButtonStopElement, ButtonStartElement, ButtonEmergencyElement } from '.
 import PilotLampElement from './elements/PilotLampsElement';
 import TerminalBlockElement from './elements/TerminalBlockElement';
 import DinRailElement from './elements/DinRailElement';
+import TextNoteElement from './elements/TextNoteElement';
 import SchematicElement from './elements/SchematicElement';
 import { TIMER_RELAY_TERMINALS, getBreakerTerminals, getTerminalBlockTerminals, SCHEMATIC_SOURCE_BUSES, SCHEMATIC_SOURCE_BUS_X_END } from '../types/components';
 import { sounds } from '../services/soundEffects';
@@ -2008,6 +2009,22 @@ export default function Canvas({
           >
             <Zap size={17} className={showElectronFlow ? 'electron-icon-active' : ''} />
           </button>
+          <div className="toolbar-divider" />
+          <button
+            type="button"
+            className="btn-toolbar-icon btn-toolbar-text-add"
+            onClick={() => {
+              try {
+                sounds.playButtonClick();
+              } catch {}
+              const center = viewportCenterRef.current || { x: 400, y: 200 };
+              onAddComponent?.('text_note', Math.round(center.x - 70), Math.round(center.y - 30));
+            }}
+            title="Adicionar Caixa de Texto / Etiqueta"
+            aria-label="Adicionar Texto"
+          >
+            <Type size={17} />
+          </button>
         </div>
       </div>
 
@@ -2082,7 +2099,7 @@ export default function Canvas({
                   }`}
                 >
                   {/* 1. Toggle Mode Button (Icon only) */}
-                  {comp.type !== 'din_rail' && comp.type !== 'terminal_block' && (
+                  {comp.type !== 'din_rail' && comp.type !== 'terminal_block' && comp.type !== 'text_note' && (
                     <button
                       type="button"
                       className="btn-action-lateral btn-lateral-mode"
@@ -2221,6 +2238,63 @@ export default function Canvas({
                         title="Diminuir comprimento (-100mm)"
                       >
                         <Minus size={14} />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Text Note Specific Actions: Font Size, Visual Style, Text Color */}
+                  {comp.type === 'text_note' && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn-action-lateral btn-lateral-size"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const sizes = ['small', 'medium', 'large', 'xlarge'];
+                          const curIdx = sizes.indexOf(comp.state?.fontSize || 'medium');
+                          const nextSize = sizes[(curIdx + 1) % sizes.length];
+                          try {
+                            sounds.playButtonClick();
+                          } catch {}
+                          onUpdateComponentState(comp.id, { fontSize: nextSize });
+                        }}
+                        title="Tamanho da fonte (Pequeno, Médio, Grande, Título)"
+                      >
+                        <Type size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-action-lateral btn-lateral-settings"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const styles = ['badge', 'transparent', 'warning', 'tag', 'blueprint'];
+                          const curIdx = styles.indexOf(comp.state?.bgStyle || 'badge');
+                          const nextStyle = styles[(curIdx + 1) % styles.length];
+                          try {
+                            sounds.playButtonClick();
+                          } catch {}
+                          onUpdateComponentState(comp.id, { bgStyle: nextStyle });
+                        }}
+                        title="Estilo visual da etiqueta (Placa, Transparente, Aviso, Etiqueta, Blueprint)"
+                      >
+                        <Layers size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-action-lateral btn-lateral-color"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const colors = ['#f8fafc', '#eab308', '#22c55e', '#ef4444', '#38bdf8', '#a855f7'];
+                          const curIdx = colors.indexOf(comp.state?.textColor || '#f8fafc');
+                          const nextColor = colors[(curIdx + 1) % colors.length];
+                          try {
+                            sounds.playButtonClick();
+                          } catch {}
+                          onUpdateComponentState(comp.id, { textColor: nextColor });
+                        }}
+                        title="Mudar cor do texto"
+                      >
+                        <Palette size={14} />
                       </button>
                     </>
                   )}
@@ -2407,6 +2481,15 @@ export default function Canvas({
                       onOpenSettings={onOpenTerminalBlockSettings}
                       isSimulationMode={isSimulationMode}
                       isSelected={isCompSelected}
+                    />
+                  )}
+
+                  {comp.type === 'text_note' && (
+                    <TextNoteElement
+                      component={comp}
+                      isSelected={isCompSelected}
+                      onUpdateComponentState={onUpdateComponentState}
+                      isSimulationMode={isSimulationMode}
                     />
                   )}
                 </>

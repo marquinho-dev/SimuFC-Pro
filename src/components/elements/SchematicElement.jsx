@@ -16,6 +16,7 @@ import {
   SCHEMATIC_SOURCE_BUS_X_START,
   SCHEMATIC_SOURCE_BUS_X_END,
 } from '../../types/components';
+import TextNoteElement from './TextNoteElement';
 
 export function getConnectedWireColor(
   componentId,
@@ -1868,6 +1869,16 @@ export default function SchematicElement({
           component={component}
           onAlignComponents={onAlignDinRail}
           onStartResize={onStartResizeDinRail}
+          isSimulationMode={isSimulationMode}
+        />
+      );
+
+    case 'text_note':
+      return (
+        <TextNoteElement
+          component={component}
+          isSelected={isSelected}
+          onUpdateComponentState={onUpdateComponentState}
           isSimulationMode={isSimulationMode}
         />
       );

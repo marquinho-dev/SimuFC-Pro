@@ -279,7 +279,7 @@ export function computeAutoRoute(
 
   const existingSegs = extractExistingSegments(existingWiresPoints);
   const candidateObstacles = (allComponents || []).filter((c) => {
-    if (!c || c.type === 'din_rail') return false;
+    if (!c || c.type === 'din_rail' || c.type === 'text_note') return false;
     if (c.id === comp1?.id || c.id === comp2?.id) return false;
     return true;
   });

@@ -1030,6 +1030,7 @@ export default function App() {
       else if (type === 'motor_6p') prefix = 'M';
       else if (type === 'pilot_light' || type === 'pilot_lamp') prefix = 'H';
       else if (type === 'power_source') prefix = 'REDE';
+      else if (type === 'text_note') prefix = 'TXT';
       else prefix = template.tag || 'C';
 
       // Collect existing numbers already in use by components of this type

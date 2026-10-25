@@ -1190,6 +1190,18 @@ export function TerminalBlockThumbnail() {
   );
 }
 
+export function TextThumbnail() {
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', background: 'transparent' }}>
+      <svg viewBox="0 0 100 70" className="comp-thumb-svg">
+        <rect x="14" y="14" width="72" height="42" rx="6" fill="rgba(15, 23, 42, 0.85)" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+        <text x="50" y="42" fill="#38bdf8" fontSize="26" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">T</text>
+      </svg>
+      <span style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.5px' }}>TEXTO</span>
+    </div>
+  );
+}
+
 export const COMPONENT_THUMBNAILS = {
   power_source: PowerSourceThumbnail,
   circuit_breaker: BreakerThumbnail,
@@ -1204,6 +1216,7 @@ export const COMPONENT_THUMBNAILS = {
   pilot_light: PilotLightThumbnail,
   din_rail: DinRailThumbnail,
   terminal_block: TerminalBlockThumbnail,
+  text_note: TextThumbnail,
 };
 
 /* ==========================================================
@@ -1392,4 +1405,5 @@ export const SCHEMATIC_THUMBNAILS = {
   button_stop: SchematicButtonStopThumbnail,
   button_emergency: SchematicButtonEmergencyThumbnail,
   motor_6p: SchematicMotorThumbnail,
+  text_note: TextThumbnail,
 };

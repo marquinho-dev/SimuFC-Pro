@@ -6893,6 +6893,39 @@
   .fuse-holder-din-device .fh-action-btn { animation: none; }
 }
 
+/* ==========================================================================
+   TEXT NOTE & ANNOTATIONS ELEMENT STYLES
+   ========================================================================== */
+.text-note-element {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.text-note-element:hover {
+  filter: brightness(1.08);
+}
+
+.text-note-element.selected {
+  box-shadow: 0 0 0 2px #38bdf8, 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+.text-note-element.editing {
+  box-shadow: 0 0 0 2px #0284c7, 0 12px 28px rgba(0, 0, 0, 0.6) !important;
+}
+
+.text-note-quick-edit:hover {
+  background: rgba(2, 132, 199, 0.5) !important;
+  color: #ffffff !important;
+  transform: scale(1.1);
+}
+
+.btn-toolbar-text-add:hover {
+  color: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+}
+
+
 
 
 
