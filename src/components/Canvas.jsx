@@ -12,6 +12,7 @@ import PilotLampElement from './elements/PilotLampsElement';
 import TerminalBlockElement from './elements/TerminalBlockElement';
 import DinRailElement from './elements/DinRailElement';
 import TextNoteElement from './elements/TextNoteElement';
+import FloatSwitchElement from './elements/FloatSwitchElement';
 import SchematicElement from './elements/SchematicElement';
 import { TIMER_RELAY_TERMINALS, getBreakerTerminals, getTerminalBlockTerminals, SCHEMATIC_SOURCE_BUSES, SCHEMATIC_SOURCE_BUS_X_END } from '../types/components';
 import { sounds } from '../services/soundEffects';
@@ -2452,6 +2453,18 @@ export default function Canvas({
                       isSelected={isCompSelected}
                       onUpdateComponentState={onUpdateComponentState}
                       isSimulationMode={isSimulationMode}
+                    />
+                  )}
+
+                  {comp.type === 'float_switch' && (
+                    <FloatSwitchElement
+                      component={comp}
+                      terminalVoltages={terminalVoltages}
+                      activeTerminal={connectingTerminal}
+                      onTerminalClick={handleTerminalClick}
+                      onUpdateComponentState={onUpdateComponentState}
+                      isSimulationMode={isSimulationMode}
+                      isSelected={isCompSelected}
                     />
                   )}
                 </>

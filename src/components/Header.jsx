@@ -115,6 +115,11 @@ export default function Header({
           name: 'Botoeira Emergência',
           tag: 'S00',
         },
+        {
+          type: 'float_switch',
+          name: 'Boia de Nível (Reservatório)',
+          tag: 'B1',
+        },
       ],
     },
     {
@@ -235,6 +240,11 @@ export default function Header({
           type: 'button_emergency',
           name: 'Botoeira Emergência',
           tag: '-S00',
+        },
+        {
+          type: 'float_switch',
+          name: 'Boia de Nível B1',
+          tag: '-B1',
         },
       ],
     },

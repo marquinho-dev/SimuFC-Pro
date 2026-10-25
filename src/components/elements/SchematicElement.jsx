@@ -1737,6 +1737,101 @@ function SchematicDinRail({
 }
 
 /**
+ * 8. Boia de Nível Esquemática (IEC 60617)
+ * Símbolo técnico de comutador acionado por nível de líquido:
+ * - Contato reversor 11 (comum), 12 (NF), 14 (NA)
+ * - Símbolo de boia retangular flutuando sobre ondas acoplada mecanicamente
+ */
+function SchematicFloatSwitch({
+  component,
+  terminalVoltages,
+  activeTerminal,
+  wires = [],
+  onTerminalClick,
+  onUpdateComponentState,
+  isSimulationMode,
+}) {
+  const level = Number(component.state?.level ?? 22);
+  const isHigh = level >= Number(component.state?.threshold ?? 50);
+  const displayTag = component.tag || '-B1';
+
+  const comVolt = terminalVoltages?.get ? (terminalVoltages.get(`${component.id}:COM`) || terminalVoltages.get(`${component.id}:11`)) : undefined;
+  const naVolt = terminalVoltages?.get ? (terminalVoltages.get(`${component.id}:NA`) || terminalVoltages.get(`${component.id}:14`)) : undefined;
+  const nfVolt = terminalVoltages?.get ? (terminalVoltages.get(`${component.id}:NF`) || terminalVoltages.get(`${component.id}:12`)) : undefined;
+
+  const comColor = getConnectedWireColor(component.id, 'COM', wires, '#38bdf8', comVolt, terminalVoltages);
+  const naColor = getConnectedWireColor(component.id, 'NA', wires, '#38bdf8', naVolt, terminalVoltages);
+  const nfColor = getConnectedWireColor(component.id, 'NF', wires, '#38bdf8', nfVolt, terminalVoltages);
+
+  const terminals = [
+    { id: 'COM', label: '11', x: 44, y: 25 },
+    { id: 'NF', label: '12', x: 44, y: 155 },
+    { id: 'NA', label: '14', x: 104, y: 155 },
+  ];
+
+  return (
+    <div
+      className="schematic-device-card"
+      style={{ width: '150px', height: '185px', position: 'relative' }}
+      title={`Boia de Nível Esquemática ${displayTag} (Nível: ${Math.round(level)}%)`}
+    >
+      <div className="schematic-device-header">
+        <span className="schematic-device-tag">{displayTag}</span>
+        <span className="schematic-device-type" style={{ fontSize: '9px', color: isHigh ? '#4ade80' : '#38bdf8' }}>
+          {isHigh ? 'ALTO (NA)' : 'BAIXO (NF)'}
+        </span>
+      </div>
+
+      <svg viewBox="0 0 150 180" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+        {/* Linha do terminal comum (11) descendo até o ponto de rotação da palheta */}
+        <line x1="44" y1="25" x2="44" y2="70" stroke={comColor} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="44" cy="70" r="3" fill="#090d16" stroke={comColor} strokeWidth="1.8" />
+
+        {/* Linha do terminal 12 (NF) */}
+        <line x1="44" y1="110" x2="44" y2="155" stroke={nfColor} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="44" cy="110" r="3" fill="#090d16" stroke={nfColor} strokeWidth="1.8" />
+
+        {/* Linha do terminal 14 (NA) */}
+        <line x1="104" y1="110" x2="104" y2="155" stroke={naColor} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="104" cy="110" r="3" fill="#090d16" stroke={naColor} strokeWidth="1.8" />
+
+        {/* Palheta de comutação móvel */}
+        {isHigh ? (
+          <line x1="44" y1="70" x2="104" y2="110" stroke={comColor} strokeWidth="2.4" strokeLinecap="round" />
+        ) : (
+          <line x1="44" y1="70" x2="44" y2="110" stroke={comColor} strokeWidth="2.4" strokeLinecap="round" />
+        )}
+
+        {/* Haste mecânica tracejada e símbolo IEC da Boia de Nível */}
+        <line x1={isHigh ? 74 : 44} y1="90" x2="116" y2="90" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 2" />
+        {/* Boia IEC (retângulo flutuante sobre duas ondas) */}
+        <rect x="112" y="82" width="16" height="16" rx="2" fill="none" stroke="#38bdf8" strokeWidth="1.6" />
+        <path d="M 110 102 Q 114 99 118 102 T 126 102" fill="none" stroke="#38bdf8" strokeWidth="1.4" />
+        <path d="M 110 106 Q 114 103 118 106 T 126 106" fill="none" stroke="#38bdf8" strokeWidth="1.4" />
+      </svg>
+
+      {/* Pontos de conexão dos bornes */}
+      {terminals.map((t) => {
+        const volt = terminalVoltages?.get ? (terminalVoltages.get(`${component.id}:${t.id}`) || terminalVoltages.get(`${component.id}:${t.label}`)) : undefined;
+        return (
+          <SchematicTerminalPoint
+            key={t.id}
+            componentId={component.id}
+            terminal={t}
+            voltage={volt}
+            wireColor={getConnectedWireColor(component.id, String(t.id), wires, null, volt, terminalVoltages)}
+            isSelected={activeTerminal?.componentId === component.id && activeTerminal?.terminalId === t.id}
+            isConnecting={Boolean(activeTerminal)}
+            onTerminalClick={onTerminalClick}
+            labelPosition={t.y < 90 ? 'top' : 'bottom'}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/**
  * Unified Component Router for Schematic View
  */
 export default function SchematicElement({
@@ -1878,6 +1973,19 @@ export default function SchematicElement({
         <TextNoteElement
           component={component}
           isSelected={isSelected}
+          onUpdateComponentState={onUpdateComponentState}
+          isSimulationMode={isSimulationMode}
+        />
+      );
+
+    case 'float_switch':
+      return (
+        <SchematicFloatSwitch
+          component={component}
+          terminalVoltages={terminalVoltages}
+          activeTerminal={activeTerminal}
+          wires={wires}
+          onTerminalClick={onTerminalClick}
           onUpdateComponentState={onUpdateComponentState}
           isSimulationMode={isSimulationMode}
         />

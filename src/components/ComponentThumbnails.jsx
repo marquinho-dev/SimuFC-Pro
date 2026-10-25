@@ -1202,6 +1202,37 @@ export function TextThumbnail() {
   );
 }
 
+export function FloatSwitchThumbnail() {
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px', background: 'transparent' }}>
+      <svg viewBox="0 0 100 85" style={{ width: '92%', height: '92%', display: 'block' }}>
+        {/* Carcaça do reservatório */}
+        <rect x="5" y="4" width="90" height="77" rx="6" fill="#1e2530" stroke="#475569" strokeWidth="1.2" />
+        {/* Tanque interno de água */}
+        <rect x="10" y="18" width="80" height="58" rx="4" fill="#080c13" stroke="#334155" strokeWidth="0.8" />
+        {/* Volume de água azul */}
+        <path d="M 10 44 Q 30 42, 50 44 T 90 44 L 90 76 L 10 76 Z" fill="#0284c7" opacity="0.8" />
+        <line x1="10" y1="44" x2="90" y2="44" stroke="#38bdf8" strokeWidth="1" />
+        {/* Termômetro vertical à esquerda */}
+        <rect x="13" y="24" width="3" height="36" rx="1.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
+        <rect x="13.5" y="42" width="2" height="18" rx="1" fill="#ef4444" />
+        {/* Boia de nível (corpo laranja + flutuador azul) */}
+        <g transform="rotate(12 36 44)">
+          <rect x="36" y="38" width="28" height="14" rx="4" fill="#2563eb" stroke="#1d4ed8" strokeWidth="0.8" />
+          <rect x="30" y="42" width="40" height="6" rx="3" fill="#ea580c" />
+        </g>
+        {/* Bica cromada com volante vermelho */}
+        <path d="M 86 12 L 76 12 Q 72 12 72 18 L 72 26" fill="none" stroke="#cbd5e1" strokeWidth="4" strokeLinecap="round" />
+        <circle cx="80" cy="8" r="3.5" fill="#dc2626" />
+        <line x1="72" y1="26" x2="72" y2="44" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="3 2" />
+      </svg>
+      <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '7.5px', fontWeight: 800, color: '#38bdf8' }}>
+        BOIA
+      </span>
+    </div>
+  );
+}
+
 export const COMPONENT_THUMBNAILS = {
   power_source: PowerSourceThumbnail,
   circuit_breaker: BreakerThumbnail,
@@ -1217,6 +1248,7 @@ export const COMPONENT_THUMBNAILS = {
   din_rail: DinRailThumbnail,
   terminal_block: TerminalBlockThumbnail,
   text_note: TextThumbnail,
+  float_switch: FloatSwitchThumbnail,
 };
 
 /* ==========================================================
@@ -1394,6 +1426,26 @@ export function SchematicFuseHolderThumbnail() {
   );
 }
 
+export function SchematicFloatSwitchThumbnail() {
+  return (
+    <svg viewBox="0 0 100 70" className="comp-thumb-svg">
+      <circle cx="32" cy="16" r="2.5" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="32" y1="18.5" x2="32" y2="30" stroke="#38bdf8" strokeWidth="1.5" />
+      <circle cx="32" cy="30" r="2.5" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      {/* Contato NF */}
+      <circle cx="32" cy="54" r="2.5" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      <line x1="32" y1="30" x2="32" y2="52" stroke="#38bdf8" strokeWidth="1.8" />
+      {/* Contato NA */}
+      <circle cx="68" cy="54" r="2.5" fill="#090d16" stroke="#38bdf8" strokeWidth="1.5" />
+      {/* Haste mecânica e boia */}
+      <line x1="32" y1="41" x2="56" y2="41" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="2 2" />
+      <rect x="56" y="36" width="12" height="10" rx="1.5" fill="none" stroke="#38bdf8" strokeWidth="1.4" />
+      <path d="M 54 50 Q 58 48 62 50 T 70 50" fill="none" stroke="#38bdf8" strokeWidth="1.2" />
+      <text x="82" y="44" fill="#ffffff" fontSize="8" fontWeight="bold">B1</text>
+    </svg>
+  );
+}
+
 export const SCHEMATIC_THUMBNAILS = {
   power_source: SchematicPowerSourceThumbnail,
   circuit_breaker: SchematicBreakerThumbnail,
@@ -1406,4 +1458,5 @@ export const SCHEMATIC_THUMBNAILS = {
   button_emergency: SchematicButtonEmergencyThumbnail,
   motor_6p: SchematicMotorThumbnail,
   text_note: TextThumbnail,
+  float_switch: SchematicFloatSwitchThumbnail,
 };

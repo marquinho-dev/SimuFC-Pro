@@ -224,6 +224,27 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
           }
           break;
 
+        case 'float_switch': {
+          // Boia de Nível de Reservatório:
+          // Ao encher e subir o nível (>= threshold), a boia sobe e LIGA o contato NA (11-14).
+          // Ao esvaziar e descer o nível (< threshold), a boia desce e fecha o contato NF (11-12).
+          const lvl = Number(comp.state?.level ?? 22);
+          const thresh = Number(comp.state?.threshold ?? 50);
+          const isHigh = lvl >= thresh;
+          if (isHigh) {
+            addEdge(`${comp.id}:COM`, `${comp.id}:NA`);
+            addEdge(`${comp.id}:11`, `${comp.id}:14`);
+            addEdge(`${comp.id}:COM`, `${comp.id}:14`);
+            addEdge(`${comp.id}:11`, `${comp.id}:NA`);
+          } else {
+            addEdge(`${comp.id}:COM`, `${comp.id}:NF`);
+            addEdge(`${comp.id}:11`, `${comp.id}:12`);
+            addEdge(`${comp.id}:COM`, `${comp.id}:12`);
+            addEdge(`${comp.id}:11`, `${comp.id}:NF`);
+          }
+          break;
+        }
+
         case 'motor_6p':
           // Motor windings are inductive loads with impedance, not zero-ohm conductor shorts.
           // Inter-terminal connections (bridges / jumpers) are exclusively formed by user wiring.
