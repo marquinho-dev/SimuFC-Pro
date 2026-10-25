@@ -44,8 +44,21 @@ export default function FloatSwitchElement({
     }
   }, [state.level, state.isTapOpen]);
 
-  // Loop suave de enchimento e esvaziamento da caixa d'água
+  // Fecha o registro e pausa quando a simulação for desativada
   useEffect(() => {
+    if (!isSimulationMode) {
+      if (isTapOpen) {
+        setIsTapOpen(false);
+      }
+    }
+  }, [isSimulationMode]);
+
+  // Loop suave de física da água (ativo EXCLUSIVAMENTE em modo de simulação)
+  useEffect(() => {
+    if (!isSimulationMode) {
+      return;
+    }
+
     let animId;
     let lastTime = performance.now();
 
@@ -53,7 +66,7 @@ export default function FloatSwitchElement({
       const dt = Math.min(50, time - lastTime);
       lastTime = time;
 
-      // Ondulação suave da água
+      // Ondulação suave da água somente em simulação
       setWavePhase((prev) => (prev + dt * 0.003) % (Math.PI * 2));
 
       // Se registro aberto -> enche até 88%; se fechado -> esvazia até 15%
@@ -87,7 +100,7 @@ export default function FloatSwitchElement({
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [isTapOpen, threshold, componentId, onUpdateComponentState]);
+  }, [isSimulationMode, isTapOpen, threshold, componentId, onUpdateComponentState]);
 
   // Atualização periódica de persistência
   useEffect(() => {
@@ -102,9 +115,10 @@ export default function FloatSwitchElement({
     return () => clearInterval(timer);
   }, [level, isTapOpen, componentId, state.level, onUpdateComponentState]);
 
-  // Alterna o registro de entrada ao clicar na tubulação / registro
+  // Alterna o registro de entrada ao clicar na tubulação / registro (apenas em simulação)
   const handleToggleTap = (e) => {
     e.stopPropagation();
+    if (!isSimulationMode) return;
     const newTap = !isTapOpen;
     setIsTapOpen(newTap);
     onUpdateComponentState?.(componentId, {
@@ -396,8 +410,8 @@ export default function FloatSwitchElement({
             opacity="0.85"
           />
 
-          {/* Jato d'água caindo da bica (quando registro aberto) */}
-          {isTapOpen && (
+          {/* Jato d'água caindo da bica (apenas quando em simulação e registro aberto) */}
+          {isSimulationMode && isTapOpen && (
             <g>
               <line
                 x1="226"
@@ -530,9 +544,15 @@ export default function FloatSwitchElement({
             5. TUBULAÇÃO DE ENTRADA (A BICA) NA DIREITA COM REGISTRO
             ------------------------------------------------------------- */}
         <g
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: isSimulationMode ? 'pointer' : 'default', opacity: isSimulationMode ? 1 : 0.9 }}
           onClick={handleToggleTap}
-          title={isTapOpen ? 'Clique para FECHAR a entrada de água' : 'Clique para ABRIR a entrada de água'}
+          title={
+            !isSimulationMode
+              ? 'Inicie a simulação (▶) para operar o registro da caixa'
+              : isTapOpen
+              ? 'Clique para FECHAR a entrada de água'
+              : 'Clique para ABRIR a entrada de água'
+          }
         >
           {/* Tubo vertical vindo da alimentação */}
           <rect x="302" y="70" width="12" height="150" rx="1.5" fill={`url(#${uid}_pvcBrown)`} />
