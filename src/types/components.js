@@ -297,9 +297,9 @@ export const BRAZIL_VOLTAGE_STANDARDS = [
 ];
 
 export const FLOAT_SWITCH_TERMINALS = [
-  { id: 'COM', label: '11/COM', x: 44, y: 24, type: 'float_terminal' },
-  { id: 'NA', label: '14/NA', x: 94, y: 24, type: 'float_terminal' },
-  { id: 'NF', label: '12/NF', x: 144, y: 24, type: 'float_terminal' },
+  { id: 'COM', label: '11', x: 54, y: 18, type: 'float_terminal' },
+  { id: 'NA', label: '14', x: 98, y: 18, type: 'float_terminal' },
+  { id: 'NF', label: '12', x: 142, y: 18, type: 'float_terminal' },
 ];
 
 export const INITIAL_COMPONENTS = [
