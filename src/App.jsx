@@ -556,47 +556,14 @@ export default function App() {
     setComponents((prev) => {
       // 1. Moving a DIN Rail: Move all mounted components (and their linked thermal relays) in 100% lockstep
       if (compType === 'din_rail') {
-        const rail = prev.find((c) => c.id === compId) || movingComp;
-        const railLength = Math.max(300, Number(rail?.state?.length) || 800);
-        const railCenterY = (rail?.y ?? newY) + 25;
-        const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
-
         const mountedIds = new Set();
         prev.forEach((c) => {
           if (c.id === compId) return;
 
-          // Check if explicitly bound to this DIN rail
-          const isExplicit = c.dinRailId === compId || c.state?.dinRailId === compId;
-
-          // Check if geometrically positioned on this rail
-          let isGeom = false;
-          if (mountableTypes.has(c.type)) {
-            const compH =
-              c.type === 'terminal_block'
-                ? 146
-                : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
-                ? 218
-                : 350;
-            const compW =
-              c.type === 'circuit_breaker'
-                ? (c.state?.poles || 3) * 52
-                : c.type === 'fuse_holder'
-                ? 52
-                : c.type === 'terminal_block'
-                ? (c.state?.poles || 4) * 34
-                : c.type === 'timer_relay'
-                ? 120
-                : 210;
-
-            const compCenterY = c.y + compH / 2;
-            const isWithinY = Math.abs(compCenterY - railCenterY) < 65;
-            const isWithinX = c.x + compW > rail.x - 20 && c.x < rail.x + railLength + 20;
-            if (isWithinY && isWithinX) {
-              isGeom = true;
-            }
-          }
-
-          if (isExplicit || isGeom) {
+          // As peças só se movem junto se JÁ estiverem atreladas a este trilho DIN.
+          // Se o trilho passar por cima de uma peça solta na bancada, ela NÃO gruda nele!
+          const isMounted = c.dinRailId === compId || c.state?.dinRailId === compId;
+          if (isMounted) {
             mountedIds.add(c.id);
             if (c.type === 'contactor' && c.linkedRelayId) {
               mountedIds.add(c.linkedRelayId);
@@ -611,8 +578,6 @@ export default function App() {
               ...c,
               x: c.x + dx,
               y: c.y + dy,
-              dinRailId: compId,
-              state: { ...c.state, dinRailId: compId },
             };
           }
           return c;
@@ -651,38 +616,10 @@ export default function App() {
     setWires((prevWires) => {
       const movedCompIds = new Set([compId]);
       if (compType === 'din_rail') {
-        const rail = movingComp;
-        const railLength = Math.max(300, Number(rail?.state?.length) || 800);
-        const railCenterY = (rail?.y ?? newY) + 25;
-        const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
-
         components.forEach((c) => {
           if (c.id === compId) return;
-          const isExplicit = c.dinRailId === compId || c.state?.dinRailId === compId;
-          let isGeom = false;
-          if (mountableTypes.has(c.type)) {
-            const compH =
-              c.type === 'terminal_block'
-                ? 146
-                : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
-                ? 218
-                : 350;
-            const compW =
-              c.type === 'circuit_breaker'
-                ? (c.state?.poles || 3) * 52
-                : c.type === 'fuse_holder'
-                ? 52
-                : c.type === 'terminal_block'
-                ? (c.state?.poles || 4) * 34
-                : c.type === 'timer_relay'
-                ? 120
-                : 210;
-            const compCenterY = c.y + compH / 2;
-            const isWithinY = Math.abs(compCenterY - railCenterY) < 65;
-            const isWithinX = c.x + compW > (rail?.x ?? 0) - 20 && c.x < (rail?.x ?? 0) + railLength + 20;
-            if (isWithinY && isWithinX) isGeom = true;
-          }
-          if (isExplicit || isGeom) {
+          const isMounted = c.dinRailId === compId || c.state?.dinRailId === compId;
+          if (isMounted) {
             movedCompIds.add(c.id);
             if (c.type === 'contactor' && c.linkedRelayId) {
               movedCompIds.add(c.linkedRelayId);

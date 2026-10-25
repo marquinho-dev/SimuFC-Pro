@@ -1215,16 +1215,11 @@ export default function Canvas({
               dinRailId: snapTargetRef.current.railId,
             });
           } else {
-            // Check if a normal component (not the DIN rail itself) had a DIN rail and moved away
+            // Check if a normal component (not the DIN rail itself) was moved onto or away from a rail
             const curComp = componentsRef.current.find((c) => c.id === movedCompId);
-            if (curComp && curComp.type !== 'din_rail' && (curComp.dinRailId || curComp.state?.dinRailId)) {
-              const rail = componentsRef.current.find(
-                (c) => c.id === (curComp.dinRailId || curComp.state?.dinRailId)
-              );
-              let stillOnRail = false;
-              if (rail) {
-                const railLength = Math.max(300, Number(rail.state?.length) || 800);
-                const railCenterY = rail.y + 25;
+            if (curComp && curComp.type !== 'din_rail') {
+              const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
+              if (mountableTypes.has(curComp.type)) {
                 const compH =
                   curComp.type === 'terminal_block'
                     ? 146
@@ -1241,17 +1236,35 @@ export default function Canvas({
                     : curComp.type === 'timer_relay'
                     ? 120
                     : 210;
-                const isWithinY = Math.abs(curComp.y + compH / 2 - railCenterY) < 70;
-                const isWithinX =
-                  curComp.x + compW > rail.x - 20 && curComp.x < rail.x + railLength + 20;
-                if (isWithinY && isWithinX) {
-                  stillOnRail = true;
+
+                const dinRails = componentsRef.current.filter((c) => c.type === 'din_rail');
+                let targetRail = null;
+                for (const rail of dinRails) {
+                  const railLength = Math.max(300, Number(rail.state?.length) || 800);
+                  const railCenterY = rail.y + 25;
+                  const isWithinY = Math.abs(curComp.y + compH / 2 - railCenterY) < 65;
+                  const isWithinX = curComp.x + compW > rail.x - 20 && curComp.x < rail.x + railLength + 20;
+                  if (isWithinY && isWithinX) {
+                    targetRail = rail;
+                    break;
+                  }
                 }
-              }
-              if (!stillOnRail && onUpdateComponentStateRef.current) {
-                onUpdateComponentStateRef.current(movedCompId, {
-                  dinRailId: null,
-                });
+
+                if (targetRail) {
+                  // User deliberately moved the piece and left it on this rail -> attach!
+                  if (curComp.dinRailId !== targetRail.id && onUpdateComponentStateRef.current) {
+                    onUpdateComponentStateRef.current(movedCompId, {
+                      dinRailId: targetRail.id,
+                    });
+                  }
+                } else if (!targetRail && (curComp.dinRailId || curComp.state?.dinRailId)) {
+                  // User moved the piece away from the rail -> detach!
+                  if (onUpdateComponentStateRef.current) {
+                    onUpdateComponentStateRef.current(movedCompId, {
+                      dinRailId: null,
+                    });
+                  }
+                }
               }
             }
           }
@@ -1266,37 +1279,8 @@ export default function Canvas({
           const movedComp = componentsRef.current.find((c) => c.id === movedCompId);
           const allMovedCompIds = new Set([movedCompId]);
           if (movedComp?.type === 'din_rail') {
-            const railLength = Math.max(300, Number(movedComp.state?.length) || 800);
-            const railCenterY = movedComp.y + 25;
-            const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
-
             componentsRef.current.forEach((c) => {
-              const isExplicit = c.dinRailId === movedCompId || c.state?.dinRailId === movedCompId;
-              let isGeom = false;
-              if (mountableTypes.has(c.type)) {
-                const compH =
-                  c.type === 'terminal_block'
-                    ? 146
-                    : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
-                    ? 218
-                    : 350;
-                const compW =
-                  c.type === 'circuit_breaker'
-                    ? (c.state?.poles || 3) * 52
-                    : c.type === 'fuse_holder'
-                    ? 52
-                    : c.type === 'terminal_block'
-                    ? (c.state?.poles || 4) * 34
-                    : c.type === 'timer_relay'
-                    ? 120
-                    : 210;
-                const compCenterY = c.y + compH / 2;
-                const isWithinY = Math.abs(compCenterY - railCenterY) < 65;
-                const isWithinX = c.x + compW > movedComp.x - 20 && c.x < movedComp.x + railLength + 20;
-                if (isWithinY && isWithinX) isGeom = true;
-              }
-
-              if (isExplicit || isGeom) {
+              if (c.dinRailId === movedCompId || c.state?.dinRailId === movedCompId) {
                 allMovedCompIds.add(c.id);
                 if (c.type === 'contactor' && c.linkedRelayId) {
                   allMovedCompIds.add(c.linkedRelayId);
