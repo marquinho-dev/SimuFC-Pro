@@ -1213,21 +1213,27 @@ export function FloatSwitchThumbnail() {
         {/* Água interna */}
         <polygon points="30,48 76,48 74,76 32,76" fill="#0284c7" opacity="0.8" />
         <line x1="30" y1="48" x2="76" y2="48" stroke="#38bdf8" strokeWidth="1" />
-        {/* Ladrão na esquerda */}
-        <rect x="6" y="20" width="22" height="3" fill="#78350f" />
-        {/* Borneira na esquerda */}
-        <rect x="12" y="32" width="10" height="24" rx="1.5" fill="#0f172a" stroke="#334155" strokeWidth="0.6" />
-        <circle cx="17" cy="36" r="1.5" fill="#f8fafc" />
-        <circle cx="17" cy="44" r="1.5" fill="#f8fafc" />
-        <circle cx="17" cy="52" r="1.5" fill="#f8fafc" />
-        {/* Tubulação marrom na direita */}
-        <rect x="78" y="28" width="18" height="3" fill="#78350f" />
-        <rect x="76" y="28" width="3" height="8" fill="#78350f" />
+        {/* Borneira no topo esquerdo */}
+        <rect x="6" y="14" width="12" height="26" rx="1.5" fill="#0f172a" stroke="#334155" strokeWidth="0.6" />
+        <circle cx="12" cy="18" r="1.5" fill="#f8fafc" />
+        <circle cx="12" cy="26" r="1.5" fill="#f8fafc" />
+        <circle cx="12" cy="34" r="1.5" fill="#f8fafc" />
+        {/* Fios saindo da borneira */}
+        <path d="M 16 18 Q 22 18 26 22" fill="none" stroke="#0f172a" strokeWidth="0.8" />
+        <path d="M 16 26 Q 22 24 26 23" fill="none" stroke="#78350f" strokeWidth="0.8" />
+        <path d="M 16 34 Q 22 30 26 24" fill="none" stroke="#1d4ed8" strokeWidth="0.8" />
+        {/* Tubulação horizontal de entrada com registro na esquerda */}
+        <rect x="6" y="44" width="22" height="3" fill="#78350f" />
+        <circle cx="17" cy="45.5" r="2.2" fill="#ea580c" />
+        {/* Tubulação de saída no canto inferior direito */}
+        <rect x="74" y="66" width="20" height="3" fill="#78350f" />
         {/* Cabo e contrapeso amarelo */}
-        <path d="M 22 44 Q 40 32 48 42 T 52 58" fill="none" stroke="#0f172a" strokeWidth="1.2" />
-        <rect x="46" y="44" width="4" height="6" rx="1" fill="#eab308" />
-        {/* Boia azul */}
-        <rect x="48" y="55" width="8" height="12" rx="3.5" fill="#1d4ed8" stroke="#1e3a8a" strokeWidth="0.6" />
+        <path d="M 26 23 Q 36 30 42 42 T 54 50" fill="none" stroke="#0f172a" strokeWidth="1.2" />
+        <rect x="40" y="40" width="4" height="6" rx="1" fill="#eab308" />
+        {/* Boia horizontal EngeHall */}
+        <rect x="52" y="47" width="14" height="6" rx="1.5" fill="#0284c7" />
+        <rect x="50" y="49" width="16" height="1.5" rx="0.5" fill="#ea580c" />
+        <rect x="48" y="48.5" width="3" height="2.5" rx="0.5" fill="#ea580c" />
       </svg>
       <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '7px', fontWeight: 800, color: '#38bdf8' }}>
         CAIXA D'ÁGUA

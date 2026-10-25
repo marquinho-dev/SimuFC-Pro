@@ -421,16 +421,10 @@ export default function FloatSwitchElement({
               : 'Clique para ABRIR a entrada de água'
           }
         >
-          {/* Tubo vertical vindo de baixo na esquerda */}
-          <rect x="18" y="104" width="10" height="90" rx="1.5" fill={`url(#${uid}_pvc)`} />
-          {/* Joelho 90° inferior esquerdo */}
-          <rect x="18" y="184" width="22" height="12" rx="2" fill={`url(#${uid}_pvc)`} />
-
-          {/* Joelho 90° superior esquerdo */}
-          <rect x="18" y="96" width="18" height="18" rx="2" fill={`url(#${uid}_pvc)`} />
-
-          {/* Tubo horizontal de entrada de água passando para a caixa */}
-          <rect x="28" y="100" width="56" height="10" rx="1.5" fill={`url(#${uid}_pvc)`} />
+          {/* Tubo horizontal de entrada de água passando pelo registro para a caixa */}
+          <rect x="14" y="100" width="70" height="10" rx="1.5" fill={`url(#${uid}_pvc)`} />
+          {/* Luva / conexão na extremidade esquerda da tubulação */}
+          <rect x="12" y="98" width="5" height="14" rx="1.5" fill="#451a03" />
 
           {/* Flange / adaptador na parede da caixa */}
           <rect x="76" y="96" width="6" height="18" rx="1.5" fill="#451a03" />
