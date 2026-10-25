@@ -296,6 +296,12 @@ export const BRAZIL_VOLTAGE_STANDARDS = [
   },
 ];
 
+export const FLOAT_SWITCH_TERMINALS = [
+  { id: 'COM', label: '11/COM', x: 44, y: 24, type: 'float_terminal' },
+  { id: 'NA', label: '14/NA', x: 94, y: 24, type: 'float_terminal' },
+  { id: 'NF', label: '12/NF', x: 144, y: 24, type: 'float_terminal' },
+];
+
 export const INITIAL_COMPONENTS = [
   {
     id: 'source-1',
@@ -578,12 +584,6 @@ export const INITIAL_COMPONENTS = [
     },
     terminals: FLOAT_SWITCH_TERMINALS,
   },
-];
-
-export const FLOAT_SWITCH_TERMINALS = [
-  { id: 'COM', label: '11/COM', x: 44, y: 24, type: 'float_terminal' },
-  { id: 'NA', label: '14/NA', x: 94, y: 24, type: 'float_terminal' },
-  { id: 'NF', label: '12/NF', x: 144, y: 24, type: 'float_terminal' },
 ];
 
 export function getTerminalBlockTerminals(poles = 4) {
