@@ -309,6 +309,7 @@ export default function Canvas({
   onLoadPreset,
   onAlignDinRail,
   onUpdateViewportCenter,
+  onEndMoveComponent,
 }) {
   const containerRef = useRef(null);
   const boardRef = useRef(null);
@@ -349,6 +350,7 @@ export default function Canvas({
   const onUpdateComponentStateRef = useRef(onUpdateComponentState);
   const onLinkComponentsRef = useRef(onLinkComponents);
   const onUnlinkComponentsRef = useRef(onUnlinkComponents);
+  const onEndMoveComponentRef = useRef(onEndMoveComponent);
 
   // Keep refs synchronized after render
   useEffect(() => {
@@ -357,6 +359,7 @@ export default function Canvas({
     componentsRef.current = components;
     wiresRef.current = wires;
     onMoveComponentRef.current = onMoveComponent;
+    onEndMoveComponentRef.current = onEndMoveComponent;
     onMoveAllComponentsRef.current = onMoveAllComponents;
     onUpdateWireRef.current = onUpdateWire;
     onUpdateComponentStateRef.current = onUpdateComponentState;
@@ -1212,9 +1215,9 @@ export default function Canvas({
               dinRailId: snapTargetRef.current.railId,
             });
           } else {
-            // Check if component had a DIN rail and moved away
+            // Check if a normal component (not the DIN rail itself) had a DIN rail and moved away
             const curComp = componentsRef.current.find((c) => c.id === movedCompId);
-            if (curComp && (curComp.dinRailId || curComp.state?.dinRailId)) {
+            if (curComp && curComp.type !== 'din_rail' && (curComp.dinRailId || curComp.state?.dinRailId)) {
               const rail = componentsRef.current.find(
                 (c) => c.id === (curComp.dinRailId || curComp.state?.dinRailId)
               );
@@ -1263,8 +1266,37 @@ export default function Canvas({
           const movedComp = componentsRef.current.find((c) => c.id === movedCompId);
           const allMovedCompIds = new Set([movedCompId]);
           if (movedComp?.type === 'din_rail') {
+            const railLength = Math.max(300, Number(movedComp.state?.length) || 800);
+            const railCenterY = movedComp.y + 25;
+            const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
+
             componentsRef.current.forEach((c) => {
-              if (c.dinRailId === movedCompId || c.state?.dinRailId === movedCompId) {
+              const isExplicit = c.dinRailId === movedCompId || c.state?.dinRailId === movedCompId;
+              let isGeom = false;
+              if (mountableTypes.has(c.type)) {
+                const compH =
+                  c.type === 'terminal_block'
+                    ? 146
+                    : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
+                    ? 218
+                    : 350;
+                const compW =
+                  c.type === 'circuit_breaker'
+                    ? (c.state?.poles || 3) * 52
+                    : c.type === 'fuse_holder'
+                    ? 52
+                    : c.type === 'terminal_block'
+                    ? (c.state?.poles || 4) * 34
+                    : c.type === 'timer_relay'
+                    ? 120
+                    : 210;
+                const compCenterY = c.y + compH / 2;
+                const isWithinY = Math.abs(compCenterY - railCenterY) < 65;
+                const isWithinX = c.x + compW > movedComp.x - 20 && c.x < movedComp.x + railLength + 20;
+                if (isWithinY && isWithinX) isGeom = true;
+              }
+
+              if (isExplicit || isGeom) {
                 allMovedCompIds.add(c.id);
                 if (c.type === 'contactor' && c.linkedRelayId) {
                   allMovedCompIds.add(c.linkedRelayId);
@@ -1320,6 +1352,7 @@ export default function Canvas({
 
         snapTargetRef.current = null;
         setSnapTarget(null);
+        onEndMoveComponentRef.current?.(movedCompId);
         draggedCompIdRef.current = null;
         dragMovedRef.current = false;
         setDraggedCompId(null);

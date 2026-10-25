@@ -523,21 +523,80 @@ export default function App() {
     }
   }, [shortedWireIds]);
 
+  // Persistent ref for tracking previous positions during drag to guarantee zero delta-accumulation errors
+  const lastMovePosRef = useRef(new Map());
+
+  // Called when a component drag finishes (pointerup)
+  const handleEndMoveComponent = useCallback((compId) => {
+    if (compId) {
+      lastMovePosRef.current.delete(compId);
+    } else {
+      lastMovePosRef.current.clear();
+    }
+  }, []);
+
   // Handler to move a component (drag) - moves linked Contactor and Relay, and DIN Rail mounted components in lockstep (blocked in simulation)
   const handleMoveComponent = useCallback((compId, newX, newY) => {
     if (isSimulationMode) return;
     const movingComp = components.find((c) => c.id === compId);
-    if (!movingComp) return;
-    const dx = newX - movingComp.x;
-    const dy = newY - movingComp.y;
+    if (!movingComp && !lastMovePosRef.current.has(compId)) return;
+
+    // Use ref to calculate exact per-frame delta (dx, dy) regardless of React render batching
+    const lastPos = lastMovePosRef.current.get(compId);
+    const prevX = lastPos !== undefined ? lastPos.x : movingComp.x;
+    const prevY = lastPos !== undefined ? lastPos.y : movingComp.y;
+    const dx = newX - prevX;
+    const dy = newY - prevY;
+    lastMovePosRef.current.set(compId, { x: newX, y: newY });
+
     if (dx === 0 && dy === 0) return;
 
+    const compType = movingComp?.type;
+
     setComponents((prev) => {
-      // 1. Moving a DIN Rail: Move all mounted components (and their linked thermal relays) by (dx, dy)
-      if (movingComp.type === 'din_rail') {
+      // 1. Moving a DIN Rail: Move all mounted components (and their linked thermal relays) in 100% lockstep
+      if (compType === 'din_rail') {
+        const rail = prev.find((c) => c.id === compId) || movingComp;
+        const railLength = Math.max(300, Number(rail?.state?.length) || 800);
+        const railCenterY = (rail?.y ?? newY) + 25;
+        const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
+
         const mountedIds = new Set();
         prev.forEach((c) => {
-          if (c.dinRailId === compId || c.state?.dinRailId === compId) {
+          if (c.id === compId) return;
+
+          // Check if explicitly bound to this DIN rail
+          const isExplicit = c.dinRailId === compId || c.state?.dinRailId === compId;
+
+          // Check if geometrically positioned on this rail
+          let isGeom = false;
+          if (mountableTypes.has(c.type)) {
+            const compH =
+              c.type === 'terminal_block'
+                ? 146
+                : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
+                ? 218
+                : 350;
+            const compW =
+              c.type === 'circuit_breaker'
+                ? (c.state?.poles || 3) * 52
+                : c.type === 'fuse_holder'
+                ? 52
+                : c.type === 'terminal_block'
+                ? (c.state?.poles || 4) * 34
+                : c.type === 'timer_relay'
+                ? 120
+                : 210;
+
+            const compCenterY = c.y + compH / 2;
+            const isWithinY = Math.abs(compCenterY - railCenterY) < 65;
+            const isWithinX = c.x + compW > rail.x - 20 && c.x < rail.x + railLength + 20;
+            if (isWithinY && isWithinX) {
+              isGeom = true;
+            }
+          }
+
+          if (isExplicit || isGeom) {
             mountedIds.add(c.id);
             if (c.type === 'contactor' && c.linkedRelayId) {
               mountedIds.add(c.linkedRelayId);
@@ -548,28 +607,34 @@ export default function App() {
         return prev.map((c) => {
           if (c.id === compId) return { ...c, x: newX, y: newY };
           if (mountedIds.has(c.id)) {
-            return { ...c, x: c.x + dx, y: c.y + dy };
+            return {
+              ...c,
+              x: c.x + dx,
+              y: c.y + dy,
+              dinRailId: compId,
+              state: { ...c.state, dinRailId: compId },
+            };
           }
           return c;
         });
       }
 
       // 2. Moving a Contactor with docked Thermal Relay
-      if (movingComp.type === 'contactor' && movingComp.linkedRelayId) {
+      if (compType === 'contactor' && movingComp.linkedRelayId) {
         const relayId = movingComp.linkedRelayId;
         return prev.map((c) => {
           if (c.id === compId) return { ...c, x: newX, y: newY };
-          if (c.id === relayId) return { ...c, x: newX, y: newY + 238 };
+          if (c.id === relayId) return { ...c, x: c.x + dx, y: c.y + dy };
           return c;
         });
       }
 
       // 3. Moving a Thermal Relay with linked Contactor
-      if (movingComp.type === 'thermal_relay' && movingComp.linkedContactorId) {
+      if (compType === 'thermal_relay' && movingComp.linkedContactorId) {
         const contactorId = movingComp.linkedContactorId;
         return prev.map((c) => {
           if (c.id === compId) return { ...c, x: newX, y: newY };
-          if (c.id === contactorId) return { ...c, x: newX, y: newY - 238 };
+          if (c.id === contactorId) return { ...c, x: c.x + dx, y: c.y + dy };
           return c;
         });
       }
@@ -585,18 +650,48 @@ export default function App() {
     // Also update any internal jumper wires and any wire splices attached to this component or any mounted components
     setWires((prevWires) => {
       const movedCompIds = new Set([compId]);
-      if (movingComp.type === 'din_rail') {
+      if (compType === 'din_rail') {
+        const rail = movingComp;
+        const railLength = Math.max(300, Number(rail?.state?.length) || 800);
+        const railCenterY = (rail?.y ?? newY) + 25;
+        const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
+
         components.forEach((c) => {
-          if (c.dinRailId === compId || c.state?.dinRailId === compId) {
+          if (c.id === compId) return;
+          const isExplicit = c.dinRailId === compId || c.state?.dinRailId === compId;
+          let isGeom = false;
+          if (mountableTypes.has(c.type)) {
+            const compH =
+              c.type === 'terminal_block'
+                ? 146
+                : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
+                ? 218
+                : 350;
+            const compW =
+              c.type === 'circuit_breaker'
+                ? (c.state?.poles || 3) * 52
+                : c.type === 'fuse_holder'
+                ? 52
+                : c.type === 'terminal_block'
+                ? (c.state?.poles || 4) * 34
+                : c.type === 'timer_relay'
+                ? 120
+                : 210;
+            const compCenterY = c.y + compH / 2;
+            const isWithinY = Math.abs(compCenterY - railCenterY) < 65;
+            const isWithinX = c.x + compW > (rail?.x ?? 0) - 20 && c.x < (rail?.x ?? 0) + railLength + 20;
+            if (isWithinY && isWithinX) isGeom = true;
+          }
+          if (isExplicit || isGeom) {
             movedCompIds.add(c.id);
             if (c.type === 'contactor' && c.linkedRelayId) {
               movedCompIds.add(c.linkedRelayId);
             }
           }
         });
-      } else if (movingComp.type === 'contactor' && movingComp.linkedRelayId) {
+      } else if (compType === 'contactor' && movingComp?.linkedRelayId) {
         movedCompIds.add(movingComp.linkedRelayId);
-      } else if (movingComp.type === 'thermal_relay' && movingComp.linkedContactorId) {
+      } else if (compType === 'thermal_relay' && movingComp?.linkedContactorId) {
         movedCompIds.add(movingComp.linkedContactorId);
       }
 
@@ -1352,6 +1447,7 @@ export default function App() {
             onUpdateWire={handleUpdateWire}
             onUpdateComponentState={handleUpdateComponentState}
             onMoveComponent={handleMoveComponent}
+            onEndMoveComponent={handleEndMoveComponent}
             onMoveAllComponents={handleMoveAllComponents}
             onLinkComponents={handleLinkComponents}
             onUnlinkComponents={handleUnlinkComponents}
