@@ -164,61 +164,64 @@ export default function FloatSwitchElement({
   // - Nível alto (acima do contrapeso): a boia flutua empinada para cima na superfície d'água (80° -> 135°),
   //   com o cabo esticado para baixo em direção ao contrapeso.
   // -----------------------------------------------------------------
+  // -----------------------------------------------------------------
+  // CINEMÁTICA PURA, UNIFICADA E CONTÍNUA DA BOIA E DO CONTRAPESO
+  // - Elimina qualquer descontinuidade ('salto da boia') através de uma
+  //   formulação contínua única em todo o curso (0% a 100%).
+  // - O contrapeso rotaciona suavemente acompanhando a linha de tração do cabo.
+  // - O cabo sai da extremidade do contrapeso diretamente alinhado à boia,
+  //   eliminando dobras ou 'anzóis' abruptos.
+  // -----------------------------------------------------------------
   const anchorX = 82;
   const anchorY = 32;
-  const weightX = 128;
-  const weightY = 122;
-  const tetherLen = 52; // Comprimento útil do cabo entre contrapeso e boia
+  const weightX = 126;
+  const weightY = 126;
+  const tetherLen = 50; // Comprimento útil do cabo entre contrapeso e boia
 
   // Posição de repouso pendurada no ar (quando o nível d'água está baixo)
-  const maxHangY = weightY + tetherLen; // ~174
-  const minFloatY = weightY - tetherLen * 0.85; // ~78
+  const maxHangY = weightY + tetherLen; // ~176 (caixa vazia)
+  const minFloatY = weightY - tetherLen * 0.82; // ~85 (caixa cheia)
 
-  let floatX = weightX + 2;
-  let floatY = maxHangY;
-  let floatAngle = 0;
+  // Altura contínua da boia: flutua na água (waterY + 4) respeitando os limites do cabo
+  const floatY = Math.max(minFloatY, Math.min(maxHangY, waterY + 4));
 
-  // Se a água alcançou a boia, ela passa a flutuar na superfície (waterY)
-  if (waterY < maxHangY - 6) {
-    // A boia flutua apoiada na lâmina d'água
-    floatY = Math.max(minFloatY, Math.min(maxHangY, waterY + 6));
+  // Deslocamento vertical relativo ao ponto de ancoragem do contrapeso
+  const dy = floatY - weightY;
 
-    if (floatY >= weightY) {
-      // ÁGUA ABAIXO OU NO NÍVEL DO CONTRAPESO (Nível médio-baixo):
-      // A boia deita suavemente em direção à direita (0° até -80°)
-      const liftRatio = Math.max(0, Math.min(1, (maxHangY - floatY) / (maxHangY - weightY)));
-      floatX = weightX + 4 + liftRatio * 26;
-      floatAngle = -(liftRatio * 80);
-    } else {
-      // ÁGUA ACIMA DO CONTRAPESO (Nível alto / Caixa cheia):
-      // O contrapeso submerso puxa o colar para baixo e a boia empina para cima (-80° até -135°)
-      const dyUp = weightY - floatY;
-      const dxArc = Math.sqrt(Math.max(16, tetherLen * tetherLen - dyUp * dyUp));
-      floatX = weightX + dxArc;
+  // Deslocamento horizontal: arco circular puro contínuo ao redor do contrapeso
+  const dxArc = Math.sqrt(Math.max(0, tetherLen * tetherLen - dy * dy));
+  const floatX = weightX + 4 + dxArc * 0.94;
 
-      const highRatio = Math.max(0, Math.min(1, dyUp / (weightY - minWaterY)));
-      floatAngle = -(80 + highRatio * 55);
-    }
-  } else {
-    // Boia pendurada no ar sob gravidade (quase vertical)
-    floatX = weightX + 2;
-    floatY = maxHangY;
-    floatAngle = -2;
-  }
+  // Vetor contínuo da linha de tração do contrapeso até a boia
+  const vecX = floatX - weightX;
+  const vecY = floatY - weightY;
+  const tetherAngle = Math.atan2(vecY, vecX) * (180 / Math.PI);
 
-  // Posição exata do conector/colar amarelo no topo da boia (0, -12) rotacionado por floatAngle
-  const rad = (floatAngle * Math.PI) / 180;
-  const collarX = floatX + 12 * Math.sin(rad);
-  const collarY = floatY - 12 * Math.cos(rad);
+  // Ângulo contínuo da boia: alinhada ao vetor de tração e empuxo (sem saltos)
+  const floatAngle = tetherAngle - 90;
 
-  // Tangente para entrada perfeitamente contínua do cabo no colar da boia
-  const ctrl2X = collarX + 14 * Math.sin(rad);
-  const ctrl2Y = collarY - 14 * Math.cos(rad);
+  // Rotação suave do contrapeso amarelo alinhado à tensão do cabo
+  const weightRot = (tetherAngle - 90) * 0.82;
+  const weightRotRad = (weightRot * Math.PI) / 180;
 
-  // Ponto de controle inicial saindo da base do contrapeso
-  const isUpward = collarY < weightY + 9;
-  const ctrl1X = weightX + (collarX - weightX) * (isUpward ? 0.35 : 0.2);
-  const ctrl1Y = isUpward ? (weightY + 9) + (collarY - (weightY + 9)) * 0.35 : weightY + 22;
+  // Furos de entrada (topo) e saída (base) do contrapeso acompanhando sua rotação
+  const weightEnterX = weightX + 9 * Math.sin(weightRotRad);
+  const weightEnterY = weightY - 9 * Math.cos(weightRotRad);
+  const weightExitX = weightX - 9 * Math.sin(weightRotRad);
+  const weightExitY = weightY + 9 * Math.cos(weightRotRad);
+
+  // Posição exata do conector/colar amarelo no topo da boia (0, -12)
+  const floatRad = (floatAngle * Math.PI) / 180;
+  const collarX = floatX + 12 * Math.sin(floatRad);
+  const collarY = floatY - 12 * Math.cos(floatRad);
+
+  // Curvatura suave e natural para o cabo entre o contrapeso e o colar
+  const segDx = collarX - weightExitX;
+  const segDy = collarY - weightExitY;
+  const ctrl1X = weightExitX + segDx * 0.35;
+  const ctrl1Y = weightExitY + segDy * 0.35;
+  const ctrl2X = weightExitX + segDx * 0.7;
+  const ctrl2Y = weightExitY + segDy * 0.7;
 
   return (
     <div
@@ -511,7 +514,7 @@ export default function FloatSwitchElement({
             d={`
               M 56 46
               C ${anchorX} 46, ${anchorX + 8} 60, ${anchorX + 16} 80
-              C ${anchorX + 24} 95, ${weightX - 6} ${weightY - 14}, ${weightX} ${weightY}
+              C ${anchorX + 24} 95, ${weightEnterX - 6} ${weightEnterY - 14}, ${weightEnterX} ${weightEnterY}
             `}
             fill="none"
             stroke="#0f172a"
@@ -522,7 +525,7 @@ export default function FloatSwitchElement({
           {/* Segmento 2 do cabo: do contrapeso até o colar conector da boia */}
           <path
             d={`
-              M ${weightX} ${weightY + 9}
+              M ${weightExitX} ${weightExitY}
               C ${ctrl1X} ${ctrl1Y},
                 ${ctrl2X} ${ctrl2Y},
                 ${collarX} ${collarY}
@@ -533,11 +536,11 @@ export default function FloatSwitchElement({
             strokeLinecap="round"
           />
 
-          {/* O CONTRAPESO AMARELO REGULADOR NO CABO */}
-          <g transform={`translate(${weightX - 6}, ${weightY - 9})`}>
+          {/* O CONTRAPESO AMARELO REGULADOR NO CABO (ROTACIONA ALINHADO À LINHA DE TRAÇÃO) */}
+          <g transform={`translate(${weightX}, ${weightY}) rotate(${weightRot})`}>
             <rect
-              x="0"
-              y="0"
+              x="-6"
+              y="-9"
               width="12"
               height="18"
               rx="3"
@@ -545,8 +548,8 @@ export default function FloatSwitchElement({
               stroke="#ca8a04"
               strokeWidth="1"
             />
-            <rect x="2" y="3" width="8" height="12" rx="1.5" fill="#facc15" />
-            <line x1="6" y1="0" x2="6" y2="18" stroke="#a16207" strokeWidth="1" />
+            <rect x="-4" y="-6" width="8" height="12" rx="1.5" fill="#facc15" />
+            <line x1="0" y1="-9" x2="0" y2="9" stroke="#a16207" strokeWidth="1" />
           </g>
 
           {/* A BOIA DE NÍVEL COM CINEMÁTICA CONTÍNUA E NATURAL */}
