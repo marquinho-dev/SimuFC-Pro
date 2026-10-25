@@ -1868,6 +1868,7 @@
   outline: 2px dashed rgba(56, 189, 248, 0.5);
   outline-offset: 4px;
   border-radius: 8px;
+  z-index: 75 !important;
 }
 
 .btn-remove-comp {
@@ -6365,8 +6366,13 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  z-index: 50;
+  z-index: 100;
   pointer-events: auto;
+}
+
+.comp-card-actions-lateral.actions-lateral-left {
+  left: auto;
+  right: calc(100% + 8px);
 }
 
 .btn-action-lateral {

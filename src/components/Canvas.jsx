@@ -879,54 +879,77 @@ export default function Canvas({
           if (!isLinked) {
             // Magnetic snapping when Thermal Relay approaches Contactor
             if (draggedComp.type === 'thermal_relay') {
-              const targetContactor = componentsRef.current.find(
+              const unlinkedContactors = componentsRef.current.filter(
                 (c) => c.type === 'contactor' && !c.linkedRelayId
               );
-              if (targetContactor) {
-                const dockX = targetContactor.x;
-                const dockY = targetContactor.y + 238;
-                // Snapping occurs when user drags relay up and the copper pins are entering/hiding under the contactor
-                const isHorizontallyAligned = Math.abs(newX - dockX) < 45;
-                const isCoveringPins = newY >= targetContactor.y + 190 && newY <= targetContactor.y + 295;
+              let bestContactor = null;
+              let bestDist = Infinity;
+              for (const c of unlinkedContactors) {
+                const dockX = c.x;
+                const dockY = c.y + 238;
+                const isHorizontallyAligned = Math.abs(newX - dockX) < 70;
+                const isCoveringPins = newY >= c.y + 160 && newY <= c.y + 320;
                 if (isHorizontallyAligned && isCoveringPins) {
-                  newX = dockX;
-                  newY = dockY;
-                  snapTargetRef.current = { contactorId: targetContactor.id, relayId: draggedComp.id };
-                  setSnapTarget({ x: dockX, y: dockY, width: 210, height: 355 });
-                } else if (snapTargetRef.current) {
-                  snapTargetRef.current = null;
-                  setSnapTarget(null);
+                  const dist = Math.hypot(newX - dockX, newY - dockY);
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestContactor = c;
+                  }
                 }
+              }
+              if (bestContactor) {
+                const dockX = bestContactor.x;
+                const dockY = bestContactor.y + 238;
+                newX = dockX;
+                newY = dockY;
+                snapTargetRef.current = { contactorId: bestContactor.id, relayId: draggedComp.id };
+                setSnapTarget({ x: dockX, y: dockY, width: 210, height: 355 });
+              } else if (snapTargetRef.current?.contactorId) {
+                snapTargetRef.current = null;
+                setSnapTarget(null);
               }
             } else if (draggedComp.type === 'contactor') {
               // Magnetic snapping when Contactor approaches Thermal Relay
-              const targetRelay = componentsRef.current.find(
+              const unlinkedRelays = componentsRef.current.filter(
                 (c) => c.type === 'thermal_relay' && !c.linkedContactorId
               );
-              if (targetRelay) {
-                const dockX = targetRelay.x;
-                const dockY = targetRelay.y - 238;
-                const isHorizontallyAligned = Math.abs(newX - dockX) < 45;
-                const isCoveringPins = newY >= targetRelay.y - 295 && newY <= targetRelay.y - 190;
+              let bestRelay = null;
+              let bestDist = Infinity;
+              for (const r of unlinkedRelays) {
+                const dockX = r.x;
+                const dockY = r.y - 238;
+                const isHorizontallyAligned = Math.abs(newX - dockX) < 70;
+                const isCoveringPins = newY >= r.y - 320 && newY <= r.y - 160;
                 if (isHorizontallyAligned && isCoveringPins) {
-                  newX = dockX;
-                  newY = dockY;
-                  snapTargetRef.current = { contactorId: draggedComp.id, relayId: targetRelay.id };
-                  setSnapTarget({ x: dockX, y: dockY, width: 210, height: 350 });
-                } else if (snapTargetRef.current) {
-                  snapTargetRef.current = null;
-                  setSnapTarget(null);
+                  const dist = Math.hypot(newX - dockX, newY - dockY);
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestRelay = r;
+                  }
                 }
+              }
+              if (bestRelay) {
+                const dockX = bestRelay.x;
+                const dockY = bestRelay.y - 238;
+                newX = dockX;
+                newY = dockY;
+                snapTargetRef.current = { contactorId: draggedComp.id, relayId: bestRelay.id };
+                setSnapTarget({ x: dockX, y: dockY, width: 210, height: 350 });
+              } else if (snapTargetRef.current?.contactorId) {
+                snapTargetRef.current = null;
+                setSnapTarget(null);
               }
             }
           }
 
-          // DIN Rail Magnetic Snapping & Alignment
+          // DIN Rail Magnetic Snapping & Alignment (only if not currently snapping to thermal relay/contactor)
+          const isSnappingToRelay = Boolean(snapTargetRef.current?.contactorId);
           if (
-            draggedComp.type === 'contactor' ||
+            !isSnappingToRelay &&
+            (draggedComp.type === 'contactor' ||
             draggedComp.type === 'circuit_breaker' ||
             draggedComp.type === 'fuse_holder' ||
-            draggedComp.type === 'timer_relay'
+            draggedComp.type === 'timer_relay')
           ) {
             const compWidth =
               draggedComp.type === 'circuit_breaker'
@@ -1145,12 +1168,11 @@ export default function Canvas({
       if (draggedCompIdRef.current) {
         const movedCompId = draggedCompIdRef.current;
         const didMove = dragMovedRef.current;
-        if (snapTargetRef.current) {
+        if (didMove && snapTargetRef.current) {
           if (snapTargetRef.current.isDinRail && onUpdateComponentStateRef.current) {
             onUpdateComponentStateRef.current(snapTargetRef.current.compId, {
               dinRailId: snapTargetRef.current.railId,
             });
-            sounds.playContactorClick?.(true);
           } else if (onLinkComponentsRef.current && snapTargetRef.current.contactorId) {
             onLinkComponentsRef.current(snapTargetRef.current.contactorId, snapTargetRef.current.relayId);
           }
@@ -1953,6 +1975,14 @@ export default function Canvas({
             compZIndex = 50;
           }
 
+          if (isCompSelected) {
+            // Bring selected component and its lateral actions to the absolute foreground
+            compZIndex = comp.type === 'thermal_relay' && comp.linkedContactorId ? 74 : 75;
+          }
+          if (isDragging) {
+            compZIndex = comp.type === 'thermal_relay' && comp.linkedContactorId ? 89 : 90;
+          }
+
           const style = {
             position: 'absolute',
             left: `${comp.x}px`,
@@ -1973,7 +2003,13 @@ export default function Canvas({
             >
               {/* Lateral Action Buttons (Toggle Real/Schematic, Settings, Delete) - ONLY VISIBLE WHEN INDIVIDUALLY SELECTED */}
               {showLateralButtons && (
-                <div className="comp-card-actions-lateral">
+                <div
+                  className={`comp-card-actions-lateral ${
+                    comp.type === 'terminal_block' || comp.type === 'din_rail'
+                      ? 'actions-lateral-left'
+                      : ''
+                  }`}
+                >
                   {/* 1. Toggle Mode Button (Icon only) */}
                   {comp.type !== 'din_rail' && comp.type !== 'terminal_block' && (
                     <button

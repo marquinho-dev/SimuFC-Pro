@@ -960,6 +960,9 @@ export default function App() {
     if (isSimulationMode) {
       return;
     }
+    try {
+      sounds.playButtonClick();
+    } catch {}
     const template = INITIAL_COMPONENTS.find((c) => c.type === type);
     if (!template) return;
 
