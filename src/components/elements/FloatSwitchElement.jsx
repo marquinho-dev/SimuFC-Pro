@@ -185,26 +185,25 @@ export default function FloatSwitchElement({
 
     if (floatY >= weightY) {
       // ÁGUA ABAIXO OU NO NÍVEL DO CONTRAPESO (Nível médio-baixo):
-      // À medida que a água sobe de maxHangY até weightY, a boia deita suavemente de 0° até ~80°
+      // A boia deita suavemente em direção à direita (0° até -80°)
       const liftRatio = Math.max(0, Math.min(1, (maxHangY - floatY) / (maxHangY - weightY)));
       floatX = weightX + 4 + liftRatio * 26;
-      floatAngle = liftRatio * 80;
+      floatAngle = -(liftRatio * 80);
     } else {
       // ÁGUA ACIMA DO CONTRAPESO (Nível alto / Caixa cheia):
-      // O contrapeso está submerso e o cabo puxa a ponta da boia para baixo, fazendo a boia
-      // empinar para cima (80° até 135°) na superfície da água
+      // O contrapeso submerso puxa o colar para baixo e a boia empina para cima (-80° até -135°)
       const dyUp = weightY - floatY;
       const dxArc = Math.sqrt(Math.max(16, tetherLen * tetherLen - dyUp * dyUp));
       floatX = weightX + dxArc;
 
       const highRatio = Math.max(0, Math.min(1, dyUp / (weightY - minWaterY)));
-      floatAngle = 80 + highRatio * 55;
+      floatAngle = -(80 + highRatio * 55);
     }
   } else {
     // Boia pendurada no ar sob gravidade (quase vertical)
     floatX = weightX + 2;
     floatY = maxHangY;
-    floatAngle = 2;
+    floatAngle = -2;
   }
 
   // Posição exata do conector/colar amarelo no topo da boia (0, -12) rotacionado por floatAngle
@@ -213,8 +212,13 @@ export default function FloatSwitchElement({
   const collarY = floatY - 12 * Math.cos(rad);
 
   // Tangente para entrada perfeitamente contínua do cabo no colar da boia
-  const ctrl2X = collarX - 14 * Math.sin(rad);
-  const ctrl2Y = collarY + 14 * Math.cos(rad);
+  const ctrl2X = collarX + 14 * Math.sin(rad);
+  const ctrl2Y = collarY - 14 * Math.cos(rad);
+
+  // Ponto de controle inicial saindo da base do contrapeso
+  const isUpward = collarY < weightY + 9;
+  const ctrl1X = weightX + (collarX - weightX) * (isUpward ? 0.35 : 0.2);
+  const ctrl1Y = isUpward ? (weightY + 9) + (collarY - (weightY + 9)) * 0.35 : weightY + 22;
 
   return (
     <div
@@ -519,7 +523,7 @@ export default function FloatSwitchElement({
           <path
             d={`
               M ${weightX} ${weightY + 9}
-              C ${weightX + (collarX - weightX) * 0.25} ${weightY + 18},
+              C ${ctrl1X} ${ctrl1Y},
                 ${ctrl2X} ${ctrl2Y},
                 ${collarX} ${collarY}
             `}
