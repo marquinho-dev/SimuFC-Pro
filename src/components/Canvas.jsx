@@ -1960,6 +1960,10 @@ export default function Canvas({
           const isPartnerDragging = Boolean(linkedPartnerId && draggedCompId === linkedPartnerId);
           const isPairDragging = isThisDragging || isPartnerDragging;
           const isDragging = isPairDragging;
+          const isCompSelected = isAllSelected || selectedComponentId === comp.id;
+          const showLateralButtons = !isSimulationMode && !isAllSelected && selectedComponentId === comp.id;
+          const isCompSchematic =
+            comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic' || viewMode === 'schematic';
 
           let compZIndex = 20;
           if (comp.type === 'din_rail') {
@@ -1989,10 +1993,6 @@ export default function Canvas({
             top: `${comp.y}px`,
             zIndex: compZIndex,
           };
-          const isCompSelected = isAllSelected || selectedComponentId === comp.id;
-          const showLateralButtons = !isSimulationMode && !isAllSelected && selectedComponentId === comp.id;
-          const isCompSchematic =
-            comp.displayMode === 'schematic' || comp.state?.displayMode === 'schematic' || viewMode === 'schematic';
 
           return (
             <div
