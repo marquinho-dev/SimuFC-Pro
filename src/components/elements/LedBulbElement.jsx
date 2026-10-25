@@ -5,65 +5,74 @@ export const BULB_COLORS = {
     id: 'purple',
     label: 'Roxo',
     glow: 'rgba(168, 85, 247, 0.95)',
+    glowSoft: 'rgba(192, 132, 252, 0.45)',
+    litMid: '#f3e8ff',
     base: '#a855f7',
-    filterLit: 'drop-shadow(0 0 16px rgba(168, 85, 247, 0.95)) drop-shadow(0 0 35px rgba(168, 85, 247, 0.85)) brightness(1.25) hue-rotate(260deg)',
   },
   white: {
     id: 'white',
     label: 'Branco',
     glow: 'rgba(255, 255, 255, 0.95)',
+    glowSoft: 'rgba(224, 242, 254, 0.5)',
+    litMid: '#ffffff',
     base: '#ffffff',
-    filterLit: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 40px rgba(224, 242, 254, 0.9)) brightness(1.35)',
   },
   red: {
     id: 'red',
     label: 'Vermelho',
     glow: 'rgba(239, 68, 68, 0.95)',
+    glowSoft: 'rgba(248, 113, 113, 0.45)',
+    litMid: '#fecaca',
     base: '#ef4444',
-    filterLit: 'drop-shadow(0 0 18px rgba(239, 68, 68, 0.95)) drop-shadow(0 0 35px rgba(239, 68, 68, 0.85)) brightness(1.25) hue-rotate(345deg)',
   },
   blue: {
     id: 'blue',
     label: 'Azul',
     glow: 'rgba(37, 99, 235, 0.95)',
+    glowSoft: 'rgba(96, 165, 250, 0.45)',
+    litMid: '#bfdbfe',
     base: '#2563eb',
-    filterLit: 'drop-shadow(0 0 18px rgba(37, 99, 235, 0.95)) drop-shadow(0 0 35px rgba(37, 99, 235, 0.85)) brightness(1.25) hue-rotate(200deg)',
   },
   green: {
     id: 'green',
     label: 'Verde',
     glow: 'rgba(22, 163, 74, 0.95)',
+    glowSoft: 'rgba(74, 222, 128, 0.45)',
+    litMid: '#bbf7d0',
     base: '#16a34a',
-    filterLit: 'drop-shadow(0 0 18px rgba(22, 163, 74, 0.95)) drop-shadow(0 0 35px rgba(22, 163, 74, 0.85)) brightness(1.25) hue-rotate(95deg)',
   },
   black: {
     id: 'black',
     label: 'Preto (Fosco)',
     glow: 'rgba(212, 212, 216, 0.55)',
+    glowSoft: 'rgba(161, 161, 170, 0.25)',
+    litMid: '#e4e4e7',
     base: '#18181b',
-    filterLit: 'drop-shadow(0 0 10px rgba(212, 212, 216, 0.6)) brightness(0.85)',
   },
   yellow: {
     id: 'yellow',
     label: 'Amarelo (3000K)',
     glow: 'rgba(234, 179, 8, 0.95)',
+    glowSoft: 'rgba(250, 204, 21, 0.45)',
+    litMid: '#fef08a',
     base: '#eab308',
-    filterLit: 'drop-shadow(0 0 18px rgba(234, 179, 8, 0.95)) drop-shadow(0 0 35px rgba(234, 179, 8, 0.85)) brightness(1.25)',
   },
   // Aliases de compatibilidade
   warm_white: {
     id: 'yellow',
     label: 'Amarelo (Branco Quente)',
     glow: 'rgba(234, 179, 8, 0.95)',
+    glowSoft: 'rgba(250, 204, 21, 0.45)',
+    litMid: '#fef08a',
     base: '#eab308',
-    filterLit: 'drop-shadow(0 0 18px rgba(234, 179, 8, 0.95)) drop-shadow(0 0 35px rgba(234, 179, 8, 0.85)) brightness(1.25)',
   },
   cool_white: {
     id: 'white',
     label: 'Branco',
     glow: 'rgba(255, 255, 255, 0.95)',
+    glowSoft: 'rgba(224, 242, 254, 0.5)',
+    litMid: '#ffffff',
     base: '#ffffff',
-    filterLit: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 40px rgba(224, 242, 254, 0.9)) brightness(1.35)',
   },
 };
 
@@ -82,11 +91,9 @@ function getVoltageColor(v) {
 
 /**
  * Lâmpada LED Bulbo E27 montada em Bocal Industrial Receptáculo E27
- * Estrutura 3D realista em camadas:
- * 1. Cavidade interna traseira do bocal (fica atrás da lâmpada)
- * 2. Lâmpada LED penetrando fisicamente dentro da boca do bocal
- * 3. Borda frontal envolvente do bocal com sombra de oclusão sobreposta (lâmpada entra DENTRO)
- * 4. Bornes industriais X1 e X2 montados na carcaça do bocal
+ * - Iluminação emissiva realista de alta intensidade com halo circular livre de cortes
+ * - Bocal industrial E27 que envolve e aloja a rosca da lâmpada de forma contínua
+ * - Bornes de parafuso industriais X1 e X2 na base do bocal
  */
 export default function LedBulbElement({
   component,
@@ -120,29 +127,56 @@ export default function LedBulbElement({
         background: 'transparent',
         border: 'none',
         boxShadow: 'none',
+        overflow: 'visible', // Permite que a luz circular irradie suavemente sem cortes retangulares
       }}
       data-component-type="led_bulb"
     >
-      {/* 1. Halo Volumétrico Difuso quando Acesa */}
+      {/* -----------------------------------------------------------------
+          1. HALOS LUMINOSOS CIRCULARES DE ALTA INTENSIDADE (quando acesa)
+          Radiação de luz esférica realista e ampla sem cantos quadrados
+          ----------------------------------------------------------------- */}
       {isLit && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '4px',
-            left: '5px',
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            background: `radial-gradient(circle, #ffffff 20%, ${colorCfg.glow} 65%, transparent 100%)`,
-            filter: 'blur(10px)',
-            mixBlendMode: 'screen',
-            pointerEvents: 'none',
-            zIndex: 4,
-          }}
-        />
+        <>
+          {/* Halo Primário Brilhante envolvente */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-25px',
+              left: '-25px',
+              width: '140px',
+              height: '140px',
+              borderRadius: '50%',
+              background: `radial-gradient(circle at 50% 50%, rgba(255,255,255,0.95) 12%, ${colorCfg.glow} 48%, transparent 76%)`,
+              filter: 'blur(12px)',
+              mixBlendMode: 'screen',
+              pointerEvents: 'none',
+              zIndex: 1,
+              opacity: 0.9,
+            }}
+          />
+          {/* Halo Secundário Atmosférico Amplo (Ilumina a bancada ao redor) */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-45px',
+              left: '-45px',
+              width: '180px',
+              height: '180px',
+              borderRadius: '50%',
+              background: `radial-gradient(circle at 50% 50%, ${colorCfg.glowSoft} 0%, transparent 70%)`,
+              filter: 'blur(22px)',
+              mixBlendMode: 'screen',
+              pointerEvents: 'none',
+              zIndex: 1,
+              opacity: 0.65,
+            }}
+          />
+        </>
       )}
 
-      {/* 2. PARTE TRASEIRA DO BOCAL (Interior da cavidade rosqueada, fica ATRÁS da lâmpada) */}
+      {/* -----------------------------------------------------------------
+          2. PARTE TRASEIRA DO BOCAL (Cavidade interna, fica ATRÁS da lâmpada)
+          ----------------------------------------------------------------- */}
       <svg
         width="90"
         height="184"
@@ -169,46 +203,81 @@ export default function LedBulbElement({
 
         {/* Borda traseira do anel do bocal */}
         <path
-          d="M 21 125 C 21 118 69 118 69 125 L 69 135 C 69 128 21 128 21 135 Z"
+          d="M 21 112 C 21 105 69 105 69 112 L 69 122 C 69 115 21 115 21 122 Z"
           fill={`url(#bocalBackInterior-${componentId})`}
           stroke="#1c222c"
           strokeWidth="1"
         />
 
         {/* Fios de rosca de latão internos visíveis no fundo do bocal */}
-        <path d="M 25 123 C 30 119 60 119 65 123" stroke={`url(#bocalThreadBrass-${componentId})`} strokeWidth="1.5" fill="none" opacity="0.85" />
-        <path d="M 24 126 C 29 122 61 122 66 126" stroke={`url(#bocalThreadBrass-${componentId})`} strokeWidth="1.5" fill="none" opacity="0.6" />
+        <path d="M 25 110 C 30 106 60 106 65 110" stroke={`url(#bocalThreadBrass-${componentId})`} strokeWidth="1.5" fill="none" opacity="0.85" />
+        <path d="M 24 113 C 29 109 61 109 66 113" stroke={`url(#bocalThreadBrass-${componentId})`} strokeWidth="1.5" fill="none" opacity="0.6" />
       </svg>
 
-      {/* 3. LÂMPADA LED PENETRANDO FISICAMENTE DENTRO DO BOCAL (Camada intermediária zIndex: 2) */}
-      <div
+      {/* -----------------------------------------------------------------
+          3. IMAGEM DA LÂMPADA LED (Sem overflow:hidden, para não cortar o brilho)
+          ----------------------------------------------------------------- */}
+      <img
+        src="/led_bulb.png"
+        alt="Lâmpada LED Bulbo E27"
+        draggable={false}
         style={{
+          width: '90px',
+          height: '175px',
+          objectFit: 'contain',
+          display: 'block',
+          pointerEvents: 'none',
           position: 'absolute',
           top: '0px',
           left: '0px',
-          width: '90px',
-          height: '148px', // A lâmpada entra até y=148 dentro do bocal e fica alojada no interior
-          overflow: 'hidden',
           zIndex: 2,
-          pointerEvents: 'none',
+          filter: isLit
+            ? `brightness(1.55) contrast(1.12) drop-shadow(0 0 14px ${colorCfg.glow})`
+            : 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45))',
+          transition: 'filter 0.15s ease',
         }}
-      >
-        <img
-          src="/led_bulb.png"
-          alt="Lâmpada LED Bulbo E27"
-          draggable={false}
-          style={{
-            width: '90px',
-            height: '175px',
-            objectFit: 'contain',
-            display: 'block',
-            filter: isLit
-              ? colorCfg.filterLit
-              : 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45))',
-            transition: 'filter 0.15s ease',
-          }}
-        />
-      </div>
+      />
+
+      {/* -----------------------------------------------------------------
+          GLOBO EMISSIVO INCANDESCENTE (Luz intensa sobre o bulbo quando acesa)
+          ----------------------------------------------------------------- */}
+      {isLit && (
+        <>
+          {/* Brilho volumétrico interno do globo de vidro/policarbonato */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '6px',
+              left: '7px',
+              width: '76px',
+              height: '76px',
+              borderRadius: '50%',
+              background: `radial-gradient(circle at 48% 44%, #ffffff 20%, ${colorCfg.litMid} 52%, ${colorCfg.base} 78%, transparent 100%)`,
+              mixBlendMode: 'screen',
+              pointerEvents: 'none',
+              zIndex: 3,
+              filter: 'blur(3px)',
+              opacity: 0.95,
+            }}
+          />
+          {/* Núcleo central de brilho ofuscante */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '14px',
+              left: '17px',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle at 46% 42%, #ffffff 45%, rgba(255,255,255,0.85) 75%, transparent 100%)',
+              mixBlendMode: 'screen',
+              pointerEvents: 'none',
+              zIndex: 4,
+              filter: 'blur(1.5px)',
+            }}
+          />
+        </>
+      )}
 
       {/* Tag Identificadora Discreta (ex: L1) */}
       <div
@@ -233,7 +302,9 @@ export default function LedBulbElement({
         {component.tag || 'L1'}
       </div>
 
-      {/* 4. PARTE FRONTAL DO BOCAL (Borda frontal envolvente, corpo e bornes, fica NA FRENTE da lâmpada zIndex: 5) */}
+      {/* -----------------------------------------------------------------
+          4. PARTE FRONTAL DO BOCAL (Envolve a lâmpada e aloja bornes X1 e X2)
+          ----------------------------------------------------------------- */}
       <svg
         width="90"
         height="184"
@@ -278,10 +349,10 @@ export default function LedBulbElement({
 
         {/* Sombra de oclusão do bocal projetada DIRETAMENTE SOBRE a lâmpada inserida */}
         <path
-          d="M 21 125 
-             C 21 133 69 133 69 125 
-             L 69 131 
-             C 69 139 21 139 21 131 
+          d="M 21 112 
+             C 21 120 69 120 69 112 
+             L 69 118 
+             C 69 126 21 126 21 118 
              Z"
           fill="rgba(0, 0, 0, 0.75)"
         />
@@ -289,14 +360,14 @@ export default function LedBulbElement({
         <g filter={`url(#bocalShadowFront-${componentId})`}>
           {/* Base e flange inferior alargada com orelhas de fixação */}
           <path
-            d="M 12 164 
-               C 12 154 18 146 26 144 
-               L 64 144 
-               C 72 146 78 154 78 164 
-               L 80 176 
+            d="M 12 156 
+               C 12 144 18 136 26 133 
+               L 64 133 
+               C 72 136 78 144 78 156 
+               L 80 174 
                C 80 180 76 182 72 182 
                L 18 182 
-               C 14 182 10 180 10 176 
+               C 14 182 10 180 10 174 
                Z"
             fill={`url(#bocalBodyGrad-${componentId})`}
             stroke="#2d3442"
@@ -305,10 +376,10 @@ export default function LedBulbElement({
 
           {/* Corpo cilíndrico central do bocal que abraça a lâmpada */}
           <path
-            d="M 21 127 
-               C 21 134 69 134 69 127 
-               L 70 148 
-               L 20 148 
+            d="M 21 114 
+               C 21 121 69 121 69 114 
+               L 70 142 
+               L 20 142 
                Z"
             fill={`url(#bocalBodyGrad-${componentId})`}
             stroke="#1c222c"
@@ -316,22 +387,22 @@ export default function LedBulbElement({
           />
 
           {/* Ranhuras verticais de aperto e ventilação na carcaça do bocal */}
-          <line x1="28" y1="133" x2="28" y2="147" stroke="#12161f" strokeWidth="1.8" />
-          <line x1="29" y1="133" x2="29" y2="147" stroke="#434d61" strokeWidth="0.8" />
+          <line x1="28" y1="120" x2="28" y2="138" stroke="#12161f" strokeWidth="1.8" />
+          <line x1="29" y1="120" x2="29" y2="138" stroke="#434d61" strokeWidth="0.8" />
 
-          <line x1="45" y1="133" x2="45" y2="147" stroke="#12161f" strokeWidth="1.8" />
-          <line x1="46" y1="133" x2="46" y2="147" stroke="#434d61" strokeWidth="0.8" />
+          <line x1="45" y1="120" x2="45" y2="138" stroke="#12161f" strokeWidth="1.8" />
+          <line x1="46" y1="120" x2="46" y2="138" stroke="#434d61" strokeWidth="0.8" />
 
-          <line x1="61" y1="133" x2="61" y2="147" stroke="#12161f" strokeWidth="1.8" />
-          <line x1="62" y1="133" x2="62" y2="147" stroke="#434d61" strokeWidth="0.8" />
+          <line x1="61" y1="120" x2="61" y2="138" stroke="#12161f" strokeWidth="1.8" />
+          <line x1="62" y1="120" x2="62" y2="138" stroke="#434d61" strokeWidth="0.8" />
 
           {/* Borda / Lábio frontal do bocal que contorna e sobrepõe a lâmpada (dando efeito de entrada real) */}
           <path
-            d="M 21 125 
-               C 21 133 69 133 69 125 
-               C 69 128 67 131 65 131 
-               C 55 136 35 136 25 131 
-               C 23 131 21 128 21 125 
+            d="M 21 112 
+               C 21 120 69 120 69 112 
+               C 69 115 67 118 65 118 
+               C 55 123 35 123 25 118 
+               C 23 118 21 115 21 112 
                Z"
             fill={`url(#bocalLipGrad-${componentId})`}
             stroke="#455167"
@@ -339,17 +410,17 @@ export default function LedBulbElement({
           />
 
           {/* Friso horizontal da base inferior */}
-          <line x1="14" y1="168" x2="76" y2="168" stroke="#0f131a" strokeWidth="1.6" />
-          <line x1="14" y1="169" x2="76" y2="169" stroke="#434d61" strokeWidth="0.8" />
+          <line x1="14" y1="162" x2="76" y2="162" stroke="#0f131a" strokeWidth="1.6" />
+          <line x1="14" y1="163" x2="76" y2="163" stroke="#434d61" strokeWidth="0.8" />
 
           {/* Parafusos de fixação mecânica da flange no painel */}
-          <circle cx="15" cy="175" r="1.6" fill="#334155" />
-          <circle cx="75" cy="175" r="1.6" fill="#334155" />
+          <circle cx="15" cy="172" r="1.6" fill="#334155" />
+          <circle cx="75" cy="172" r="1.6" fill="#334155" />
         </g>
       </svg>
 
       {/* -----------------------------------------------------------------
-          TERMINAIS INDUSTRIAIS NO BOCAL (X1 e X2)
+          5. TERMINAIS INDUSTRIAIS NO BOCAL (X1 e X2)
           ----------------------------------------------------------------- */}
 
       {/* Terminal X1: Rosca Lateral do Bocal E27 (Esquerda) */}
