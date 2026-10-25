@@ -225,20 +225,21 @@ export default function PilotLampElement({
             </feMerge>
           </filter>
 
-          {/* Gradiente do corpo cilíndrico traseiro (plástico cinza-grafite de engenharia) */}
+          {/* Gradiente do corpo traseiro industrial (simétrico) */}
           <linearGradient id={barrelGradId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#1e2229" />
-            <stop offset="25%" stopColor="#2c323b" />
-            <stop offset="60%" stopColor="#3d4450" />
-            <stop offset="85%" stopColor="#252a32" />
-            <stop offset="100%" stopColor="#15181d" />
+            <stop offset="0%" stopColor="#181c22" />
+            <stop offset="12%" stopColor="#2c323b" />
+            <stop offset="28%" stopColor="#3d4450" />
+            <stop offset="50%" stopColor="#20242d" />
+            <stop offset="72%" stopColor="#3d4450" />
+            <stop offset="88%" stopColor="#2c323b" />
+            <stop offset="100%" stopColor="#181c22" />
           </linearGradient>
 
           {/* Gradiente das aletas de aperto */}
           <linearGradient id={finGradId} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#121519" />
-            <stop offset="30%" stopColor="#353b46" />
-            <stop offset="70%" stopColor="#485160" />
+            <stop offset="50%" stopColor="#485160" />
             <stop offset="100%" stopColor="#1a1d23" />
           </linearGradient>
 
@@ -275,7 +276,7 @@ export default function PilotLampElement({
         {isLit && (
           <g pointerEvents="none">
             <circle
-              cx="58"
+              cx="52"
               cy="48"
               r="44"
               fill={cCfg.glow}
@@ -283,7 +284,7 @@ export default function PilotLampElement({
               opacity="0.8"
             />
             <circle
-              cx="58"
+              cx="52"
               cy="48"
               r="34"
               fill={cCfg.litCore}
@@ -294,98 +295,104 @@ export default function PilotLampElement({
         )}
 
         {/* -----------------------------------------------------------------
-            2. CORPO TRASEIRO CILÍNDRICO E BASE DE APOIO NOS BORNES
-            Mostra o tambor industrial cinza escuro com as aletas de ventilação,
-            estendendo-se e apoiando-se diretamente sobre o bloco de bornes X1/X2
+            2. CORPO TRASEIRO CILÍNDRICO E BASE DE APOIO NOS BORNES (SIMÉTRICO)
+            Mostra a carcaça industrial perfeitamente espelhada dos dois lados,
+            com aletas e ranhuras idênticas à esquerda e à direita
             ----------------------------------------------------------------- */}
         <g filter={`url(#${shadowId})`}>
-          {/* Corpo principal traseiro monolítico que apoia nos bornes */}
+          {/* Corpo principal traseiro monolítico simétrico que apoia nos bornes */}
           <path
-            d="M 16 30 
-               Q 13 60 16 94 
-               L 86 94 
-               L 86 76 
-               Q 84 50 80 34 
-               L 46 24 
+            d="M 14 30 
+               Q 12 60 14 94 
+               L 90 94 
+               Q 92 60 90 30 
+               Q 90 22 84 22 
+               L 20 22 
+               Q 14 22 14 30 
                Z"
             fill={`url(#${barrelGradId})`}
             stroke="#121518"
             strokeWidth="1.2"
           />
 
-          {/* Aletas / Ranhuras de aperto e reforço mecânico descendo até a base dos bornes */}
+          {/* Frisos e rebaixos traseiros verticais externos (Esquerda e Direita) */}
+          <line x1="14" y1="34" x2="14" y2="88" stroke="#3a414c" strokeWidth="3" strokeLinecap="round" />
+          <line x1="12" y1="38" x2="12" y2="84" stroke="#1e2329" strokeWidth="2.4" strokeLinecap="round" />
+
+          <line x1="90" y1="34" x2="90" y2="88" stroke="#3a414c" strokeWidth="3" strokeLinecap="round" />
+          <line x1="92" y1="38" x2="92" y2="84" stroke="#1e2329" strokeWidth="2.4" strokeLinecap="round" />
+
+          {/* Aletas / Ranhuras de aperto e ventilação perfeitamente simétricas */}
           <g fill="none" strokeWidth="2.4" strokeLinecap="round">
-            {/* Aleta 1 (superior) */}
-            <path d="M 22 36 Q 30 38 38 40" stroke={`url(#${finGradId})`} />
-            <path d="M 22 38 Q 30 40 38 42" stroke="#0e1115" strokeWidth="1.2" />
+            {/* --- Aletas da Esquerda --- */}
+            <path d="M 17 36 L 24 38" stroke={`url(#${finGradId})`} />
+            <path d="M 17 38 L 24 40" stroke="#0e1115" strokeWidth="1.2" />
 
-            {/* Aleta 2 (central-alta) */}
-            <path d="M 20 46 Q 29 48 38 50" stroke={`url(#${finGradId})`} />
-            <path d="M 20 48 Q 29 50 38 52" stroke="#0e1115" strokeWidth="1.2" />
+            <path d="M 16 47 L 23 49" stroke={`url(#${finGradId})`} />
+            <path d="M 16 49 L 23 51" stroke="#0e1115" strokeWidth="1.2" />
 
-            {/* Aleta 3 (central) */}
-            <path d="M 20 57 Q 29 59 38 61" stroke={`url(#${finGradId})`} />
-            <path d="M 20 59 Q 29 61 38 63" stroke="#0e1115" strokeWidth="1.2" />
+            <path d="M 16 58 L 23 60" stroke={`url(#${finGradId})`} />
+            <path d="M 16 60 L 23 62" stroke="#0e1115" strokeWidth="1.2" />
 
-            {/* Aleta 4 (apoio intermediário) */}
-            <path d="M 20 68 Q 29 70 38 72" stroke={`url(#${finGradId})`} />
-            <path d="M 20 70 Q 29 72 38 74" stroke="#0e1115" strokeWidth="1.2" />
+            <path d="M 16 69 L 23 71" stroke={`url(#${finGradId})`} />
+            <path d="M 16 71 L 23 73" stroke="#0e1115" strokeWidth="1.2" />
 
-            {/* Aleta 5 (apoio inferior próximo aos bornes) */}
-            <path d="M 22 79 Q 30 81 38 83" stroke={`url(#${finGradId})`} />
-            <path d="M 22 81 Q 30 83 38 85" stroke="#0e1115" strokeWidth="1.2" />
+            <path d="M 17 80 L 24 82" stroke={`url(#${finGradId})`} />
+            <path d="M 17 82 L 24 84" stroke="#0e1115" strokeWidth="1.2" />
+
+            {/* --- Aletas da Direita (Espelhamento exato) --- */}
+            <path d="M 87 36 L 80 38" stroke={`url(#${finGradId})`} />
+            <path d="M 87 38 L 80 40" stroke="#0e1115" strokeWidth="1.2" />
+
+            <path d="M 88 47 L 81 49" stroke={`url(#${finGradId})`} />
+            <path d="M 88 49 L 81 51" stroke="#0e1115" strokeWidth="1.2" />
+
+            <path d="M 88 58 L 81 60" stroke={`url(#${finGradId})`} />
+            <path d="M 88 60 L 81 62" stroke="#0e1115" strokeWidth="1.2" />
+
+            <path d="M 88 69 L 81 71" stroke={`url(#${finGradId})`} />
+            <path d="M 88 71 L 81 73" stroke="#0e1115" strokeWidth="1.2" />
+
+            <path d="M 87 80 L 80 82" stroke={`url(#${finGradId})`} />
+            <path d="M 87 82 L 80 84" stroke="#0e1115" strokeWidth="1.2" />
           </g>
 
-          {/* Rosca e rebaixos traseiros estendidos ao longo de todo o corpo até os bornes */}
+          {/* Flange / Engate mecânico de travamento simétrico sobre o bloco de bornes */}
           <path
-            d="M 14 34 L 14 88"
-            stroke="#3a414c"
-            strokeWidth="3.2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 12 38 L 12 84"
-            stroke="#1e2329"
-            strokeWidth="2.8"
-            strokeLinecap="round"
-          />
-
-          {/* Flange / Engate mecânico de travamento sobre o bloco de bornes */}
-          <path
-            d="M 12 90 L 88 90 L 90 94 L 10 94 Z"
+            d="M 12 90 L 92 90 L 94 94 L 10 94 Z"
             fill="#121519"
             stroke="#2b313a"
             strokeWidth="0.8"
           />
           <circle cx="16" cy="92" r="1.4" fill="#475569" />
-          <circle cx="84" cy="92" r="1.4" fill="#475569" />
+          <circle cx="88" cy="92" r="1.4" fill="#475569" />
 
-          {/* Colar / Anel de encosto e retenção preto frontal */}
-          <path
-            d="M 42 22 C 41 38 41 58 42 74 L 48 76 C 47 58 47 38 48 20 Z"
+          {/* Colar / Anel de encosto e retenção preto do painel (centralizado) */}
+          <circle
+            cx="52"
+            cy="48"
+            r="32.5"
             fill="#121519"
             stroke="#2b313a"
-            strokeWidth="0.8"
+            strokeWidth="1"
           />
 
-          {/* Anel Chanfrado da Lente (Moldura no polímero colorido da lente) */}
-          <ellipse
-            cx="58"
+          {/* Anel Chanfrado da Lente (Moldura no polímero escuro) */}
+          <circle
+            cx="52"
             cy="48"
-            rx="33"
-            ry="33"
+            r="30"
             fill="#14171c"
             stroke="#2d333d"
             strokeWidth="1.8"
           />
-          <ellipse
-            cx="58"
+          <circle
+            cx="52"
             cy="48"
-            rx="31"
-            ry="31"
+            r="28"
             fill={isLit ? cCfg.litMain : cCfg.unlitRim}
             stroke={isLit ? cCfg.litHalo : cCfg.unlitBorder}
-            strokeWidth="1.5"
+            strokeWidth="1.4"
             opacity={isLit ? 0.95 : 0.85}
           />
         </g>
@@ -396,9 +403,9 @@ export default function PilotLampElement({
         <g id="pilotLampLensGroup">
           {/* Lente principal convexa com textura interna */}
           <circle
-            cx="58"
+            cx="52"
             cy="48"
-            r="28.5"
+            r="25.5"
             fill={`url(#${lensGradId})`}
             stroke={isLit ? '#ffffff' : cCfg.unlitBorder}
             strokeWidth={isLit ? '1.2' : '0.9'}
@@ -406,31 +413,31 @@ export default function PilotLampElement({
 
           {/* Anel difusor concêntrico interno (padrão óptico Fresnel da lente LED) */}
           <circle
-            cx="58"
+            cx="52"
             cy="48"
-            r="22"
+            r="19"
             fill="none"
             stroke={isLit ? cCfg.litCore : cCfg.unlitRim}
-            strokeWidth="1.6"
+            strokeWidth="1.5"
             strokeDasharray="4 2.5"
             opacity={isLit ? 0.85 : 0.45}
           />
           <circle
-            cx="58"
+            cx="52"
             cy="48"
-            r="15"
+            r="13"
             fill="none"
             stroke={isLit ? cCfg.litMid : cCfg.unlitCenter}
-            strokeWidth="1.2"
+            strokeWidth="1.1"
             opacity={isLit ? 0.75 : 0.35}
           />
 
           {/* Núcleo LED central de alta intensidade quando acesa */}
           {isLit && (
             <circle
-              cx="58"
+              cx="52"
               cy="48"
-              r="9"
+              r="8"
               fill={cCfg.litCore}
               opacity="0.95"
               filter={`url(#${glowId})`}
@@ -439,19 +446,19 @@ export default function PilotLampElement({
 
           {/* Reflexo especular curvilíneo de estúdio (brilho acrílico superior) */}
           <path
-            d="M 37 42 C 41 28 67 24 77 34 C 71 30 48 32 37 42 Z"
+            d="M 31 42 C 35 28 61 24 71 34 C 65 30 42 32 31 42 Z"
             fill="#ffffff"
             opacity={isLit ? 0.75 : 0.42}
           />
           {/* Ponto secundário de reflexo esférico */}
           <ellipse
-            cx="72"
+            cx="66"
             cy="60"
             rx="3"
             ry="1.8"
             fill="#ffffff"
             opacity={isLit ? 0.4 : 0.22}
-            transform="rotate(-30 72 60)"
+            transform="rotate(-30 66 60)"
           />
         </g>
 
