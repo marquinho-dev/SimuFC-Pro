@@ -15,7 +15,6 @@ import {
   Bell,
   AlertTriangle,
   CheckCircle2,
-  Type,
 } from 'lucide-react';
 import { WIRE_COLORS } from '../types/components';
 import { COMPONENT_THUMBNAILS, SCHEMATIC_THUMBNAILS } from './ComponentThumbnails';
@@ -154,11 +153,6 @@ export default function Header({
           name: 'Borneira',
           tag: 'XT1',
         },
-        {
-          type: 'text_note',
-          name: 'Texto / Etiqueta',
-          tag: 'TXT',
-        },
       ],
     },
   ];
@@ -257,18 +251,6 @@ export default function Header({
           type: 'motor_6p',
           name: 'Motor Trifásico',
           tag: '-M1',
-        },
-      ],
-    },
-    {
-      id: 'annotations_schematic',
-      title: 'Anotações & Identificação',
-      icon: '📝',
-      items: [
-        {
-          type: 'text_note',
-          name: 'Texto / Etiqueta',
-          tag: 'TXT',
         },
       ],
     },
@@ -435,19 +417,6 @@ export default function Header({
             <span>Multímetro</span>
           </button>
 
-          {/* Adicionar Texto / Anotação */}
-          <button
-            type="button"
-            disabled={isSimulationMode}
-            className={`btn-toolbar ${isSimulationMode ? 'btn-disabled' : ''}`}
-            onClick={() => onAddComponent && onAddComponent('text_note')}
-            title={
-              isSimulationMode ? 'Pause a simulação para adicionar texto' : 'Adicionar Caixa de Texto / Etiqueta'
-            }
-          >
-            <Type size={16} />
-            <span>Texto</span>
-          </button>
 
           {/* Tutor / Dicas Guide */}
           <button
