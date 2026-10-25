@@ -351,11 +351,15 @@ export default function App() {
           if (c.type === 'terminal_block' && partialState.poles !== undefined) {
             updatedTerminals = getTerminalBlockTerminals(partialState.poles);
           }
-          return {
+          const nextComp = {
             ...c,
             state: { ...c.state, ...partialState },
             terminals: updatedTerminals,
           };
+          if ('dinRailId' in partialState) {
+            nextComp.dinRailId = partialState.dinRailId || undefined;
+          }
+          return nextComp;
         }
         return c;
       })
@@ -529,7 +533,7 @@ export default function App() {
       if (movingComp.type === 'din_rail') {
         const mountedIds = new Set();
         prev.forEach((c) => {
-          if (c.dinRailId === compId) {
+          if (c.dinRailId === compId || c.state?.dinRailId === compId) {
             mountedIds.add(c.id);
             if (c.type === 'contactor' && c.linkedRelayId) {
               mountedIds.add(c.linkedRelayId);
@@ -574,11 +578,27 @@ export default function App() {
       });
     });
 
-    // Also update any internal jumper wires and any wire splices attached to this component
+    // Also update any internal jumper wires and any wire splices attached to this component or any mounted components
     setWires((prevWires) => {
+      const movedCompIds = new Set([compId]);
+      if (movingComp.type === 'din_rail') {
+        components.forEach((c) => {
+          if (c.dinRailId === compId || c.state?.dinRailId === compId) {
+            movedCompIds.add(c.id);
+            if (c.type === 'contactor' && c.linkedRelayId) {
+              movedCompIds.add(c.linkedRelayId);
+            }
+          }
+        });
+      } else if (movingComp.type === 'contactor' && movingComp.linkedRelayId) {
+        movedCompIds.add(movingComp.linkedRelayId);
+      } else if (movingComp.type === 'thermal_relay' && movingComp.linkedContactorId) {
+        movedCompIds.add(movingComp.linkedContactorId);
+      }
+
       const directlyConnectedWireIds = new Set(
         prevWires
-          .filter((w) => w.fromComponent === compId || w.toComponent === compId)
+          .filter((w) => movedCompIds.has(w.fromComponent) || movedCompIds.has(w.toComponent))
           .map((w) => w.id)
       );
 
@@ -589,7 +609,7 @@ export default function App() {
         let newToPoint = w.toPoint;
         let newWaypoints = w.waypoints;
 
-        if (w.fromComponent === compId && w.toComponent === compId && w.waypoints?.length > 0) {
+        if (movedCompIds.has(w.fromComponent) && movedCompIds.has(w.toComponent) && w.waypoints?.length > 0) {
           newWaypoints = w.waypoints.map((pt) => ({ x: pt.x + dx, y: pt.y + dy }));
           updated = true;
         }
@@ -658,21 +678,35 @@ export default function App() {
       const railCenterY = rail.y + 25;
 
       // Find all mountable components near or assigned to this rail
-      const mountableTypes = new Set(['circuit_breaker', 'contactor', 'timer_relay']);
+      const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
       const candidates = prev.filter((c) => {
         if (!mountableTypes.has(c.type)) return false;
-        if (c.dinRailId === railId) return true;
+        if (c.dinRailId === railId || c.state?.dinRailId === railId) return true;
 
         // Check proximity to rail:
-        const compCenterY = c.type === 'circuit_breaker' ? c.y + 109 : c.y + 175;
-        const compWidth = c.type === 'circuit_breaker' ? (c.state?.poles || 3) * 52 : c.type === 'timer_relay' ? 120 : 210;
+        const compCenterY =
+          c.type === 'terminal_block'
+            ? c.y + 73
+            : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
+            ? c.y + 109
+            : c.y + 175;
+        const compWidth =
+          c.type === 'circuit_breaker'
+            ? (c.state?.poles || 3) * 52
+            : c.type === 'fuse_holder'
+            ? 52
+            : c.type === 'terminal_block'
+            ? (c.state?.poles || 4) * 34
+            : c.type === 'timer_relay'
+            ? 120
+            : 210;
         const isNearY = Math.abs(compCenterY - railCenterY) < 180;
         const isNearX = (c.x + compWidth > railMinX - 80) && (c.x < railMaxX + 80);
         return isNearY && isNearX;
       });
 
       if (candidates.length === 0) {
-        setToastMessage('ℹ️ Nenhum contator ou disjuntor próximo ao trilho para alinhar.');
+        setToastMessage('ℹ️ Nenhum componente próximo ao trilho para alinhar.');
         setTimeout(() => setToastMessage(null), 2500);
         return prev;
       }
@@ -686,20 +720,29 @@ export default function App() {
       const updatedPositions = new Map();
 
       sorted.forEach((comp) => {
-        const compWidth = comp.type === 'circuit_breaker'
-          ? (comp.state?.poles || 3) * 52
-          : comp.type === 'timer_relay'
-          ? 120
-          : 210;
+        const compWidth =
+          comp.type === 'circuit_breaker'
+            ? (comp.state?.poles || 3) * 52
+            : comp.type === 'fuse_holder'
+            ? 52
+            : comp.type === 'terminal_block'
+            ? (comp.state?.poles || 4) * 34
+            : comp.type === 'timer_relay'
+            ? 120
+            : 210;
 
-        const targetY = comp.type === 'circuit_breaker'
-          ? Math.round(railCenterY - 109)
-          : Math.round(railCenterY - 175);
+        const targetY =
+          comp.type === 'terminal_block'
+            ? Math.round(railCenterY - 73)
+            : comp.type === 'circuit_breaker' || comp.type === 'fuse_holder'
+            ? Math.round(railCenterY - 109)
+            : Math.round(railCenterY - 175);
 
         updatedPositions.set(comp.id, {
           x: currX,
           y: targetY,
           dinRailId: railId,
+          state: { ...comp.state, dinRailId: railId },
         });
 
         // If this is a contactor with a docked thermal relay, update the relay position as well
@@ -1029,25 +1072,77 @@ export default function App() {
         newTag = `${prefix}${num}`;
       }
 
+      let finalX = x;
+      let finalY = y;
+      let boundRailId = undefined;
+      const isMountable = ['contactor', 'circuit_breaker', 'fuse_holder', 'timer_relay', 'terminal_block'].includes(type);
+
+      if (isMountable) {
+        const compWidth =
+          type === 'circuit_breaker'
+            ? (template.state?.poles || 3) * 52
+            : type === 'fuse_holder'
+            ? 52
+            : type === 'terminal_block'
+            ? (template.state?.poles || 4) * 34
+            : type === 'timer_relay'
+            ? 120
+            : 210;
+        const compHeight =
+          type === 'circuit_breaker' || type === 'fuse_holder'
+            ? 218
+            : type === 'terminal_block'
+            ? 146
+            : 350;
+
+        const dinRails = prev.filter((c) => c.type === 'din_rail');
+        for (const rail of dinRails) {
+          const railLength = Math.max(300, Number(rail.state?.length) || 800);
+          const railCenterY = rail.y + 25;
+          const targetY =
+            type === 'terminal_block'
+              ? Math.round(railCenterY - 73)
+              : type === 'circuit_breaker' || type === 'fuse_holder'
+              ? Math.round(railCenterY - 109)
+              : Math.round(railCenterY - 175);
+
+          const isNearX = x + compWidth >= rail.x - 20 && x <= rail.x + railLength + 20;
+          const isNearY =
+            Math.abs(y + compHeight / 2 - railCenterY) < 110 || Math.abs(y - targetY) < 70;
+
+          if (isNearX && isNearY) {
+            boundRailId = rail.id;
+            finalY = targetY;
+            finalX = Math.max(rail.x + 24, Math.min(x, rail.x + railLength - compWidth - 24));
+            break;
+          }
+        }
+      }
+
       const newComp = {
         ...template,
         id,
         tag: newTag,
         name: template.name,
         displayMode: displayMode,
-        x,
-        y,
-        state: { ...template.state, displayMode: displayMode },
+        x: finalX,
+        y: finalY,
+        dinRailId: boundRailId,
+        state: { ...template.state, displayMode: displayMode, dinRailId: boundRailId },
         terminals: template.terminals.map((t) => ({ ...t })),
       };
 
+      if (boundRailId) {
+        setToastMessage(`⚡ ${template.name || type} fixado e vinculado ao Trilho DIN!`);
+      } else {
+        setToastMessage(`✅ ${template.name || type} adicionado à bancada!`);
+      }
+      setTimeout(() => {
+        setToastMessage(null);
+      }, 2800);
+
       return [...prev, newComp];
     });
-
-    setToastMessage(`✅ ${template.name || type} adicionado à bancada!`);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 2800);
   }, []);
 
   // Handler to remove a component and all its attached wires (blocked in simulation)

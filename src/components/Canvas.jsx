@@ -949,19 +949,24 @@ export default function Canvas({
             (draggedComp.type === 'contactor' ||
             draggedComp.type === 'circuit_breaker' ||
             draggedComp.type === 'fuse_holder' ||
-            draggedComp.type === 'timer_relay')
+            draggedComp.type === 'timer_relay' ||
+            draggedComp.type === 'terminal_block')
           ) {
             const compWidth =
               draggedComp.type === 'circuit_breaker'
                 ? (draggedComp.state?.poles || 3) * 52
                 : draggedComp.type === 'fuse_holder'
                 ? 52
+                : draggedComp.type === 'terminal_block'
+                ? (draggedComp.state?.poles || 4) * 34
                 : draggedComp.type === 'timer_relay'
                 ? 120
                 : 210;
             const compHeight =
               draggedComp.type === 'circuit_breaker' || draggedComp.type === 'fuse_holder'
                 ? 218
+                : draggedComp.type === 'terminal_block'
+                ? 146
                 : 350;
 
             const dinRails = componentsRef.current.filter((c) => c.type === 'din_rail');
@@ -971,11 +976,13 @@ export default function Canvas({
               const railLength = Math.max(300, Number(rail.state?.length) || 800);
               const railCenterY = rail.y + 25;
               const targetY =
-                draggedComp.type === 'circuit_breaker' || draggedComp.type === 'fuse_holder'
+                draggedComp.type === 'terminal_block'
+                  ? Math.round(railCenterY - 73)
+                  : draggedComp.type === 'circuit_breaker' || draggedComp.type === 'fuse_holder'
                   ? Math.round(railCenterY - 109)
                   : Math.round(railCenterY - 175);
 
-              const isWithinY = Math.abs(newY - targetY) < 45;
+              const isWithinY = Math.abs(newY - targetY) < 55;
               const isWithinX =
                 newX + compWidth > rail.x - 20 && newX < rail.x + railLength + 20;
 
@@ -993,12 +1000,15 @@ export default function Canvas({
                       (c.type === 'contactor' ||
                         c.type === 'circuit_breaker' ||
                         c.type === 'fuse_holder' ||
-                        c.type === 'timer_relay') &&
+                        c.type === 'timer_relay' ||
+                        c.type === 'terminal_block') &&
                       Math.abs(
-                        (c.type === 'circuit_breaker' || c.type === 'fuse_holder'
+                        (c.type === 'terminal_block'
+                          ? c.y + 73
+                          : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
                           ? c.y + 109
                           : c.y + 175) - railCenterY
-                      ) < 20
+                      ) < 25
                   );
 
                   for (const other of otherComps) {
@@ -1007,6 +1017,8 @@ export default function Canvas({
                         ? (other.state?.poles || 3) * 52
                         : other.type === 'fuse_holder'
                         ? 52
+                        : other.type === 'terminal_block'
+                        ? (other.state?.poles || 4) * 34
                         : other.type === 'timer_relay'
                         ? 120
                         : 210;
@@ -1168,21 +1180,80 @@ export default function Canvas({
       if (draggedCompIdRef.current) {
         const movedCompId = draggedCompIdRef.current;
         const didMove = dragMovedRef.current;
-        if (didMove && snapTargetRef.current) {
-          if (snapTargetRef.current.isDinRail && onUpdateComponentStateRef.current) {
+        if (didMove) {
+          if (snapTargetRef.current?.isDinRail && onUpdateComponentStateRef.current) {
             onUpdateComponentStateRef.current(snapTargetRef.current.compId, {
               dinRailId: snapTargetRef.current.railId,
             });
-          } else if (onLinkComponentsRef.current && snapTargetRef.current.contactorId) {
+          } else {
+            // Check if component had a DIN rail and moved away
+            const curComp = componentsRef.current.find((c) => c.id === movedCompId);
+            if (curComp && (curComp.dinRailId || curComp.state?.dinRailId)) {
+              const rail = componentsRef.current.find(
+                (c) => c.id === (curComp.dinRailId || curComp.state?.dinRailId)
+              );
+              let stillOnRail = false;
+              if (rail) {
+                const railLength = Math.max(300, Number(rail.state?.length) || 800);
+                const railCenterY = rail.y + 25;
+                const compH =
+                  curComp.type === 'terminal_block'
+                    ? 146
+                    : curComp.type === 'circuit_breaker' || curComp.type === 'fuse_holder'
+                    ? 218
+                    : 350;
+                const compW =
+                  curComp.type === 'circuit_breaker'
+                    ? (curComp.state?.poles || 3) * 52
+                    : curComp.type === 'fuse_holder'
+                    ? 52
+                    : curComp.type === 'terminal_block'
+                    ? (curComp.state?.poles || 4) * 34
+                    : curComp.type === 'timer_relay'
+                    ? 120
+                    : 210;
+                const isWithinY = Math.abs(curComp.y + compH / 2 - railCenterY) < 70;
+                const isWithinX =
+                  curComp.x + compW > rail.x - 20 && curComp.x < rail.x + railLength + 20;
+                if (isWithinY && isWithinX) {
+                  stillOnRail = true;
+                }
+              }
+              if (!stillOnRail && onUpdateComponentStateRef.current) {
+                onUpdateComponentStateRef.current(movedCompId, {
+                  dinRailId: null,
+                });
+              }
+            }
+          }
+
+          if (snapTargetRef.current?.contactorId && onLinkComponentsRef.current) {
             onLinkComponentsRef.current(snapTargetRef.current.contactorId, snapTargetRef.current.relayId);
           }
         }
 
         // Commit fresh waypoints and tap points for any wires attached to the moved component or attached to moved wires
         if (didMove && onUpdateWireRef.current && wiresPointListsRef.current) {
+          const movedComp = componentsRef.current.find((c) => c.id === movedCompId);
+          const allMovedCompIds = new Set([movedCompId]);
+          if (movedComp?.type === 'din_rail') {
+            componentsRef.current.forEach((c) => {
+              if (c.dinRailId === movedCompId || c.state?.dinRailId === movedCompId) {
+                allMovedCompIds.add(c.id);
+                if (c.type === 'contactor' && c.linkedRelayId) {
+                  allMovedCompIds.add(c.linkedRelayId);
+                }
+              }
+            });
+          } else if (movedComp?.type === 'contactor' && movedComp?.linkedRelayId) {
+            allMovedCompIds.add(movedComp.linkedRelayId);
+          } else if (movedComp?.type === 'thermal_relay' && movedComp?.linkedContactorId) {
+            allMovedCompIds.add(movedComp.linkedContactorId);
+          }
+
           const movedWireIds = new Set();
           wiresRef.current.forEach((w) => {
-            if (w.fromComponent === movedCompId || w.toComponent === movedCompId) {
+            if (allMovedCompIds.has(w.fromComponent) || allMovedCompIds.has(w.toComponent)) {
               movedWireIds.add(w.id);
             }
           });
