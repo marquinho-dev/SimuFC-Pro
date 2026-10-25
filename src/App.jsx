@@ -900,11 +900,12 @@ export default function App() {
         sounds.playButtonClick();
       } else if (selectedComponentId && !isSimulationMode) {
         const comp = components.find((c) => c.id === selectedComponentId);
-        if (comp && comp.type === 'pilot_light') {
+        if (comp && (comp.type === 'pilot_light' || comp.type === 'led_bulb')) {
           const matched = WIRE_COLORS.find(
             (w) => w.color.toLowerCase() === color.toLowerCase()
           );
-          const colorKey = matched ? matched.id : 'red';
+          const defaultKey = comp.type === 'led_bulb' ? 'yellow' : 'red';
+          const colorKey = matched ? matched.id : defaultKey;
           setComponents((prev) =>
             prev.map((c) =>
               c.id === selectedComponentId

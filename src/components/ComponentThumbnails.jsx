@@ -1459,11 +1459,18 @@ export function SchematicFloatSwitchThumbnail() {
 export function LedBulbThumbnail() {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px', background: 'transparent' }}>
-      <img
-        src="/led_bulb.png"
-        alt="Lâmpada LED"
-        style={{ width: '42px', height: '68px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}
-      />
+      <div style={{ position: 'relative', width: '42px', height: '68px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <img
+          src="/led_bulb.png"
+          alt="Lâmpada LED"
+          style={{ width: '38px', height: '54px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}
+        />
+        {/* Mini Bocal E27 */}
+        <div style={{ width: '28px', height: '12px', background: 'linear-gradient(180deg, #2a3342 0%, #12161f 100%)', borderRadius: '2px 2px 4px 4px', border: '1px solid #3b4556', marginTop: '-6px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 3px' }}>
+          <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#94a3b8' }} />
+          <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#94a3b8' }} />
+        </div>
+      </div>
       <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '7px', fontWeight: 800, color: '#facc15' }}>
         LÂMPADA LED
       </span>

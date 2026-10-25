@@ -304,8 +304,8 @@ export const FLOAT_SWITCH_TERMINALS = [
 ];
 
 export const LED_BULB_TERMINALS = [
-  { id: 'X1', label: 'X1', x: 20, y: 136, type: 'light_terminal' },
-  { id: 'X2', label: 'X2', x: 45, y: 172, type: 'light_terminal' },
+  { id: 'X1', label: 'X1', x: 20, y: 158, type: 'light_terminal' },
+  { id: 'X2', label: 'X2', x: 70, y: 158, type: 'light_terminal' },
 ];
 
 export const INITIAL_COMPONENTS = [
@@ -527,7 +527,7 @@ export const INITIAL_COMPONENTS = [
     templateOnly: true,
     state: {
       lit: false,
-      color: 'warm_white',
+      color: 'yellow',
     },
     terminals: LED_BULB_TERMINALS,
   },

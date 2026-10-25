@@ -47,12 +47,20 @@ export default function Header({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const isPilotLampSelected = selectedComponent?.type === 'pilot_light';
-  const selectedPilotColorHex = isPilotLampSelected
-    ? (WIRE_COLORS.find((w) => w.id === (selectedComponent.state?.color || 'red'))?.color || '#ef4444')
+  const isLedBulbSelected = selectedComponent?.type === 'led_bulb';
+  const isLampSelected = isPilotLampSelected || isLedBulbSelected;
+
+  const selectedLampColorHex = isLampSelected
+    ? (WIRE_COLORS.find(
+        (w) =>
+          w.id ===
+          (selectedComponent.state?.color ||
+            (isLedBulbSelected ? 'yellow' : 'red'))
+      )?.color || (isLedBulbSelected ? '#eab308' : '#ef4444'))
     : null;
 
-  const displayWireColor = isPilotLampSelected
-    ? selectedPilotColorHex
+  const displayWireColor = isLampSelected
+    ? selectedLampColorHex
     : selectedWireId && selectedWireColor
     ? selectedWireColor
     : activeWireColor;
@@ -363,12 +371,14 @@ export default function Header({
             )}
           </button>
 
-          {/* Wire & Sinaleira Color Selector Palette (ao lado do botão de iniciar simulação) */}
+          {/* Wire, Sinaleira & Lâmpada Color Selector Palette (ao lado do botão de iniciar simulação) */}
           <div
             className={`wire-color-palette ${isSimulationMode ? 'palette-disabled' : ''}`}
             title={
               isSimulationMode
                 ? 'Modo Simulação: os cabos adotam as cores normatizadas das fases'
+                : isLedBulbSelected
+                ? 'Clique para alterar a cor da lâmpada LED selecionada'
                 : isPilotLampSelected
                 ? 'Clique para alterar a cor da sinaleira selecionada'
                 : selectedWireId
@@ -377,7 +387,9 @@ export default function Header({
             }
           >
             <span className="palette-label">
-              {isPilotLampSelected
+              {isLedBulbSelected
+                ? 'Lâmpada:'
+                : isPilotLampSelected
                 ? 'Sinaleira:'
                 : selectedWireId
                 ? 'Fio Sel.:'
@@ -396,7 +408,9 @@ export default function Header({
                     : setActiveWireColor(w.color)
                 }
                 title={
-                  isPilotLampSelected
+                  isLedBulbSelected
+                    ? `Mudar cor da lâmpada para ${w.label}`
+                    : isPilotLampSelected
                     ? `Mudar cor da sinaleira para ${w.label}`
                     : selectedWireId
                     ? `Mudar fio selecionado para ${w.label}`
