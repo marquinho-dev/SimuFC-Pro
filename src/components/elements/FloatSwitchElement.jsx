@@ -1,20 +1,18 @@
-import React, { useState, useEffect, useRef, useId } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 
 /**
- * FloatSwitchElement - Boia de Nível de Reservatório Industrial
+ * FloatSwitchElement - Caixa D'Água Industrial com Boia de Nível Elétrica e Contrapeso.
  *
- * Design limpo e fiel à imagem de referência:
- * - Corpo escuro com cantos arredondados, sem poluição visual.
- * - Barra indicadora vertical de nível à esquerda com rótulo "NÍVEL XX%".
- * - Bica metálica industrial no nicho superior direito com registro circular vermelho.
- * - Ao abrir o registro: a água cai em gotas alongadas/jato contínuo e o nível sobe suavemente.
- * - Ao fechar o registro: o fluxo cessa e o nível esvazia/desce suavemente.
- * - Boia com colar flutuador azul e corpo cilíndrico laranja com bota corrugada à esquerda,
- *   flutuando naturalmente sobre as ondas da água:
- *   - Nível Alto (>= 50%): A boia inclina para cima e fecha o contato NA (11-14).
- *   - Nível Baixo (< 50%): A boia inclina para baixo e fecha o contato NF (11-12).
- * - Três bornes industriais discretos no topo: 11 (COM), 14 (NA) e 12 (NF).
- * - Sem badges ou textos poluídos na base.
+ * Fiel ao diagrama técnico de instalação predial/industrial:
+ * - Caixa D'água azul em polietileno com formato trapezoidal, tampa e corte transparente.
+ * - Tubulação de entrada marrom (padrão predial PVC soldável) com flange, joelho 90° e registro de esfera clicável.
+ * - Tubulação do ladrão no canto superior esquerdo com flange de overflow.
+ * - Borneira lateral com bornes 1 (COM), 2 (NA) e 3 (NF) para ligação elétrica.
+ * - Cabo elétrico preto entrando na caixa com o CONTRAPESO AMARELO regulador de nível.
+ * - Boia de nível (corpo azul com conector amarelo) que flutua e tomba conforme a água sobe:
+ *   - Nível Baixo (< 50%): Boia pendurada para baixo, contato NF (1-3 / COM-NF) fechado.
+ *   - Nível Alto (>= 50%): Boia sobe e tomba para cima na água, contato NA (1-2 / COM-NA) fechado.
+ * - Totalmente silencioso (sem sons de disjuntor indesejados).
  */
 
 export default function FloatSwitchElement({
@@ -28,7 +26,7 @@ export default function FloatSwitchElement({
 }) {
   const componentId = component.id;
   const state = component.state || {};
-  const [level, setLevel] = useState(Number(state.level ?? 22));
+  const [level, setLevel] = useState(Number(state.level ?? 20));
   const [isTapOpen, setIsTapOpen] = useState(Boolean(state.isTapOpen));
   const [wavePhase, setWavePhase] = useState(0);
 
@@ -46,7 +44,7 @@ export default function FloatSwitchElement({
     }
   }, [state.level, state.isTapOpen]);
 
-  // Loop suave de física da água (enchimento, esvaziamento e ondas suaves)
+  // Loop suave de enchimento e esvaziamento da caixa d'água
   useEffect(() => {
     let animId;
     let lastTime = performance.now();
@@ -55,12 +53,12 @@ export default function FloatSwitchElement({
       const dt = Math.min(50, time - lastTime);
       lastTime = time;
 
-      // Ondulação suave da água (ritmo calmo e natural)
-      setWavePhase((prev) => (prev + dt * 0.0025) % (Math.PI * 2));
+      // Ondulação suave da água
+      setWavePhase((prev) => (prev + dt * 0.003) % (Math.PI * 2));
 
-      // Se torneira aberta -> enche até 90%; se fechada -> esvazia até 18%
-      const target = isTapOpen ? 90 : 18;
-      const speed = isTapOpen ? 0.32 : 0.24; // % por tick
+      // Se registro aberto -> enche até 88%; se fechado -> esvazia até 15%
+      const target = isTapOpen ? 88 : 15;
+      const speed = isTapOpen ? 0.35 : 0.25; // % por tick
 
       setLevel((prev) => {
         let next = prev;
@@ -71,7 +69,7 @@ export default function FloatSwitchElement({
             next = Math.max(target, prev - speed * (dt / 16.6));
           }
 
-          // Se cruzou o limite de comutação da boia (50%), comuta o contato na simulação
+          // Se cruzou o ponto de acionamento da boia (50%), notifica a simulação
           const prevHigh = prev >= threshold;
           const nextHigh = next >= threshold;
           if (prevHigh !== nextHigh) {
@@ -91,10 +89,10 @@ export default function FloatSwitchElement({
     return () => cancelAnimationFrame(animId);
   }, [isTapOpen, threshold, componentId, onUpdateComponentState]);
 
-  // Atualiza periodicamente o nível persistido no estado global
+  // Atualização periódica de persistência
   useEffect(() => {
     const timer = setInterval(() => {
-      if (Math.abs(level - (state.level ?? 22)) > 1) {
+      if (Math.abs(level - (state.level ?? 20)) > 1) {
         onUpdateComponentState?.(componentId, {
           level: Math.round(level),
           isTapOpen,
@@ -104,36 +102,22 @@ export default function FloatSwitchElement({
     return () => clearInterval(timer);
   }, [level, isTapOpen, componentId, state.level, onUpdateComponentState]);
 
-  // Abrir ou fechar o registro da bica ao clicar nela
+  // Alterna o registro de entrada ao clicar na tubulação / registro
   const handleToggleTap = (e) => {
     e.stopPropagation();
-    const newTapState = !isTapOpen;
-    setIsTapOpen(newTapState);
+    const newTap = !isTapOpen;
+    setIsTapOpen(newTap);
     onUpdateComponentState?.(componentId, {
-      isTapOpen: newTapState,
+      isTapOpen: newTap,
       level: Math.round(level),
-    });
-  };
-
-  // Ajuste manual ao clicar na barra de nível
-  const handleGaugeClick = (e) => {
-    e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickY = e.clientY - rect.top;
-    const ratio = Math.max(0, Math.min(1, 1 - clickY / rect.height));
-    const newLvl = Math.round(ratio * 100);
-    setLevel(newLvl);
-    onUpdateComponentState?.(componentId, {
-      level: newLvl,
-      isTapOpen,
     });
   };
 
   // Cores de tensão nos bornes
   const getVolt = (termId) => terminalVoltages?.get?.(`${componentId}:${termId}`);
-  const vCOM = getVolt('COM') || getVolt('11');
-  const vNA = getVolt('NA') || getVolt('14');
-  const vNF = getVolt('NF') || getVolt('12');
+  const vCOM = getVolt('COM') || getVolt('1') || getVolt('11');
+  const vNA = getVolt('NA') || getVolt('2') || getVolt('14');
+  const vNF = getVolt('NF') || getVolt('3') || getVolt('12');
 
   const getVoltageColor = (v) => {
     if (!v) return null;
@@ -146,28 +130,63 @@ export default function FloatSwitchElement({
     return '#38bdf8';
   };
 
-  // Altura da água dentro do tanque
-  // Tanque útil: y de 95 (alto) a 200 (baixo)
-  const minWaterY = 95;  // 100% cheio
-  const maxWaterY = 200; // 0% vazio
-  const waterY = maxWaterY - (level / 100) * (maxWaterY - minWaterY);
+  // Altura da água na caixa
+  // Altura útil interna da caixa: y de 60 (quase cheia) a 220 (quase vazia)
+  const tankTopY = 60;
+  const tankBottomY = 220;
+  const waterY = tankBottomY - (level / 100) * (tankBottomY - tankTopY);
 
-  // Posição vertical e inclinação suave da Boia
-  // A boia repousa diretamente sobre a superfície da água
-  const floatY = waterY;
-  const floatAngle = isHigh ? -8 : 12; // inclinação suave e realista
+  // Posição e cinemática da boia com contrapeso
+  // O contrapeso fica fixado no cabo em (152, 138)
+  const weightX = 152;
+  const weightY = 138;
+
+  // Quando o nível sobe acima do contrapeso, a boia sobe e vira para cima
+  let floatX = 158;
+  let floatY = 192;
+  let floatAngle = 20; // pendurada para baixo
+
+  if (level < 35) {
+    // Pendurada livre para baixo
+    floatX = 158;
+    floatY = Math.min(200, waterY + 6);
+    floatAngle = 22;
+  } else if (level < 50) {
+    // Começando a tocar na água
+    floatX = 162;
+    floatY = waterY;
+    floatAngle = 10;
+  } else if (level < 70) {
+    // Flutuando na água e comutando
+    floatX = 166;
+    floatY = waterY - 8;
+    floatAngle = -28;
+  } else {
+    // Nível alto: completamente tombada para cima flutuando
+    floatX = 168;
+    floatY = waterY - 10;
+    floatAngle = -52;
+  }
+
+  // Interpolação suave das laterais trapezoidais para a largura da água
+  // y=28: xLeft=88, xRight=242 (largura 154)
+  // y=230: xLeft=104, xRight=226 (largura 122)
+  const t = (waterY - 28) / (230 - 28);
+  const waterLeftX = 88 + (104 - 88) * t;
+  const waterRightX = 242 - (242 - 226) * t;
+  const waterWidth = waterRightX - waterLeftX;
 
   return (
     <div
       style={{
         position: 'relative',
-        width: '260px',
-        height: '240px',
+        width: '320px',
+        height: '250px',
         userSelect: 'none',
       }}
     >
       <svg
-        viewBox="0 0 260 240"
+        viewBox="0 0 320 250"
         style={{
           width: '100%',
           height: '100%',
@@ -178,416 +197,394 @@ export default function FloatSwitchElement({
         }}
       >
         <defs>
-          {/* Fundo do gabinete escuro */}
-          <linearGradient id={`${uid}_cardGrad`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#21262d" />
-            <stop offset="60%" stopColor="#1a1e26" />
-            <stop offset="100%" stopColor="#14181f" />
+          {/* Gradiente da carcaça azul da caixa d'água */}
+          <linearGradient id={`${uid}_tankBlue`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#0284c7" />
+            <stop offset="30%" stopColor="#0369a1" />
+            <stop offset="70%" stopColor="#0284c7" />
+            <stop offset="100%" stopColor="#075985" />
           </linearGradient>
 
-          {/* Gradiente da água */}
-          <linearGradient id={`${uid}_waterGrad`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.75" />
-            <stop offset="40%" stopColor="#1d4ed8" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#0f2b5c" stopOpacity="0.95" />
+          {/* Gradiente de água */}
+          <linearGradient id={`${uid}_water`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+            <stop offset="25%" stopColor="#0284c7" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#0c4a6e" stopOpacity="0.9" />
           </linearGradient>
 
-          {/* Gradiente do corpo metálico cromado da bica */}
-          <linearGradient id={`${uid}_chromeGrad`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#cbd5e1" />
-            <stop offset="40%" stopColor="#f8fafc" />
-            <stop offset="75%" stopColor="#64748b" />
-            <stop offset="100%" stopColor="#334155" />
+          {/* Gradiente dos tubos de PVC marrom padrão brasileiro */}
+          <linearGradient id={`${uid}_pvcBrown`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a16207" />
+            <stop offset="35%" stopColor="#b45309" />
+            <stop offset="70%" stopColor="#78350f" />
+            <stop offset="100%" stopColor="#451a03" />
           </linearGradient>
 
-          {/* Gradiente da boia azul */}
-          <linearGradient id={`${uid}_floatBlue`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="25%" stopColor="#2563eb" />
-            <stop offset="85%" stopColor="#1d4ed8" />
-            <stop offset="100%" stopColor="#172554" />
-          </linearGradient>
-
-          {/* Gradiente do corpo laranja da boia */}
-          <linearGradient id={`${uid}_floatOrange`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#fb923c" />
-            <stop offset="35%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#c2410c" />
-          </linearGradient>
-
-          {/* Parafusos metálicos dos bornes */}
+          {/* Gradiente dos parafusos */}
           <radialGradient id={`${uid}_screw`} cx="35%" cy="35%" r="65%">
             <stop offset="0%" stopColor="#f8fafc" />
             <stop offset="55%" stopColor="#94a3b8" />
             <stop offset="100%" stopColor="#475569" />
           </radialGradient>
 
-          {/* Clip path para que a água fique dentro do reservatório */}
-          <clipPath id={`${uid}_reservoirClip`}>
-            <rect x="0" y="34" width="260" height="206" rx="20" />
+          {/* Clip path com formato trapezoidal interno da caixa d'água */}
+          <clipPath id={`${uid}_tankInteriorClip`}>
+            <polygon points="90,32 240,32 225,228 105,228" />
           </clipPath>
         </defs>
 
         {/* -------------------------------------------------------------
-            1. CORPO PRINCIPAL DO RESERVATÓRIO
+            1. TUBO LADRÃO (SAÍDA DE SEGURANÇA NO TOPO ESQUERDO)
             ------------------------------------------------------------- */}
+        <text
+          x="10"
+          y="32"
+          fill="#94a3b8"
+          fontSize="8"
+          fontWeight="700"
+          fontFamily="system-ui, sans-serif"
+        >
+          Ladrão (saída de água)
+        </text>
+
+        {/* Tubo horizontal de PVC marrom */}
+        <rect x="12" y="38" width="76" height="10" rx="1.5" fill={`url(#${uid}_pvcBrown)`} />
+        {/* Joelho 90° para baixo na ponta esquerda do ladrão */}
+        <rect x="6" y="38" width="10" height="18" rx="2" fill={`url(#${uid}_pvcBrown)`} />
+        {/* Flange / adaptador de caixa d'água com arruela na parede */}
+        <rect x="80" y="34" width="8" height="18" rx="2" fill="#451a03" />
+        <rect x="82" y="36" width="4" height="14" fill="#a16207" />
+
+        {/* -------------------------------------------------------------
+            2. BORNEIRA LATERAL DE CONEXÃO ELÉTRICA (BORNES 1, 2, 3)
+            ------------------------------------------------------------- */}
+        {/* Corpo isolante da borneira com rebaixos */}
         <rect
-          x="1"
-          y="1"
-          width="258"
-          height="238"
-          rx="24"
-          fill={`url(#${uid}_cardGrad)`}
+          x="28"
+          y="68"
+          width="36"
+          height="74"
+          rx="5"
+          fill="#0f172a"
           stroke="#334155"
           strokeWidth="1.2"
         />
 
-        {/* -------------------------------------------------------------
-            2. BORNEIRA SUPERIOR DISCRETA (11, 14, 12)
-            ------------------------------------------------------------- */}
-        {/* Identificação do componente à esquerda */}
-        <text
-          x="18"
-          y="22"
-          fill="#f8fafc"
-          fontSize="11"
-          fontWeight="800"
-          letterSpacing="0.5"
-        >
-          {component.tag || 'B1'}
-        </text>
-
-        {/* Borne COM (11) */}
+        {/* Borne 1: COM (Comum) */}
         <g
           style={{ cursor: 'pointer' }}
           onClick={(e) => {
             e.stopPropagation();
             onTerminalClick?.(componentId, 'COM');
           }}
-          title="Terminal 11 (Comum)"
+          title="Borne 1 (Comum / 11)"
         >
           <circle
-            cx="54"
-            cy="18"
-            r="10"
+            cx="46"
+            cy="80"
+            r="9"
             fill={activeTerminal?.componentId === componentId && activeTerminal?.terminalId === 'COM' ? '#00e676' : 'rgba(255, 255, 255, 0.04)'}
             stroke={vCOM ? getVoltageColor(vCOM) : '#475569'}
             strokeWidth="1.2"
           />
-          <circle cx="54" cy="18" r="6" fill={`url(#${uid}_screw)`} stroke="#334155" strokeWidth="0.8" />
-          <line x1="51" y1="18" x2="57" y2="18" stroke="#1e293b" strokeWidth="1.2" />
-          <line x1="54" y1="15" x2="54" y2="21" stroke="#1e293b" strokeWidth="1.2" />
-          {vCOM && <circle cx="54" cy="18" r="2.8" fill={getVoltageColor(vCOM)} />}
-          <text x="54" y="32" fill="#94a3b8" fontSize="7.5" fontWeight="800" textAnchor="middle" fontFamily="monospace">
-            11
+          <circle cx="46" cy="80" r="5.5" fill={`url(#${uid}_screw)`} stroke="#334155" strokeWidth="0.7" />
+          <line x1="43.5" y1="80" x2="48.5" y2="80" stroke="#1e293b" strokeWidth="1.2" />
+          {vCOM && <circle cx="46" cy="80" r="2.5" fill={getVoltageColor(vCOM)} />}
+          <text x="33" y="83" fill="#94a3b8" fontSize="7.5" fontWeight="800" textAnchor="end" fontFamily="monospace">
+            1
           </text>
         </g>
 
-        {/* Borne NA (14 - Fecha em nível alto) */}
+        {/* Borne 2: NA (Normalmente Aberto - Liga no Nível Alto) */}
         <g
           style={{ cursor: 'pointer' }}
           onClick={(e) => {
             e.stopPropagation();
             onTerminalClick?.(componentId, 'NA');
           }}
-          title="Terminal 14 (Normalmente Aberto - Liga no Nível Alto)"
+          title="Borne 2 (NA / 14 - Liga quando a caixa enche)"
         >
           <circle
-            cx="98"
-            cy="18"
-            r="10"
+            cx="46"
+            cy="104"
+            r="9"
             fill={activeTerminal?.componentId === componentId && activeTerminal?.terminalId === 'NA' ? '#00e676' : 'rgba(255, 255, 255, 0.04)'}
             stroke={vNA ? getVoltageColor(vNA) : '#475569'}
             strokeWidth="1.2"
           />
-          <circle cx="98" cy="18" r="6" fill={`url(#${uid}_screw)`} stroke="#334155" strokeWidth="0.8" />
-          <line x1="95" y1="18" x2="101" y2="18" stroke="#1e293b" strokeWidth="1.2" />
-          <line x1="98" y1="15" x2="98" y2="21" stroke="#1e293b" strokeWidth="1.2" />
-          {vNA && <circle cx="98" cy="18" r="2.8" fill={getVoltageColor(vNA)} />}
-          <text x="98" y="32" fill={isHigh ? '#22c55e' : '#94a3b8'} fontSize="7.5" fontWeight="800" textAnchor="middle" fontFamily="monospace">
-            14
+          <circle cx="46" cy="104" r="5.5" fill={`url(#${uid}_screw)`} stroke="#334155" strokeWidth="0.7" />
+          <line x1="43.5" y1="104" x2="48.5" y2="104" stroke="#1e293b" strokeWidth="1.2" />
+          {vNA && <circle cx="46" cy="104" r="2.5" fill={getVoltageColor(vNA)} />}
+          <text x="33" y="107" fill={isHigh ? '#22c55e' : '#94a3b8'} fontSize="7.5" fontWeight="800" textAnchor="end" fontFamily="monospace">
+            2
           </text>
         </g>
 
-        {/* Borne NF (12 - Fecha em nível baixo) */}
+        {/* Borne 3: NF (Normalmente Fechado - Liga no Nível Baixo) */}
         <g
           style={{ cursor: 'pointer' }}
           onClick={(e) => {
             e.stopPropagation();
             onTerminalClick?.(componentId, 'NF');
           }}
-          title="Terminal 12 (Normalmente Fechado - Liga no Nível Baixo)"
+          title="Borne 3 (NF / 12 - Liga quando a caixa esvazia)"
         >
           <circle
-            cx="142"
-            cy="18"
-            r="10"
+            cx="46"
+            cy="128"
+            r="9"
             fill={activeTerminal?.componentId === componentId && activeTerminal?.terminalId === 'NF' ? '#00e676' : 'rgba(255, 255, 255, 0.04)'}
             stroke={vNF ? getVoltageColor(vNF) : '#475569'}
             strokeWidth="1.2"
           />
-          <circle cx="142" cy="18" r="6" fill={`url(#${uid}_screw)`} stroke="#334155" strokeWidth="0.8" />
-          <line x1="139" y1="18" x2="145" y2="18" stroke="#1e293b" strokeWidth="1.2" />
-          <line x1="142" y1="15" x2="142" y2="21" stroke="#1e293b" strokeWidth="1.2" />
-          {vNF && <circle cx="142" cy="18" r="2.8" fill={getVoltageColor(vNF)} />}
-          <text x="142" y="32" fill={!isHigh ? '#38bdf8' : '#94a3b8'} fontSize="7.5" fontWeight="800" textAnchor="middle" fontFamily="monospace">
-            12
+          <circle cx="46" cy="128" r="5.5" fill={`url(#${uid}_screw)`} stroke="#334155" strokeWidth="0.7" />
+          <line x1="43.5" y1="128" x2="48.5" y2="128" stroke="#1e293b" strokeWidth="1.2" />
+          {vNF && <circle cx="46" cy="128" r="2.5" fill={getVoltageColor(vNF)} />}
+          <text x="33" y="131" fill={!isHigh ? '#38bdf8' : '#94a3b8'} fontSize="7.5" fontWeight="800" textAnchor="end" fontFamily="monospace">
+            3
           </text>
         </g>
 
+        {/* Rótulo de status da boia ao lado da borneira */}
+        <text x="46" y="152" fill={isHigh ? '#4ade80' : '#7dd3fc'} fontSize="7.5" fontWeight="800" textAnchor="middle" fontFamily="monospace">
+          {isHigh ? 'NA ON' : 'NF ON'}
+        </text>
+
         {/* -------------------------------------------------------------
-            3. ÁGUA E ONDAS DENTRO DO RESERVATÓRIO
+            3. A CAIXA D'ÁGUA AZUL (CORPO EM POLIETILENO COM CORTE)
             ------------------------------------------------------------- */}
-        <g clipPath={`url(#${uid}_reservoirClip)`}>
-          {/* Onda do fundo (camada escura / profundidade) */}
+        {/* Parede de fundo do tanque (interior escuro translúcido) */}
+        <polygon
+          points="88,28 242,28 226,230 104,230"
+          fill="#081426"
+          stroke="#0369a1"
+          strokeWidth="1.5"
+        />
+
+        {/* Tampa da caixa d'água no topo */}
+        <path
+          d="M 80 26 L 165 14 L 250 26 L 246 32 L 84 32 Z"
+          fill={`url(#${uid}_tankBlue)`}
+          stroke="#0284c7"
+          strokeWidth="1.5"
+        />
+        {/* Borda / aba saliente da tampa */}
+        <rect x="80" y="26" width="170" height="5" rx="1.5" fill="#075985" />
+
+        {/* Volume de água dentro do tanque com recorte trapezoidal */}
+        <g clipPath={`url(#${uid}_tankInteriorClip)`}>
+          {/* Massa de água azul */}
+          <polygon
+            points={`
+              ${waterLeftX},${waterY}
+              ${waterRightX},${waterY}
+              226,230
+              104,230
+            `}
+            fill={`url(#${uid}_water)`}
+          />
+
+          {/* Superfície da água com ondulação suave */}
           <path
             d={`
-              M 0 ${waterY + 4}
-              Q 70 ${waterY + 4 + Math.sin(wavePhase + 1.2) * 2.2}, 140 ${waterY + 4}
-              T 260 ${waterY + 4}
-              L 260 240
-              L 0 240
-              Z
+              M ${waterLeftX} ${waterY}
+              Q ${waterLeftX + waterWidth * 0.5} ${waterY + Math.sin(wavePhase) * 2}, ${waterRightX} ${waterY}
             `}
-            fill="#122538"
+            fill="none"
+            stroke="#bae6fd"
+            strokeWidth="1.5"
             opacity="0.85"
           />
 
-          {/* Onda frontal (água principal azul) */}
-          <path
-            d={`
-              M 0 ${waterY}
-              Q 65 ${waterY + Math.sin(wavePhase) * 2}, 130 ${waterY}
-              T 260 ${waterY}
-              L 260 240
-              L 0 240
-              Z
-            `}
-            fill={`url(#${uid}_waterGrad)`}
-          />
-
-          {/* Linha brilhante translúcida na superfície da água */}
-          <path
-            d={`
-              M 0 ${waterY}
-              Q 65 ${waterY + Math.sin(wavePhase) * 2}, 130 ${waterY}
-              T 260 ${waterY}
-            `}
-            fill="none"
-            stroke="#60a5fa"
-            strokeWidth="1.5"
-            opacity="0.65"
-          />
-
-          {/* Jato d'água caindo da bica (em gotas verticais como na imagem) */}
+          {/* Jato d'água caindo da bica (quando registro aberto) */}
           {isTapOpen && (
             <g>
-              {/* Coluna de gotas d'água alongadas */}
-              {Array.from({ length: 9 }).map((_, i) => {
-                const dropY = 88 + i * 14;
-                if (dropY >= waterY - 4) return null;
-                return (
-                  <rect
-                    key={i}
-                    x="184"
-                    y={dropY}
-                    width="4.5"
-                    height="9"
-                    rx="2.2"
-                    fill="#38bdf8"
-                    opacity="0.85"
-                  />
-                );
-              })}
-
-              {/* Ondinha sutil de impacto na superfície */}
+              <line
+                x1="226"
+                y1="88"
+                x2="226"
+                y2={Math.max(90, waterY)}
+                stroke="#38bdf8"
+                strokeWidth="4"
+                strokeDasharray="6 4"
+                strokeDashoffset={-wavePhase * 10}
+                strokeLinecap="round"
+                opacity="0.9"
+              />
+              <line
+                x1="226"
+                y1="88"
+                x2="226"
+                y2={Math.max(90, waterY)}
+                stroke="#ffffff"
+                strokeWidth="1.5"
+                opacity="0.75"
+              />
+              {/* Espirro / splash suave no ponto de impacto */}
               <ellipse
-                cx="186"
+                cx="226"
                 cy={waterY + 1}
-                rx="8"
+                rx="7"
                 ry="2"
                 fill="none"
-                stroke="#bae6fd"
-                strokeWidth="1.2"
-                opacity="0.8"
+                stroke="#e0f2fe"
+                strokeWidth="1"
               />
             </g>
           )}
 
           {/* -------------------------------------------------------------
-              4. A BOIA DE NÍVEL (FLUTUA CENTRALIZADA SOBRE A ÁGUA)
+              4. A BOIA ELÉTRICA COM CABO E CONTRAPESO
               ------------------------------------------------------------- */}
-          <g transform={`translate(120, ${floatY}) rotate(${floatAngle}) translate(-50, -18)`}>
-            {/* Bloco flutuador azul (colar de sustentação) */}
+          {/* Cabo elétrico preto da boia saindo da borneira e passando pelo contrapeso */}
+          <path
+            d={`
+              M 64 104
+              C 80 104, 110 65, 125 75
+              C 140 85, ${weightX} ${weightY - 15}, ${weightX} ${weightY}
+              C ${weightX} ${weightY + 15}, ${floatX} ${floatY - 15}, ${floatX} ${floatY}
+            `}
+            fill="none"
+            stroke="#0f172a"
+            strokeWidth="3.2"
+            strokeLinecap="round"
+          />
+
+          {/* O CONTRAPESO AMARELO (REGULADOR DE NÍVEL NO CABO) */}
+          <g transform={`translate(${weightX - 6}, ${weightY - 9})`}>
             <rect
-              x="22"
+              x="0"
               y="0"
-              width="62"
-              height="36"
-              rx="8"
-              fill={`url(#${uid}_floatBlue)`}
+              width="12"
+              height="18"
+              rx="3"
+              fill="#eab308"
+              stroke="#ca8a04"
+              strokeWidth="1"
+            />
+            <rect x="2" y="3" width="8" height="12" rx="1.5" fill="#facc15" />
+            <line x1="6" y1="0" x2="6" y2="18" stroke="#a16207" strokeWidth="1" />
+          </g>
+
+          {/* A BOIA DE NÍVEL (CORPO AZUL COM COLAR AMARELO) */}
+          <g transform={`translate(${floatX}, ${floatY}) rotate(${floatAngle})`}>
+            {/* Colar / conector amarelo onde o cabo entra na boia */}
+            <path
+              d="M -4 0 L 4 0 L 6 10 L -6 10 Z"
+              fill="#eab308"
+              stroke="#ca8a04"
+              strokeWidth="0.8"
+            />
+
+            {/* Corpo principal da boia em gota / cápsula azul */}
+            <rect
+              x="-12"
+              y="10"
+              width="24"
+              height="34"
+              rx="10"
+              fill="#1d4ed8"
               stroke="#1e3a8a"
               strokeWidth="1.2"
             />
-            {/* Rebaixo / entalhe central do bloco azul */}
+            {/* Rebaixo / visor central azul escuro */}
             <rect
-              x="32"
-              y="4"
-              width="42"
-              height="6"
-              rx="3"
-              fill="#60a5fa"
-              opacity="0.45"
-            />
-
-            {/* Corpo cilíndrico laranja que atravessa o flutuador */}
-            <rect
-              x="0"
-              y="10"
-              width="96"
-              height="16"
-              rx="8"
-              fill={`url(#${uid}_floatOrange)`}
-              stroke="#9a3412"
+              x="-7"
+              y="16"
+              width="14"
+              height="20"
+              rx="5"
+              fill="#172554"
+              stroke="#2563eb"
               strokeWidth="0.8"
             />
-            {/* Linha de reflexo no corpo laranja */}
-            <line
-              x1="6"
-              y1="14"
-              x2="90"
-              y2="14"
-              stroke="#ffedd5"
-              strokeWidth="1.6"
+            {/* Brilho de luz na superfície da boia */}
+            <path
+              d="M -7 14 Q 0 12 7 14"
+              fill="none"
+              stroke="#60a5fa"
+              strokeWidth="1.5"
               strokeLinecap="round"
-              opacity="0.75"
+              opacity="0.8"
             />
+          </g>
+        </g>
 
-            {/* Bota corrugada de borracha na extremidade esquerda */}
-            <g>
-              <line x1="5" y1="11" x2="5" y2="25" stroke="#7c2d12" strokeWidth="1.8" />
-              <line x1="10" y1="11" x2="10" y2="25" stroke="#7c2d12" strokeWidth="1.8" />
-              <line x1="15" y1="11" x2="15" y2="25" stroke="#7c2d12" strokeWidth="1.8" />
+        {/* Moldura frontal chanfrada em azul da Caixa D'Água */}
+        <polygon
+          points="88,28 242,28 226,230 104,230"
+          fill="none"
+          stroke="#0284c7"
+          strokeWidth="6"
+          strokeLinejoin="round"
+        />
+        <polygon
+          points="88,28 242,28 226,230 104,230"
+          fill="none"
+          stroke="#0369a1"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+
+        {/* -------------------------------------------------------------
+            5. TUBULAÇÃO DE ENTRADA (A BICA) NA DIREITA COM REGISTRO
+            ------------------------------------------------------------- */}
+        <g
+          style={{ cursor: 'pointer' }}
+          onClick={handleToggleTap}
+          title={isTapOpen ? 'Clique para FECHAR a entrada de água' : 'Clique para ABRIR a entrada de água'}
+        >
+          {/* Tubo vertical vindo da alimentação */}
+          <rect x="302" y="70" width="12" height="150" rx="1.5" fill={`url(#${uid}_pvcBrown)`} />
+          {/* Joelho 90° superior direito */}
+          <rect x="292" y="66" width="22" height="18" rx="3" fill={`url(#${uid}_pvcBrown)`} />
+
+          {/* Tubo horizontal de entrada de água entrando na caixa */}
+          <rect x="238" y="70" width="56" height="10" rx="1" fill={`url(#${uid}_pvcBrown)`} />
+
+          {/* Flange com adaptador na parede da caixa */}
+          <rect x="236" y="66" width="8" height="18" rx="2" fill="#451a03" />
+          <rect x="238" y="68" width="4" height="14" fill="#a16207" />
+
+          {/* Joelho 90° voltado para baixo dentro da caixa d'água (A BICA) */}
+          <path
+            d="M 234 70 L 222 70 Q 220 70 220 76 L 220 88"
+            fill="none"
+            stroke={`url(#${uid}_pvcBrown)`}
+            strokeWidth="10"
+            strokeLinecap="square"
+          />
+          {/* Bico na ponta do joelho */}
+          <rect x="216" y="86" width="8" height="4" rx="1" fill="#451a03" />
+
+          {/* Registro de esfera (Torneira / Válvula) na tubulação */}
+          <g transform="translate(274, 75)">
+            {/* Corpo do registro */}
+            <circle cx="0" cy="0" r="8" fill="#78350f" stroke="#451a03" strokeWidth="1" />
+            {/* Alavanca do registro (rotaciona 90° ao abrir/fechar) */}
+            <g transform={`rotate(${isTapOpen ? 0 : -90})`} style={{ transition: 'transform 0.25s ease-out' }}>
+              <rect x="-3" y="-18" width="6" height="20" rx="2" fill={isTapOpen ? '#22c55e' : '#dc2626'} stroke="#1e293b" strokeWidth="0.8" />
+              <circle cx="0" cy="0" r="3" fill="#f8fafc" />
             </g>
           </g>
         </g>
 
         {/* -------------------------------------------------------------
-            5. GAUGE VERTICAL DE NÍVEL À ESQUERDA (ESTILO TERMÔMETRO)
+            6. LEITURA DE NÍVEL DISCRETA NA BASE
             ------------------------------------------------------------- */}
-        <g
-          style={{ cursor: 'pointer' }}
-          onClick={handleGaugeClick}
-          title="Clique para ajustar o nível manualmente"
-        >
-          {/* Tubo de vidro fino */}
-          <rect
-            x="24"
-            y="65"
-            width="6"
-            height="85"
-            rx="3"
-            fill="#121721"
-            stroke="#475569"
-            strokeWidth="0.8"
-          />
-
-          {/* Coluna de líquido vermelho subindo do fundo */}
-          <rect
-            x="24.5"
-            y={65 + 85 - (level / 100) * 85}
-            width="5"
-            height={(level / 100) * 85}
-            rx="2.5"
-            fill="#ef4444"
-          />
-
-          {/* Bulbo inferior arredondado */}
-          <circle
-            cx="27"
-            cy="153"
-            r="5"
-            fill="#ef4444"
-            stroke="#475569"
-            strokeWidth="0.8"
-          />
-
-          {/* Rótulo "NÍVEL XX%" perfeitamente limpo */}
+        <g transform="translate(165, 242)">
           <text
-            x="27"
-            y="172"
-            fill="#f8fafc"
-            fontSize="9"
-            fontWeight="700"
+            x="0"
+            y="0"
+            fill="#94a3b8"
+            fontSize="9.5"
+            fontWeight="800"
             fontFamily="monospace"
             textAnchor="middle"
-            letterSpacing="0.2"
+            letterSpacing="0.3"
           >
-            NÍVEL {Math.round(level)}%
+            NÍVEL: {Math.round(level)}%
           </text>
-        </g>
-
-        {/* -------------------------------------------------------------
-            6. A BICA INDUSTRIAL COM REGISTRO (TOP-RIGHT COM NICHO)
-            ------------------------------------------------------------- */}
-        <g
-          style={{ cursor: 'pointer' }}
-          onClick={handleToggleTap}
-          title={isTapOpen ? 'Clique no registro para FECHAR a bica' : 'Clique no registro para ABRIR a bica'}
-        >
-          {/* Moldura do nicho da bica exatamente como na referência */}
-          <rect
-            x="166"
-            y="38"
-            width="66"
-            height="50"
-            rx="4"
-            fill="rgba(15, 23, 42, 0.45)"
-            stroke="#64748b"
-            strokeWidth="1"
-          />
-
-          {/* Cano metálico saindo da parede direita */}
-          <path
-            d="M 224 54 L 194 54"
-            stroke={`url(#${uid}_chromeGrad)`}
-            strokeWidth="8"
-            strokeLinecap="square"
-          />
-
-          {/* Curva da bica apontando verticalmente para baixo */}
-          <path
-            d="M 198 54 Q 186 54 186 64 L 186 82"
-            fill="none"
-            stroke={`url(#${uid}_chromeGrad)`}
-            strokeWidth="8"
-            strokeLinecap="round"
-          />
-
-          {/* Bico arejador na saída */}
-          <rect
-            x="182"
-            y="81"
-            width="8"
-            height="4"
-            rx="1.5"
-            fill="#475569"
-            stroke="#94a3b8"
-            strokeWidth="0.8"
-          />
-
-          {/* Registro metálico industrial no topo com volante circular */}
-          <g
-            transform={`translate(202, 46) rotate(${isTapOpen ? 90 : 0})`}
-            style={{ transition: 'transform 0.25s ease-out' }}
-          >
-            <circle cx="0" cy="0" r="9" fill="#dc2626" stroke="#7f1d1d" strokeWidth="1" />
-            <circle cx="0" cy="0" r="7.5" fill="#ef4444" />
-            {/* Cruz do volante */}
-            <line x1="-7" y1="0" x2="7" y2="0" stroke="#f8fafc" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="0" y1="-7" x2="0" y2="7" stroke="#f8fafc" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="0" cy="0" r="3.2" fill="#94a3b8" stroke="#334155" strokeWidth="0.8" />
-          </g>
         </g>
       </svg>
     </div>

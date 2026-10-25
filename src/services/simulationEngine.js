@@ -233,13 +233,19 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
           const isHigh = lvl >= thresh;
           if (isHigh) {
             addEdge(`${comp.id}:COM`, `${comp.id}:NA`);
+            addEdge(`${comp.id}:1`, `${comp.id}:2`);
             addEdge(`${comp.id}:11`, `${comp.id}:14`);
+            addEdge(`${comp.id}:COM`, `${comp.id}:2`);
             addEdge(`${comp.id}:COM`, `${comp.id}:14`);
+            addEdge(`${comp.id}:1`, `${comp.id}:NA`);
             addEdge(`${comp.id}:11`, `${comp.id}:NA`);
           } else {
             addEdge(`${comp.id}:COM`, `${comp.id}:NF`);
+            addEdge(`${comp.id}:1`, `${comp.id}:3`);
             addEdge(`${comp.id}:11`, `${comp.id}:12`);
+            addEdge(`${comp.id}:COM`, `${comp.id}:3`);
             addEdge(`${comp.id}:COM`, `${comp.id}:12`);
+            addEdge(`${comp.id}:1`, `${comp.id}:NF`);
             addEdge(`${comp.id}:11`, `${comp.id}:NF`);
           }
           break;

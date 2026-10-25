@@ -1206,28 +1206,31 @@ export function FloatSwitchThumbnail() {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', borderRadius: '4px', background: 'transparent' }}>
       <svg viewBox="0 0 100 85" style={{ width: '92%', height: '92%', display: 'block' }}>
-        {/* Carcaça do reservatório */}
-        <rect x="5" y="4" width="90" height="77" rx="6" fill="#1e2530" stroke="#475569" strokeWidth="1.2" />
-        {/* Tanque interno de água */}
-        <rect x="10" y="18" width="80" height="58" rx="4" fill="#080c13" stroke="#334155" strokeWidth="0.8" />
-        {/* Volume de água azul */}
-        <path d="M 10 44 Q 30 42, 50 44 T 90 44 L 90 76 L 10 76 Z" fill="#0284c7" opacity="0.8" />
-        <line x1="10" y1="44" x2="90" y2="44" stroke="#38bdf8" strokeWidth="1" />
-        {/* Termômetro vertical à esquerda */}
-        <rect x="13" y="24" width="3" height="36" rx="1.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
-        <rect x="13.5" y="42" width="2" height="18" rx="1" fill="#ef4444" />
-        {/* Boia de nível (corpo laranja + flutuador azul) */}
-        <g transform="rotate(12 36 44)">
-          <rect x="36" y="38" width="28" height="14" rx="4" fill="#2563eb" stroke="#1d4ed8" strokeWidth="0.8" />
-          <rect x="30" y="42" width="40" height="6" rx="3" fill="#ea580c" />
-        </g>
-        {/* Bica cromada com volante vermelho */}
-        <path d="M 86 12 L 76 12 Q 72 12 72 18 L 72 26" fill="none" stroke="#cbd5e1" strokeWidth="4" strokeLinecap="round" />
-        <circle cx="80" cy="8" r="3.5" fill="#dc2626" />
-        <line x1="72" y1="26" x2="72" y2="44" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="3 2" />
+        {/* Caixa d'água trapezoidal azul */}
+        <polygon points="26,16 80,16 74,76 32,76" fill="#081426" stroke="#0284c7" strokeWidth="2.5" strokeLinejoin="round" />
+        {/* Tampa azul */}
+        <polygon points="24,16 53,10 82,16 80,19 26,19" fill="#0284c7" />
+        {/* Água interna */}
+        <polygon points="30,48 76,48 74,76 32,76" fill="#0284c7" opacity="0.8" />
+        <line x1="30" y1="48" x2="76" y2="48" stroke="#38bdf8" strokeWidth="1" />
+        {/* Ladrão na esquerda */}
+        <rect x="6" y="20" width="22" height="3" fill="#78350f" />
+        {/* Borneira na esquerda */}
+        <rect x="12" y="32" width="10" height="24" rx="1.5" fill="#0f172a" stroke="#334155" strokeWidth="0.6" />
+        <circle cx="17" cy="36" r="1.5" fill="#f8fafc" />
+        <circle cx="17" cy="44" r="1.5" fill="#f8fafc" />
+        <circle cx="17" cy="52" r="1.5" fill="#f8fafc" />
+        {/* Tubulação marrom na direita */}
+        <rect x="78" y="28" width="18" height="3" fill="#78350f" />
+        <rect x="76" y="28" width="3" height="8" fill="#78350f" />
+        {/* Cabo e contrapeso amarelo */}
+        <path d="M 22 44 Q 40 32 48 42 T 52 58" fill="none" stroke="#0f172a" strokeWidth="1.2" />
+        <rect x="46" y="44" width="4" height="6" rx="1" fill="#eab308" />
+        {/* Boia azul */}
+        <rect x="48" y="55" width="8" height="12" rx="3.5" fill="#1d4ed8" stroke="#1e3a8a" strokeWidth="0.6" />
       </svg>
-      <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '7.5px', fontWeight: 800, color: '#38bdf8' }}>
-        BOIA
+      <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '7px', fontWeight: 800, color: '#38bdf8' }}>
+        CAIXA D'ÁGUA
       </span>
     </div>
   );

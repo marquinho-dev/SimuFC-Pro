@@ -297,9 +297,9 @@ export const BRAZIL_VOLTAGE_STANDARDS = [
 ];
 
 export const FLOAT_SWITCH_TERMINALS = [
-  { id: 'COM', label: '11', x: 54, y: 18, type: 'float_terminal' },
-  { id: 'NA', label: '14', x: 98, y: 18, type: 'float_terminal' },
-  { id: 'NF', label: '12', x: 142, y: 18, type: 'float_terminal' },
+  { id: 'COM', label: '1', x: 46, y: 80, type: 'float_terminal' },
+  { id: 'NA', label: '2', x: 46, y: 104, type: 'float_terminal' },
+  { id: 'NF', label: '3', x: 46, y: 128, type: 'float_terminal' },
 ];
 
 export const INITIAL_COMPONENTS = [
@@ -572,7 +572,7 @@ export const INITIAL_COMPONENTS = [
   {
     id: 'float-1',
     type: COMPONENT_TYPES.FLOAT_SWITCH,
-    name: 'Boia de Nível (Reservatório)',
+    name: "Caixa D'Água (Boia de Nível)",
     tag: 'B1',
     x: 520,
     y: 120,

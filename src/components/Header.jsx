@@ -116,7 +116,7 @@ export default function Header({
         },
         {
           type: 'float_switch',
-          name: 'Boia de Nível (Reservatório)',
+          name: "Caixa D'Água (Boia)",
           tag: 'B1',
         },
       ],
