@@ -165,63 +165,61 @@ export default function FloatSwitchElement({
   //   com o cabo esticado para baixo em direção ao contrapeso.
   // -----------------------------------------------------------------
   // -----------------------------------------------------------------
-  // CINEMÁTICA PURA, UNIFICADA E CONTÍNUA DA BOIA E DO CONTRAPESO
-  // - Elimina qualquer descontinuidade ('salto da boia') através de uma
-  //   formulação contínua única em todo o curso (0% a 100%).
-  // - O contrapeso rotaciona suavemente acompanhando a linha de tração do cabo.
-  // - O cabo sai da extremidade do contrapeso diretamente alinhado à boia,
-  //   eliminando dobras ou 'anzóis' abruptos.
+  // CINEMÁTICA REALISTA ENGEHALL: BOIA HORIZONTAL NA LÂMINA D'ÁGUA
+  // - Na água, a boia repousa HORIZONTALMENTE na superfície (como na foto da EngeHall),
+  //   com o prensa-cabo laranja à esquerda e o corpo azul boiando perfeitamente plano.
+  // - Quando a caixa está vazia (sem água sustentando a boia), ela pende para baixo
+  //   pela gravidade (~65°).
+  // - O contrapeso rotaciona acompanhando o cabo sem dobras ou descontinuidades.
   // -----------------------------------------------------------------
   const anchorX = 82;
   const anchorY = 32;
   const weightX = 126;
   const weightY = 126;
-  const tetherLen = 50; // Comprimento útil do cabo entre contrapeso e boia
+  const tetherLen = 50;
 
-  // Posição de repouso pendurada no ar (quando o nível d'água está baixo)
+  // Limites verticais
   const maxHangY = weightY + tetherLen; // ~176 (caixa vazia)
-  const minFloatY = weightY - tetherLen * 0.82; // ~85 (caixa cheia)
+  const minFloatY = weightY - tetherLen * 0.85; // ~83 (caixa cheia)
 
-  // Altura contínua da boia: flutua na água (waterY + 4) respeitando os limites do cabo
-  const floatY = Math.max(minFloatY, Math.min(maxHangY, waterY + 4));
+  // Altura da boia na lâmina d'água (waterY)
+  const floatY = Math.max(minFloatY, Math.min(maxHangY, waterY));
 
-  // Deslocamento vertical relativo ao ponto de ancoragem do contrapeso
+  // Deslocamento horizontal: o cabo afasta a boia suavemente para a direita
   const dy = floatY - weightY;
-
-  // Deslocamento horizontal: arco circular puro contínuo ao redor do contrapeso
   const dxArc = Math.sqrt(Math.max(0, tetherLen * tetherLen - dy * dy));
-  const floatX = weightX + 4 + dxArc * 0.94;
+  const floatX = weightX + 22 + dxArc * 0.78;
 
-  // Vetor contínuo da linha de tração do contrapeso até a boia
-  const vecX = floatX - weightX;
-  const vecY = floatY - weightY;
-  const tetherAngle = Math.atan2(vecY, vecX) * (180 / Math.PI);
-
-  // Ângulo contínuo da boia: alinhada ao vetor de tração e empuxo (sem saltos)
-  const floatAngle = tetherAngle - 90;
-
-  // Rotação suave do contrapeso amarelo alinhado à tensão do cabo
-  const weightRot = (tetherAngle - 90) * 0.82;
-  const weightRotRad = (weightRot * Math.PI) / 180;
-
-  // Furos de entrada (topo) e saída (base) do contrapeso acompanhando sua rotação
-  const weightEnterX = weightX + 9 * Math.sin(weightRotRad);
-  const weightEnterY = weightY - 9 * Math.cos(weightRotRad);
-  const weightExitX = weightX - 9 * Math.sin(weightRotRad);
-  const weightExitY = weightY + 9 * Math.cos(weightRotRad);
-
-  // Posição exata do conector/colar amarelo no topo da boia (0, -12)
+  // Transição de ângulo:
+  // Se estiver pendurada no ar (água abaixo do limite), pende para baixo (65°).
+  // Assim que a água a alcança e a sustenta, ela deita PLANA / HORIZONTAL (0°) na água,
+  // com sutil ondulação (±2°) reproduzindo exatamente a foto da EngeHall.
+  const hangRatio = Math.max(0, Math.min(1, (maxHangY - waterY) / 16));
+  const floatAngle = (1 - hangRatio) * 65 + (hangRatio > 0.9 ? Math.sin(wavePhase) * 2.2 : 0);
   const floatRad = (floatAngle * Math.PI) / 180;
-  const collarX = floatX + 12 * Math.sin(floatRad);
-  const collarY = floatY - 12 * Math.cos(floatRad);
 
-  // Curvatura suave e natural para o cabo entre o contrapeso e o colar
-  const segDx = collarX - weightExitX;
-  const segDy = collarY - weightExitY;
-  const ctrl1X = weightExitX + segDx * 0.35;
-  const ctrl1Y = weightExitY + segDy * 0.35;
-  const ctrl2X = weightExitX + segDx * 0.7;
-  const ctrl2Y = weightExitY + segDy * 0.7;
+  // Ponto de entrada do cabo no prensa-cabo laranja da boia (x = -18, y = 0 no grupo)
+  const bootX = floatX - 18 * Math.cos(floatRad);
+  const bootY = floatY - 18 * Math.sin(floatRad);
+
+  // Vetor do contrapeso até o prensa-cabo da boia
+  const toBootX = bootX - weightX;
+  const toBootY = bootY - weightY;
+  const alpha = Math.atan2(toBootY, toBootX);
+  const alphaDeg = (alpha * 180) / Math.PI;
+
+  // Alinhamento do contrapeso ao longo da tração
+  const weightRot = alphaDeg - 90;
+  const weightExitX = weightX + 9 * Math.cos(alpha);
+  const weightExitY = weightY + 9 * Math.sin(alpha);
+  const weightEnterX = weightX - 9 * Math.cos(alpha);
+  const weightEnterY = weightY - 9 * Math.sin(alpha);
+
+  // Pontos de controle para curvatura natural do cabo
+  const ctrl1X = weightExitX + 14 * Math.cos(alpha);
+  const ctrl1Y = weightExitY + 14 * Math.sin(alpha);
+  const ctrl2X = bootX - 16 * Math.cos(floatRad);
+  const ctrl2Y = bootY - 16 * Math.sin(floatRad);
 
   return (
     <div
@@ -522,13 +520,13 @@ export default function FloatSwitchElement({
             strokeLinecap="round"
           />
 
-          {/* Segmento 2 do cabo: do contrapeso até o colar conector da boia */}
+          {/* Segmento 2 do cabo: do contrapeso até o prensa-cabo da boia */}
           <path
             d={`
               M ${weightExitX} ${weightExitY}
               C ${ctrl1X} ${ctrl1Y},
                 ${ctrl2X} ${ctrl2Y},
-                ${collarX} ${collarY}
+                ${bootX} ${bootY}
             `}
             fill="none"
             stroke="#0f172a"
@@ -552,46 +550,72 @@ export default function FloatSwitchElement({
             <line x1="0" y1="-9" x2="0" y2="9" stroke="#a16207" strokeWidth="1" />
           </g>
 
-          {/* A BOIA DE NÍVEL COM CINEMÁTICA CONTÍNUA E NATURAL */}
+          {/* A BOIA DE NÍVEL REALISTA ENGEHALL (HORIZONTE PLANO NA ÁGUA) */}
           <g transform={`translate(${floatX}, ${floatY}) rotate(${floatAngle})`}>
-            {/* Conector amarelo da ponta onde o cabo entra */}
+            {/* Prensa-cabo flexível laranja com ranhuras à esquerda */}
             <path
-              d="M -4 -12 L 4 -12 L 6 0 L -6 0 Z"
-              fill="#eab308"
-              stroke="#ca8a04"
+              d="M -18 -3 L -14 -3.5 L -14 -4.5 L -4 -4.5 L 0 -5 L 0 5 L -4 4.5 L -14 4.5 L -14 3.5 L -18 3 Z"
+              fill="#ea580c"
+              stroke="#c2410c"
+              strokeWidth="0.8"
+            />
+            <line x1="-14" y1="-4" x2="-14" y2="4" stroke="#9a3412" strokeWidth="1" />
+            <line x1="-10" y1="-4.5" x2="-10" y2="4.5" stroke="#9a3412" strokeWidth="1" />
+            <line x1="-6" y1="-4.5" x2="-6" y2="4.5" stroke="#9a3412" strokeWidth="1" />
+
+            {/* Casco inferior azul submerso na água */}
+            <path
+              d="M 0 2 L 3 9 Q 5 11.5 9 11.5 L 27 11.5 Q 31 11.5 33 7 L 36 2 Z"
+              fill="#0369a1"
+              stroke="#075985"
+              strokeWidth="0.9"
+            />
+            <path
+              d="M 10 11.5 Q 18 13.5 26 11.5"
+              fill="none"
+              stroke="#075985"
               strokeWidth="0.8"
             />
 
-            {/* Corpo azul ovalado / gota da boia */}
+            {/* Friso / borda perimetral de vedação em laranja */}
             <rect
-              x="-12"
-              y="0"
-              width="24"
-              height="36"
-              rx="10"
-              fill="#1d4ed8"
-              stroke="#1e3a8a"
-              strokeWidth="1.2"
-            />
-            {/* Visor central azul marinho */}
-            <rect
-              x="-7"
-              y="6"
-              width="14"
-              height="22"
-              rx="5"
-              fill="#172554"
-              stroke="#2563eb"
+              x="-2"
+              y="-2"
+              width="40"
+              height="4"
+              rx="2"
+              fill="#ea580c"
+              stroke="#c2410c"
               strokeWidth="0.8"
             />
-            {/* Brilho de reflexo luminoso */}
+
+            {/* Cúpula superior azul acima da lâmina d'água */}
             <path
-              d="M -6 4 Q 0 2 6 4"
+              d="M 0 -2 L 3 -10 Q 5 -12.5 9 -12.5 L 27 -12.5 Q 31 -12.5 33 -8 L 36 -2 Z"
+              fill="#0284c7"
+              stroke="#0369a1"
+              strokeWidth="0.9"
+            />
+            {/* Rebaixo central retangular em relevo no topo da boia */}
+            <rect
+              x="9"
+              y="-11.5"
+              width="18"
+              height="2.5"
+              rx="1"
+              fill="#0369a1"
+              stroke="#38bdf8"
+              strokeWidth="0.6"
+              opacity="0.9"
+            />
+            {/* Reflexo de brilho na carcaça azul */}
+            <path
+              d="M 8 -8.5 Q 18 -10 28 -8.5"
               fill="none"
-              stroke="#60a5fa"
-              strokeWidth="1.5"
+              stroke="#bae6fd"
+              strokeWidth="1"
               strokeLinecap="round"
-              opacity="0.85"
+              opacity="0.8"
             />
           </g>
         </g>
