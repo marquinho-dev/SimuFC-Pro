@@ -2201,7 +2201,7 @@ export default function Canvas({
                         onClick={(e) => {
                           e.stopPropagation();
                           try {
-                            sounds.playSwitch();
+                            sounds.playButtonClick();
                           } catch {}
                           onAlignDinRail?.(comp.id);
                         }}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
-import { sounds } from '../../services/soundEffects';
 
 /**
  * FloatSwitchElement - Boia de Nível de Reservatório Industrial
@@ -76,9 +75,6 @@ export default function FloatSwitchElement({
           const prevHigh = prev >= threshold;
           const nextHigh = next >= threshold;
           if (prevHigh !== nextHigh) {
-            try {
-              sounds.playSwitch(!nextHigh);
-            } catch {}
             onUpdateComponentState?.(componentId, {
               level: Math.round(next),
               isTapOpen,
@@ -111,9 +107,6 @@ export default function FloatSwitchElement({
   // Abrir ou fechar o registro da bica ao clicar nela
   const handleToggleTap = (e) => {
     e.stopPropagation();
-    try {
-      sounds.playSwitch(!isTapOpen);
-    } catch {}
     const newTapState = !isTapOpen;
     setIsTapOpen(newTapState);
     onUpdateComponentState?.(componentId, {
@@ -130,9 +123,6 @@ export default function FloatSwitchElement({
     const ratio = Math.max(0, Math.min(1, 1 - clickY / rect.height));
     const newLvl = Math.round(ratio * 100);
     setLevel(newLvl);
-    try {
-      sounds.playSwitch(newLvl < threshold);
-    } catch {}
     onUpdateComponentState?.(componentId, {
       level: newLvl,
       isTapOpen,
