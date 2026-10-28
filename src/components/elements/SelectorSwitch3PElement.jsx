@@ -48,17 +48,41 @@ export default function SelectorSwitch3PElement({
 
   const handleAngle = positionAngles[position] ?? 0;
 
-  // Ciclo sequencial ao clicar no atuador
+  // Ciclo sequencial mecânico ao clicar no atuador:
+  // Em uma chave industrial de 3 posições com batentes físicos, o ciclo correto é:
+  // 1 -> 0 -> 2 -> 0 -> 1 (vai e volta passando sempre pelo neutro 0)
   const handleToggle = (e) => {
     e.stopPropagation();
     try {
       sounds.playRotarySwitchClick();
     } catch {}
 
-    const order = ['0', '2', '1'];
-    const currentIdx = order.indexOf(position);
-    const nextPos = order[(currentIdx + 1) % order.length];
-    onUpdateComponentState(componentId, { position: nextPos });
+    let nextPos = '0';
+    let nextDir = component.state?.toggleDirection ?? 'to2';
+
+    if (position === '1') {
+      // De 1 só pode ir para 0 em direção ao 2
+      nextPos = '0';
+      nextDir = 'to2';
+    } else if (position === '2') {
+      // De 2 só pode ir para 0 em direção ao 1
+      nextPos = '0';
+      nextDir = 'to1';
+    } else {
+      // Posição '0' (centro): segue a direção atual
+      if (nextDir === 'to1') {
+        nextPos = '1';
+        nextDir = 'to2'; // Chegou ao batente esquerdo, próximo movimento será de volta
+      } else {
+        nextPos = '2';
+        nextDir = 'to1'; // Chegou ao batente direito, próximo movimento será de volta
+      }
+    }
+
+    onUpdateComponentState(componentId, {
+      position: nextPos,
+      toggleDirection: nextDir,
+    });
   };
 
   const handleSelectPosition = (e, pos) => {
@@ -67,7 +91,11 @@ export default function SelectorSwitch3PElement({
     try {
       sounds.playRotarySwitchClick();
     } catch {}
-    onUpdateComponentState(componentId, { position: pos });
+    const nextDir = pos === '1' ? 'to2' : pos === '2' ? 'to1' : (position === '2' ? 'to1' : 'to2');
+    onUpdateComponentState(componentId, {
+      position: pos,
+      toggleDirection: nextDir,
+    });
   };
 
   // Ids escopados para gradientes e filtros SVG

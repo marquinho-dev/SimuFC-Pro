@@ -39,6 +39,7 @@ export const COMPONENT_TYPES = {
   TEXT_NOTE: 'text_note',
   FLOAT_SWITCH: 'float_switch',
   SELECTOR_SWITCH_3P: 'selector_switch_3p',
+  AUX_CONTACTOR: 'aux_contactor',
 };
 
 // Range scale values matching the physical relay dial in the reference photo
@@ -140,6 +141,159 @@ export const BREAKER_CURVES = [
 ];
 
 export const BREAKER_CURRENTS = [6, 10, 16, 20, 25, 32, 40, 50, 63];
+
+export const CONTACTOR_POLES = [
+  {
+    id: 3,
+    label: 'Tripolar (3P)',
+    badge: '3P',
+    description: '3 Polos de Potência: 1/L1, 3/L2, 5/L3',
+  },
+  {
+    id: 4,
+    label: 'Tetrapolar (4P)',
+    badge: '4P',
+    description: '4 Polos de Potência: 1/L1, 3/L2, 5/L3, 7/L4',
+  },
+];
+
+export const CONTACTOR_COIL_VOLTAGES = [
+  '220V AC',
+  '24V DC',
+  '24V AC',
+  '110V AC',
+  '380V AC',
+];
+
+export const CONTACTOR_AUX_OPTIONS = [
+  {
+    id: 'none',
+    label: 'Sem Bloco Auxiliar',
+    badge: 'Nenhum',
+    description: 'Carcaça sem bloco auxiliar frontal montado (apenas 13-14 e 21-22 nativos)',
+  },
+  {
+    id: '1NO_1NC',
+    label: '1 NA + 1 NF (1 NO + 1 NC)',
+    badge: '1 NA + 1 NF',
+    description: 'Bloco frontal de 2 polos: 53-54 (NA) e 61-62 (NF)',
+  },
+  {
+    id: '2NO',
+    label: '2 NA (2 NO)',
+    badge: '2 NA',
+    description: 'Bloco frontal de 2 polos: 53-54 (NA) e 83-84 (NA)',
+  },
+  {
+    id: '2NC',
+    label: '2 NF (2 NC)',
+    badge: '2 NF',
+    description: 'Bloco frontal de 2 polos: 61-62 (NF) e 71-72 (NF)',
+  },
+  {
+    id: '2NO_2NC',
+    label: '2 NA + 2 NF (2 NO + 2 NC)',
+    badge: '2 NA + 2 NF',
+    description: 'Bloco frontal de 4 polos: 53-54 (NA), 61-62 (NF), 71-72 (NF) e 83-84 (NA)',
+  },
+];
+
+export function getContactorTerminals(options = {}) {
+  const poles = Number(options.poles) === 4 ? 4 : 3;
+  let auxType = options.auxBlockType;
+  if (!auxType) {
+    auxType = options.hasAuxBlock ? '1NO_1NC' : 'none';
+  }
+
+  const terminals = [];
+
+  // Polos de Potência Superiores (1, 3, 5 e opcional 7)
+  if (poles === 4) {
+    terminals.push(
+      { id: '1', label: '1/L1', x: 32, y: 34, type: 'power_main' },
+      { id: '3', label: '3/L2', x: 81, y: 34, type: 'power_main' },
+      { id: '5', label: '5/L3', x: 129, y: 34, type: 'power_main' },
+      { id: '7', label: '7/L4', x: 178, y: 34, type: 'power_main' },
+    );
+  } else {
+    terminals.push(
+      { id: '1', label: '1/L1', x: 42, y: 34, type: 'power_main' },
+      { id: '3', label: '3/L2', x: 105, y: 34, type: 'power_main' },
+      { id: '5', label: '5/L3', x: 168, y: 34, type: 'power_main' },
+    );
+  }
+
+  // Linha superior: contatos auxiliares fixos e bobina
+  terminals.push(
+    { id: '13', label: '13 NO', x: 42, y: 98, type: 'aux_no' },
+    { id: '21', label: '21 NC', x: 105, y: 98, type: 'aux_nc' },
+    { id: 'A1', label: 'A1', x: 168, y: 98, type: 'coil' },
+  );
+
+  // Bloco Frontal de Contatos Auxiliares Aditivos (conforme o tipo selecionado)
+  if (auxType === '1NO_1NC') {
+    // Foto 2: 53-54 (NO) e 61-62 (NC)
+    terminals.push(
+      { id: '53', label: '53 NO', x: 84, y: 146, type: 'aux_no' },
+      { id: '61', label: '61 NC', x: 126, y: 146, type: 'aux_nc' },
+      { id: '54', label: '54 NO', x: 84, y: 196, type: 'aux_no' },
+      { id: '62', label: '62 NC', x: 126, y: 196, type: 'aux_nc' },
+    );
+  } else if (auxType === '2NO') {
+    // Foto 3: 53-54 (NO) e 83-84 (NO)
+    terminals.push(
+      { id: '53', label: '53 NO', x: 84, y: 146, type: 'aux_no' },
+      { id: '83', label: '83 NO', x: 126, y: 146, type: 'aux_no' },
+      { id: '54', label: '54 NO', x: 84, y: 196, type: 'aux_no' },
+      { id: '84', label: '84 NO', x: 126, y: 196, type: 'aux_no' },
+    );
+  } else if (auxType === '2NC') {
+    // 2 NC: 61-62 (NC) e 71-72 (NC)
+    terminals.push(
+      { id: '61', label: '61 NC', x: 84, y: 146, type: 'aux_nc' },
+      { id: '71', label: '71 NC', x: 126, y: 146, type: 'aux_nc' },
+      { id: '62', label: '62 NC', x: 84, y: 196, type: 'aux_nc' },
+      { id: '72', label: '72 NC', x: 126, y: 196, type: 'aux_nc' },
+    );
+  } else if (auxType === '2NO_2NC') {
+    // 2 NO + 2 NC (4 colunas): 53-54 (NO), 61-62 (NC), 71-72 (NC), 83-84 (NO)
+    terminals.push(
+      { id: '53', label: '53 NO', x: 54, y: 146, type: 'aux_no' },
+      { id: '61', label: '61 NC', x: 88, y: 146, type: 'aux_nc' },
+      { id: '71', label: '71 NC', x: 122, y: 146, type: 'aux_nc' },
+      { id: '83', label: '83 NO', x: 156, y: 146, type: 'aux_no' },
+      { id: '54', label: '54 NO', x: 54, y: 196, type: 'aux_no' },
+      { id: '62', label: '62 NC', x: 88, y: 196, type: 'aux_nc' },
+      { id: '72', label: '72 NC', x: 122, y: 196, type: 'aux_nc' },
+      { id: '84', label: '84 NO', x: 156, y: 196, type: 'aux_no' },
+    );
+  }
+
+  // Linha inferior: contatos auxiliares fixos e bobina
+  terminals.push(
+    { id: '14', label: '14 NO', x: 42, y: 252, type: 'aux_no' },
+    { id: '22', label: '22 NC', x: 105, y: 252, type: 'aux_nc' },
+    { id: 'A2', label: 'A2', x: 168, y: 252, type: 'coil' },
+  );
+
+  // Polos de Potência Inferiores (2, 4, 6 e opcional 8)
+  if (poles === 4) {
+    terminals.push(
+      { id: '2', label: '2/T1', x: 32, y: 316, type: 'power_main' },
+      { id: '4', label: '4/T2', x: 81, y: 316, type: 'power_main' },
+      { id: '6', label: '6/T3', x: 129, y: 316, type: 'power_main' },
+      { id: '8', label: '8/T4', x: 178, y: 316, type: 'power_main' },
+    );
+  } else {
+    terminals.push(
+      { id: '2', label: '2/T1', x: 42, y: 316, type: 'power_main' },
+      { id: '4', label: '4/T2', x: 105, y: 316, type: 'power_main' },
+      { id: '6', label: '6/T3', x: 168, y: 316, type: 'power_main' },
+    );
+  }
+
+  return terminals;
+}
 
 export function getBreakerTerminals(poles = 3) {
   const poleCount = Math.max(1, Math.min(3, Number(poles) || 3));
@@ -299,9 +453,9 @@ export const BRAZIL_VOLTAGE_STANDARDS = [
 ];
 
 export const FLOAT_SWITCH_TERMINALS = [
-  { id: 'COM', label: '1', x: 38, y: 36, type: 'float_terminal' },
-  { id: 'NA', label: '2', x: 38, y: 56, type: 'float_terminal' },
-  { id: 'NF', label: '3', x: 38, y: 76, type: 'float_terminal' },
+  { id: 'COM', label: '1', x: 53, y: 50, type: 'float_terminal' },
+  { id: 'NA', label: '2', x: 53, y: 78, type: 'float_terminal' },
+  { id: 'NF', label: '3', x: 53, y: 106, type: 'float_terminal' },
 ];
 
 export const LED_BULB_TERMINALS = [
@@ -625,7 +779,40 @@ export const INITIAL_COMPONENTS = [
     },
     terminals: SELECTOR_SWITCH_3P_TERMINALS,
   },
+  {
+    id: 'ka1-1',
+    type: COMPONENT_TYPES.AUX_CONTACTOR,
+    name: 'Contator Auxiliar (CJX2-K22)',
+    tag: 'KA1',
+    x: 420,
+    y: 40,
+    templateOnly: true,
+    state: {
+      energized: false,
+      model: 'CJX2-K22',
+      coilVoltage: '220V AC',
+    },
+    terminals: getAuxContactorTerminals(),
+  },
 ];
+
+export function getAuxContactorTerminals() {
+  return [
+    // Top terminals (13NO, 21NC, 31NC, 43NO, A1)
+    { id: '13', label: '13NO', x: 24, y: 44, type: 'aux_no' },
+    { id: '21', label: '21NC', x: 62, y: 44, type: 'aux_nc' },
+    { id: '31', label: '31NC', x: 100, y: 44, type: 'aux_nc' },
+    { id: '43', label: '43NO', x: 138, y: 44, type: 'aux_no' },
+    { id: 'A1', label: 'A1', x: 176, y: 44, type: 'coil' },
+
+    // Bottom terminals (14NO, 22NC, 32NC, 44NO, A2)
+    { id: '14', label: '14NO', x: 24, y: 220, type: 'aux_no' },
+    { id: '22', label: '22NC', x: 62, y: 220, type: 'aux_nc' },
+    { id: '32', label: '32NC', x: 100, y: 220, type: 'aux_nc' },
+    { id: '44', label: '44NO', x: 138, y: 220, type: 'aux_no' },
+    { id: 'A2', label: 'A2', x: 176, y: 220, type: 'coil' },
+  ];
+}
 
 export function getTerminalBlockTerminals(poles = 4) {
   const count = Math.max(1, Math.min(24, Number(poles) || 4));

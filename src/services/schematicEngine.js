@@ -35,6 +35,7 @@ export function resolveComponentTags(components, powerSource) {
 
   const breakers = components.filter((c) => c.type === 'circuit_breaker');
   const contactors = components.filter((c) => c.type === 'contactor');
+  const auxContactors = components.filter((c) => c.type === 'aux_contactor');
   const thermalRelays = components.filter((c) => c.type === 'thermal_relay');
   const timerRelays = components.filter((c) => c.type === 'timer_relay');
   const emergencyBtns = components.filter((c) => c.type === 'button_emergency');
@@ -44,6 +45,7 @@ export function resolveComponentTags(components, powerSource) {
 
   assignCategory(breakers, 'Q');
   assignCategory(contactors, 'K');
+  assignCategory(auxContactors, 'KA');
   assignCategory(thermalRelays, 'F');
   assignCategory(timerRelays, 'KT');
 
@@ -146,22 +148,27 @@ export function decomposeComponent(comp, tagMap, netGraph) {
   const primitives = [];
 
   switch (comp.type) {
-    case 'contactor':
-      // 1. Power main contacts (1-2, 3-4, 5-6)
+    case 'contactor': {
+      // 1. Power main contacts (1-2, 3-4, 5-6, optional 7-8)
+      const powerTerms = [
+        { in: '1', out: '2' },
+        { in: '3', out: '4' },
+        { in: '5', out: '6' },
+      ];
+      if (comp.state?.poles === 4) {
+        powerTerms.push({ in: '7', out: '8' });
+      }
+
       primitives.push({
         id: `${comp.id}_power`,
         compId: comp.id,
         compType: comp.type,
         tag,
-        primitiveType: 'POWER_CONTACT_3P',
+        primitiveType: comp.state?.poles === 4 ? 'POWER_CONTACT_4P' : 'POWER_CONTACT_3P',
         domain: 'POWER',
-        terminals: [
-          { in: '1', out: '2' },
-          { in: '3', out: '4' },
-          { in: '5', out: '6' },
-        ],
+        terminals: powerTerms,
         isClosed: Boolean(comp.state?.energized),
-        hasWires: ['1', '2', '3', '4', '5', '6'].some((t) => netGraph.hasWire(comp.id, t)),
+        hasWires: ['1', '2', '3', '4', '5', '6', '7', '8'].some((t) => netGraph.hasWire(comp.id, t)),
       });
 
       // 2. Aux Contact NA (13-14)
@@ -177,6 +184,40 @@ export function decomposeComponent(comp, tagMap, netGraph) {
         hasWires: netGraph.hasWire(comp.id, '13') || netGraph.hasWire(comp.id, '14'),
       });
 
+      const auxType =
+        comp.state?.auxBlockType ||
+        (comp.state?.hasAuxBlock ? '1NO_1NC' : 'none');
+
+      // 2b. Bloco de Contatos Auxiliares Frontais Aditivos: 53-54 (NA)
+      if (['1NO_1NC', '2NO', '2NO_2NC'].includes(auxType)) {
+        primitives.push({
+          id: `${comp.id}_aux_no_53_54`,
+          compId: comp.id,
+          compType: comp.type,
+          tag: `${tag}.aux2`,
+          primitiveType: 'AUX_CONTACT_NO',
+          domain: 'CONTROL',
+          terminals: { in: '53', out: '54' },
+          isClosed: Boolean(comp.state?.energized),
+          hasWires: netGraph.hasWire(comp.id, '53') || netGraph.hasWire(comp.id, '54'),
+        });
+      }
+
+      // 2c. Bloco de Contatos Auxiliares Frontais Aditivos: 83-84 (NA)
+      if (['2NO', '2NO_2NC'].includes(auxType)) {
+        primitives.push({
+          id: `${comp.id}_aux_no_83_84`,
+          compId: comp.id,
+          compType: comp.type,
+          tag: `${tag}.aux4`,
+          primitiveType: 'AUX_CONTACT_NO',
+          domain: 'CONTROL',
+          terminals: { in: '83', out: '84' },
+          isClosed: Boolean(comp.state?.energized),
+          hasWires: netGraph.hasWire(comp.id, '83') || netGraph.hasWire(comp.id, '84'),
+        });
+      }
+
       // 3. Aux Contact NF (21-22)
       primitives.push({
         id: `${comp.id}_aux_nc`,
@@ -189,6 +230,36 @@ export function decomposeComponent(comp, tagMap, netGraph) {
         isClosed: !comp.state?.energized,
         hasWires: netGraph.hasWire(comp.id, '21') || netGraph.hasWire(comp.id, '22'),
       });
+
+      // 3b. Bloco de Contatos Auxiliares Frontais Aditivos: 61-62 (NF)
+      if (['1NO_1NC', '2NC', '2NO_2NC'].includes(auxType)) {
+        primitives.push({
+          id: `${comp.id}_aux_nc_61_62`,
+          compId: comp.id,
+          compType: comp.type,
+          tag: `${tag}.aux3`,
+          primitiveType: 'AUX_CONTACT_NC',
+          domain: 'CONTROL',
+          terminals: { in: '61', out: '62' },
+          isClosed: !comp.state?.energized,
+          hasWires: netGraph.hasWire(comp.id, '61') || netGraph.hasWire(comp.id, '62'),
+        });
+      }
+
+      // 3c. Bloco de Contatos Auxiliares Frontais Aditivos: 71-72 (NF)
+      if (['2NC', '2NO_2NC'].includes(auxType)) {
+        primitives.push({
+          id: `${comp.id}_aux_nc_71_72`,
+          compId: comp.id,
+          compType: comp.type,
+          tag: `${tag}.aux5`,
+          primitiveType: 'AUX_CONTACT_NC',
+          domain: 'CONTROL',
+          terminals: { in: '71', out: '72' },
+          isClosed: !comp.state?.energized,
+          hasWires: netGraph.hasWire(comp.id, '71') || netGraph.hasWire(comp.id, '72'),
+        });
+      }
 
       // 4. Electromagnetic Coil (A1-A2)
       primitives.push({
@@ -203,6 +274,75 @@ export function decomposeComponent(comp, tagMap, netGraph) {
         hasWires: netGraph.hasWire(comp.id, 'A1') || netGraph.hasWire(comp.id, 'A2'),
       });
       break;
+    }
+
+    case 'aux_contactor': {
+      // 1. Aux Contact NA (13-14)
+      primitives.push({
+        id: `${comp.id}_aux_no_13_14`,
+        compId: comp.id,
+        compType: comp.type,
+        tag,
+        primitiveType: 'AUX_CONTACT_NO',
+        domain: 'CONTROL',
+        terminals: { in: '13', out: '14' },
+        isClosed: Boolean(comp.state?.energized),
+        hasWires: netGraph.hasWire(comp.id, '13') || netGraph.hasWire(comp.id, '14'),
+      });
+
+      // 2. Aux Contact NC (21-22)
+      primitives.push({
+        id: `${comp.id}_aux_nc_21_22`,
+        compId: comp.id,
+        compType: comp.type,
+        tag,
+        primitiveType: 'AUX_CONTACT_NC',
+        domain: 'CONTROL',
+        terminals: { in: '21', out: '22' },
+        isClosed: !comp.state?.energized,
+        hasWires: netGraph.hasWire(comp.id, '21') || netGraph.hasWire(comp.id, '22'),
+      });
+
+      // 3. Aux Contact NC (31-32)
+      primitives.push({
+        id: `${comp.id}_aux_nc_31_32`,
+        compId: comp.id,
+        compType: comp.type,
+        tag,
+        primitiveType: 'AUX_CONTACT_NC',
+        domain: 'CONTROL',
+        terminals: { in: '31', out: '32' },
+        isClosed: !comp.state?.energized,
+        hasWires: netGraph.hasWire(comp.id, '31') || netGraph.hasWire(comp.id, '32'),
+      });
+
+      // 4. Aux Contact NA (43-44)
+      primitives.push({
+        id: `${comp.id}_aux_no_43_44`,
+        compId: comp.id,
+        compType: comp.type,
+        tag,
+        primitiveType: 'AUX_CONTACT_NO',
+        domain: 'CONTROL',
+        terminals: { in: '43', out: '44' },
+        isClosed: Boolean(comp.state?.energized),
+        hasWires: netGraph.hasWire(comp.id, '43') || netGraph.hasWire(comp.id, '44'),
+      });
+
+      // 5. Electromagnetic Coil (A1-A2)
+      primitives.push({
+        id: `${comp.id}_coil`,
+        compId: comp.id,
+        compType: comp.type,
+        tag,
+        primitiveType: 'COIL_CONTACTOR',
+        domain: 'CONTROL',
+        terminals: { in: 'A1', out: 'A2' },
+        isEnergized: Boolean(comp.state?.energized),
+        hasWires: netGraph.hasWire(comp.id, 'A1') || netGraph.hasWire(comp.id, 'A2'),
+      });
+      break;
+    }
 
     case 'thermal_relay':
       // 1. Power bimetal heaters (1-2, 3-4, 5-6)

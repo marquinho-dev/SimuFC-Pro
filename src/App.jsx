@@ -6,6 +6,7 @@ import TheoryGuideModal from './components/TheoryGuideModal';
 import MultimeterModal from './components/MultimeterModal';
 import PowerSourceSettingsModal from './components/PowerSourceSettingsModal';
 import BreakerSettingsModal from './components/BreakerSettingsModal';
+import ContactorSettingsModal from './components/ContactorSettingsModal';
 import TerminalBlockSettingsModal from './components/TerminalBlockSettingsModal';
 import TextSettingsModal from './components/TextSettingsModal';
 import { INITIAL_COMPONENTS, WIRE_COLORS, TIMER_RELAY_TERMINALS, POWER_MODES, getTerminalBlockTerminals } from './types/components';
@@ -228,6 +229,8 @@ export default function App() {
   const [isPowerSettingsOpen, setIsPowerSettingsOpen] = useState(false);
   const [isBreakerSettingsOpen, setIsBreakerSettingsOpen] = useState(false);
   const [selectedBreaker, setSelectedBreaker] = useState(null);
+  const [isContactorSettingsOpen, setIsContactorSettingsOpen] = useState(false);
+  const [selectedContactor, setSelectedContactor] = useState(null);
   const [isTerminalBlockSettingsOpen, setIsTerminalBlockSettingsOpen] = useState(false);
   const [selectedTerminalBlock, setSelectedTerminalBlock] = useState(null);
   const [isTextSettingsOpen, setIsTextSettingsOpen] = useState(false);
@@ -279,7 +282,7 @@ export default function App() {
     const res = evaluateCircuit(components, wires, prevEnergizedRef.current);
     const nextMap = new Map();
     for (const c of res.components) {
-      if (c.type === 'contactor' || c.type === 'timer_relay') {
+      if (c.type === 'contactor' || c.type === 'aux_contactor' || c.type === 'timer_relay') {
         nextMap.set(c.id, Boolean(c.state.energized));
       }
     }
@@ -302,7 +305,7 @@ export default function App() {
           if (c.type === 'fuse_holder') {
             resetState.closed = true;
           }
-          if (c.type === 'contactor' || c.type === 'contactor_coil') {
+          if (c.type === 'contactor' || c.type === 'aux_contactor' || c.type === 'contactor_coil') {
             resetState.energized = false;
           }
           if (c.type === 'motor_6p') {
@@ -714,7 +717,7 @@ export default function App() {
       const railCenterY = rail.y + 25;
 
       // Find all mountable components near or assigned to this rail
-      const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
+      const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'aux_contactor', 'timer_relay', 'terminal_block']);
       const candidates = prev.filter((c) => {
         if (!mountableTypes.has(c.type)) return false;
         if (c.dinRailId === railId || c.state?.dinRailId === railId) return true;
@@ -725,6 +728,8 @@ export default function App() {
             ? c.y + 73
             : c.type === 'circuit_breaker' || c.type === 'fuse_holder'
             ? c.y + 109
+            : c.type === 'aux_contactor'
+            ? c.y + 135
             : c.y + 175;
         const compWidth =
           c.type === 'circuit_breaker'
@@ -735,6 +740,8 @@ export default function App() {
             ? (c.state?.poles || 4) * 34
             : c.type === 'timer_relay'
             ? 120
+            : c.type === 'aux_contactor'
+            ? 200
             : 210;
         const isNearY = Math.abs(compCenterY - railCenterY) < 180;
         const isNearX = (c.x + compWidth > railMinX - 80) && (c.x < railMaxX + 80);
@@ -765,6 +772,8 @@ export default function App() {
             ? (comp.state?.poles || 4) * 34
             : comp.type === 'timer_relay'
             ? 120
+            : comp.type === 'aux_contactor'
+            ? 200
             : 210;
 
         const targetY =
@@ -772,6 +781,8 @@ export default function App() {
             ? Math.round(railCenterY - 73)
             : comp.type === 'circuit_breaker' || comp.type === 'fuse_holder'
             ? Math.round(railCenterY - 109)
+            : comp.type === 'aux_contactor'
+            ? Math.round(railCenterY - 135)
             : Math.round(railCenterY - 175);
 
         updatedPositions.set(comp.id, {
@@ -1022,6 +1033,45 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 2500);
   }, []);
 
+  // Handler to open contactor settings
+  const handleOpenContactorSettings = useCallback((comp) => {
+    if (isSimulationMode) return;
+    setSelectedContactor(comp);
+    setIsContactorSettingsOpen(true);
+  }, [isSimulationMode]);
+
+  // Handler to save contactor configuration (aux block, poles, coil voltage)
+  const handleSaveContactorSettings = useCallback((compId, { state, terminals }) => {
+    setComponents((prev) =>
+      prev.map((c) => {
+        if (c.id === compId) {
+          return {
+            ...c,
+            state: { ...c.state, ...state },
+            terminals,
+          };
+        }
+        return c;
+      })
+    );
+
+    // Clean any wires attached to terminals that no longer exist (with cascading delete)
+    const newTermIds = new Set(terminals.map((t) => t.id));
+    setWires((prev) => {
+      const deadWireIds = prev
+        .filter(
+          (w) =>
+            (w.fromComponent === compId && !newTermIds.has(w.fromTerminal)) ||
+            (w.toComponent === compId && !newTermIds.has(w.toTerminal))
+        )
+        .map((w) => w.id);
+      return cascadeDeleteWires(prev, deadWireIds);
+    });
+
+    setToastMessage('✅ Contator reconfigurado com sucesso.');
+    setTimeout(() => setToastMessage(null), 2500);
+  }, []);
+
   // Handler to open terminal block settings
   const handleOpenTerminalBlockSettings = useCallback((comp) => {
     if (isSimulationMode) return;
@@ -1082,6 +1132,50 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 2500);
   }, []);
 
+// Helper to accurately get physical rendered dimensions of any component
+function getCompDimensions(comp) {
+  const type = comp.type;
+  const state = comp.state || {};
+  switch (type) {
+    case 'circuit_breaker':
+      return { width: (state.poles || 3) * 52, height: 218 };
+    case 'fuse_holder':
+      return { width: 52, height: 218 };
+    case 'contactor':
+      return { width: state.poles === 4 ? 260 : 210, height: 350 };
+    case 'aux_contactor':
+      return { width: 200, height: 270 };
+    case 'thermal_relay':
+      return { width: 210, height: 180 };
+    case 'timer_relay':
+      return { width: 120, height: 350 };
+    case 'terminal_block':
+      return { width: (state.poles || 4) * 34, height: 146 };
+    case 'motor_6p':
+      return { width: 280, height: 220 };
+    case 'din_rail':
+      return { width: Math.max(300, Number(state.length) || 800), height: 50 };
+    case 'text_note':
+      return { width: 180, height: 60 };
+    case 'button_start':
+    case 'button_stop':
+    case 'button_emergency':
+      return { width: 80, height: 80 };
+    case 'pilot_light':
+    case 'pilot_lamp':
+    case 'led_bulb':
+      return { width: 60, height: 80 };
+    case 'power_source':
+      return { width: 140, height: 240 };
+    case 'float_switch':
+      return { width: 448, height: 350 };
+    case 'selector_switch_3p':
+      return { width: 100, height: 120 };
+    default:
+      return { width: 120, height: 120 };
+  }
+}
+
   // Handler to add a new component to canvas (blocked in simulation)
   const handleAddComponent = useCallback((type, posX, posY, displayMode = 'real') => {
     if (isSimulationMode) {
@@ -1095,15 +1189,12 @@ export default function App() {
 
     const id = `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
     const center = viewportCenterRef.current || { x: 350, y: 220 };
-    const staggerX = Math.round((Math.random() - 0.5) * 80);
-    const staggerY = Math.round((Math.random() - 0.5) * 80);
-    const x = posX !== undefined ? posX : Math.round(center.x - 70 + staggerX);
-    const y = posY !== undefined ? posY : Math.round(center.y - 70 + staggerY);
 
     setComponents((prev) => {
       // Find the next available numeric index for this type
       let prefix = 'KM';
       if (type === 'contactor' || type === 'contactor_coil') prefix = 'KM';
+      else if (type === 'aux_contactor') prefix = 'KA';
       else if (type === 'circuit_breaker') prefix = 'Q';
       else if (type === 'fuse_holder') prefix = 'F';
       else if (type === 'thermal_relay') prefix = 'RT';
@@ -1160,29 +1251,15 @@ export default function App() {
         newTag = `${prefix}${num}`;
       }
 
-      let finalX = x;
-      let finalY = y;
+      const { width: compWidth, height: compHeight } = getCompDimensions({ type, state: template.state });
+      const isMountable = ['contactor', 'aux_contactor', 'circuit_breaker', 'fuse_holder', 'timer_relay', 'terminal_block'].includes(type);
+
+      let finalX = posX;
+      let finalY = posY;
       let boundRailId = undefined;
-      const isMountable = ['contactor', 'circuit_breaker', 'fuse_holder', 'timer_relay', 'terminal_block'].includes(type);
 
+      // 1. DIN Rail Smart Placement (Mount without overlapping existing components on the rail)
       if (isMountable) {
-        const compWidth =
-          type === 'circuit_breaker'
-            ? (template.state?.poles || 3) * 52
-            : type === 'fuse_holder'
-            ? 52
-            : type === 'terminal_block'
-            ? (template.state?.poles || 4) * 34
-            : type === 'timer_relay'
-            ? 120
-            : 210;
-        const compHeight =
-          type === 'circuit_breaker' || type === 'fuse_holder'
-            ? 218
-            : type === 'terminal_block'
-            ? 146
-            : 350;
-
         const dinRails = prev.filter((c) => c.type === 'din_rail');
         for (const rail of dinRails) {
           const railLength = Math.max(300, Number(rail.state?.length) || 800);
@@ -1192,18 +1269,144 @@ export default function App() {
               ? Math.round(railCenterY - 73)
               : type === 'circuit_breaker' || type === 'fuse_holder'
               ? Math.round(railCenterY - 109)
+              : type === 'aux_contactor'
+              ? Math.round(railCenterY - 135)
               : Math.round(railCenterY - 175);
 
-          const isNearX = x + compWidth >= rail.x - 20 && x <= rail.x + railLength + 20;
-          const isNearY =
-            Math.abs(y + compHeight / 2 - railCenterY) < 110 || Math.abs(y - targetY) < 70;
+          const isNearExplicit =
+            posX !== undefined &&
+            posY !== undefined &&
+            posX + compWidth >= rail.x - 20 &&
+            posX <= rail.x + railLength + 20 &&
+            (Math.abs(posY + compHeight / 2 - railCenterY) < 110 || Math.abs(posY - targetY) < 70);
 
-          if (isNearX && isNearY) {
-            boundRailId = rail.id;
-            finalY = targetY;
-            finalX = Math.max(rail.x + 24, Math.min(x, rail.x + railLength - compWidth - 24));
-            break;
+          const isNearCenter =
+            posX === undefined &&
+            Math.abs(center.y - railCenterY) < 220 &&
+            center.x >= rail.x - 100 &&
+            center.x <= rail.x + railLength + 100;
+
+          if (isNearExplicit || isNearCenter) {
+            const mountedOnRail = prev
+              .filter((c) => c.dinRailId === rail.id || c.state?.dinRailId === rail.id)
+              .sort((a, b) => a.x - b.x);
+
+            if (mountedOnRail.length === 0) {
+              boundRailId = rail.id;
+              finalY = targetY;
+              finalX = posX !== undefined ? Math.max(rail.x + 24, Math.min(posX, rail.x + railLength - compWidth - 24)) : rail.x + 24;
+              break;
+            } else {
+              // If user explicitly dragged, check if it fits where dropped without collision
+              if (posX !== undefined) {
+                const candidateX = Math.max(rail.x + 24, Math.min(posX, rail.x + railLength - compWidth - 24));
+                const collides = mountedOnRail.some((c) => {
+                  const cw = getCompDimensions(c).width;
+                  return candidateX < c.x + cw + 8 && candidateX + compWidth + 8 > c.x;
+                });
+                if (!collides) {
+                  boundRailId = rail.id;
+                  finalY = targetY;
+                  finalX = candidateX;
+                  break;
+                }
+              }
+
+              // Automatically place neatly to the right of the last component mounted on this rail
+              const lastComp = mountedOnRail[mountedOnRail.length - 1];
+              const lastWidth = getCompDimensions(lastComp).width;
+              const nextSlotX = lastComp.x + lastWidth + 16;
+
+              if (nextSlotX + compWidth <= rail.x + railLength - 20) {
+                boundRailId = rail.id;
+                finalY = targetY;
+                finalX = nextSlotX;
+                break;
+              } else {
+                // If right end is full, check space before the first component on the rail
+                const firstComp = mountedOnRail[0];
+                if (firstComp.x - (rail.x + 24) >= compWidth + 16) {
+                  boundRailId = rail.id;
+                  finalY = targetY;
+                  finalX = rail.x + 24;
+                  break;
+                }
+
+                // Check internal gaps between mounted components
+                let gapFound = false;
+                for (let i = 0; i < mountedOnRail.length - 1; i++) {
+                  const c1 = mountedOnRail[i];
+                  const c2 = mountedOnRail[i + 1];
+                  const c1Right = c1.x + getCompDimensions(c1).width;
+                  if (c2.x - c1Right >= compWidth + 32) {
+                    boundRailId = rail.id;
+                    finalY = targetY;
+                    finalX = c1Right + 16;
+                    gapFound = true;
+                    break;
+                  }
+                }
+                if (gapFound) {
+                  break;
+                }
+                // Rail is fully packed; proceed to free placement outside rail
+              }
+            }
           }
+        }
+      }
+
+      // 2. Free Canvas Collision-Free Placement (Never overlaps existing components)
+      if (finalX === undefined || finalY === undefined) {
+        let candX = Math.round(center.x - compWidth / 2);
+        let candY = Math.round(center.y - compHeight / 2);
+
+        if (type === 'din_rail') {
+          // If inserting a DIN rail, stack it cleanly below any existing DIN rails
+          const existingRails = prev.filter((c) => c.type === 'din_rail');
+          if (existingRails.length > 0) {
+            const lowestRail = existingRails.reduce((max, r) => (r.y > max.y ? r : max), existingRails[0]);
+            candY = lowestRail.y + 260;
+          }
+          finalX = candX;
+          finalY = candY;
+        } else {
+          // Avoid overlapping with any already placed component
+          const existingComps = prev.filter((c) => c.type !== 'din_rail');
+          const MARGIN = 24;
+          let attempts = 0;
+          const maxAttempts = 80;
+
+          while (attempts < maxAttempts) {
+            const colliding = existingComps.find((c) => {
+              const dims = getCompDimensions(c);
+              return (
+                candX < c.x + dims.width + MARGIN &&
+                candX + compWidth + MARGIN > c.x &&
+                candY < c.y + dims.height + MARGIN &&
+                candY + compHeight + MARGIN > c.y
+              );
+            });
+
+            if (!colliding) {
+              break;
+            }
+
+            // Move candidate position to the right of the colliding component
+            const colDims = getCompDimensions(colliding);
+            candX = colliding.x + colDims.width + MARGIN;
+
+            // If shifted too far to the right of viewport center, wrap down to the next row
+            if (candX > center.x + 550) {
+              candX = Math.round(center.x - compWidth / 2);
+              candY += 70;
+            }
+
+            attempts++;
+          }
+
+          finalX = candX;
+          finalY = candY;
         }
       }
 
@@ -1390,6 +1593,7 @@ export default function App() {
             onUnlinkComponents={handleUnlinkComponents}
             onOpenPowerSettings={() => !isSimulationMode && setIsPowerSettingsOpen(true)}
             onOpenBreakerSettings={handleOpenBreakerSettings}
+            onOpenContactorSettings={handleOpenContactorSettings}
             onOpenTerminalBlockSettings={handleOpenTerminalBlockSettings}
             onOpenTextSettings={handleOpenTextSettings}
             onRemoveComponent={handleRemoveComponent}
@@ -1420,6 +1624,18 @@ export default function App() {
           }}
           component={selectedBreaker}
           onSaveSettings={handleSaveBreakerSettings}
+        />
+      )}
+
+      {isContactorSettingsOpen && selectedContactor && (
+        <ContactorSettingsModal
+          isOpen={isContactorSettingsOpen}
+          onClose={() => {
+            setIsContactorSettingsOpen(false);
+            setSelectedContactor(null);
+          }}
+          component={selectedContactor}
+          onSaveSettings={handleSaveContactorSettings}
         />
       )}
 

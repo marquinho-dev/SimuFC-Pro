@@ -225,13 +225,13 @@ export default function FloatSwitchElement({
     <div
       style={{
         position: 'relative',
-        width: '320px',
-        height: '250px',
+        width: '448px',
+        height: '350px',
         userSelect: 'none',
       }}
     >
       <svg
-        viewBox="0 0 320 250"
+        viewBox="0 0 448 350"
         style={{
           width: '100%',
           height: '100%',
@@ -277,6 +277,8 @@ export default function FloatSwitchElement({
             <polygon points="78,28 252,28 234,228 96,228" />
           </clipPath>
         </defs>
+
+        <g transform="scale(1.4)">
 
         {/* -------------------------------------------------------------
             1. BORNEIRA NO TOPO ESQUERDO (CIRCULADO EM VERMELHO NA REFERÊNCIA)
@@ -682,6 +684,7 @@ export default function FloatSwitchElement({
         >
           NÍVEL: {Math.round(level)}%
         </text>
+        </g>
       </svg>
     </div>
   );

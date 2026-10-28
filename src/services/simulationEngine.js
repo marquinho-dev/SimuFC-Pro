@@ -5,7 +5,7 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
   const compMap = new Map();
   for (const c of components) {
     const wasEnergized =
-      c.type === 'contactor' || c.type === 'timer_relay' || c.type === 'contactor_coil'
+      c.type === 'contactor' || c.type === 'aux_contactor' || c.type === 'timer_relay' || c.type === 'contactor_coil'
         ? (previousEnergizedStates.get(c.id) ?? Boolean(c.state?.energized))
         : Boolean(c.state?.energized);
 
@@ -129,17 +129,46 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
           break;
         }
 
-        case 'contactor':
+        case 'contactor': {
+          const auxType =
+            comp.state?.auxBlockType ||
+            (comp.state?.hasAuxBlock ? '1NO_1NC' : 'none');
+
           if (comp.state.energized) {
             // Main power contacts close
             addEdge(`${comp.id}:1`, `${comp.id}:2`);
             addEdge(`${comp.id}:3`, `${comp.id}:4`);
             addEdge(`${comp.id}:5`, `${comp.id}:6`);
+            if (comp.state?.poles === 4) {
+              addEdge(`${comp.id}:7`, `${comp.id}:8`);
+            }
             // 13-14 (NO / NA) closes (SELO)
             addEdge(`${comp.id}:13`, `${comp.id}:14`);
+
+            // Bloco Auxiliar Frontal: Contatos NA fecham quando a bobina energiza
+            if (auxType === '1NO_1NC') {
+              addEdge(`${comp.id}:53`, `${comp.id}:54`);
+            } else if (auxType === '2NO') {
+              addEdge(`${comp.id}:53`, `${comp.id}:54`);
+              addEdge(`${comp.id}:83`, `${comp.id}:84`);
+            } else if (auxType === '2NO_2NC') {
+              addEdge(`${comp.id}:53`, `${comp.id}:54`);
+              addEdge(`${comp.id}:83`, `${comp.id}:84`);
+            }
           } else {
             // 21-22 (NC / NF) stays closed in resting state
             addEdge(`${comp.id}:21`, `${comp.id}:22`);
+
+            // Bloco Auxiliar Frontal: Contatos NF conduzem em repouso
+            if (auxType === '1NO_1NC') {
+              addEdge(`${comp.id}:61`, `${comp.id}:62`);
+            } else if (auxType === '2NC') {
+              addEdge(`${comp.id}:61`, `${comp.id}:62`);
+              addEdge(`${comp.id}:71`, `${comp.id}:72`);
+            } else if (auxType === '2NO_2NC') {
+              addEdge(`${comp.id}:61`, `${comp.id}:62`);
+              addEdge(`${comp.id}:71`, `${comp.id}:72`);
+            }
           }
 
           // Direct conductive coupling when docked/linked to Thermal Overload Relay
@@ -149,6 +178,20 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
             addEdge(`${comp.id}:6`, `${comp.linkedRelayId}:5`);
           }
           break;
+        }
+
+        case 'aux_contactor': {
+          if (comp.state.energized) {
+            // Contatos NA fecham quando energizado: 13-14 e 43-44
+            addEdge(`${comp.id}:13`, `${comp.id}:14`);
+            addEdge(`${comp.id}:43`, `${comp.id}:44`);
+          } else {
+            // Contatos NF conduzem em repouso: 21-22 e 31-32
+            addEdge(`${comp.id}:21`, `${comp.id}:22`);
+            addEdge(`${comp.id}:31`, `${comp.id}:32`);
+          }
+          break;
+        }
 
         case 'thermal_relay':
           // Power lines always conduct through bimetal strips
@@ -501,7 +544,7 @@ export function evaluateCircuit(components, wires, previousEnergizedStates = new
 
     // 4. Evaluate Contactor K1 coil state and standalone coils
     for (const comp of compMap.values()) {
-      if (comp.type === 'contactor' || comp.type === 'timer_relay' || comp.type === 'contactor_coil') {
+      if (comp.type === 'contactor' || comp.type === 'aux_contactor' || comp.type === 'timer_relay' || comp.type === 'contactor_coil') {
         const vA1 = terminalVoltages.get(`${comp.id}:A1`);
         const vA2 = terminalVoltages.get(`${comp.id}:A2`);
 

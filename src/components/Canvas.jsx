@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import { Unlink, Sun, Moon, Zap, Settings, Trash2, AlignHorizontalJustifyStart, Plus, Minus, Boxes, Type, Palette, Layers } from 'lucide-react';
 import PowerSourceElement from './elements/PowerSourceElement';
 import ContactorElement from './elements/ContactorElement';
+import AuxContactorElement from './elements/AuxContactorElement';
 import ThermalRelayElement from './elements/ThermalRelayElement';
 import TimerRelayElement from './elements/TimerRelayElement';
 import Motor6PElement from './elements/Motor6PElement';
@@ -302,6 +303,7 @@ export default function Canvas({
   onUnlinkComponents,
   onOpenPowerSettings,
   onOpenBreakerSettings,
+  onOpenContactorSettings,
   onOpenTerminalBlockSettings,
   onOpenTextSettings,
   onRemoveComponent,
@@ -581,7 +583,7 @@ export default function Canvas({
             y: Math.round(comp.y + yc),
           };
         } else if (comp.type === 'contactor') {
-          if (['1', '2', '3', '4', '5', '6'].includes(termId)) {
+          if (['1', '2', '3', '4', '5', '6', '7', '8'].includes(termId)) {
             const poleIdx = Math.floor((parseInt(termId, 10) - 1) / 2);
             const isTop = (parseInt(termId, 10) % 2) === 1;
             const xc = Math.round(49.5 + poleIdx * 56);
@@ -630,6 +632,11 @@ export default function Canvas({
         else if (termId === '14' || termId === '2') { tx = 45; ty = 130; }
         else if (termId === '24' || termId === '4') { tx = 99; ty = 130; }
         else { tx = term.x ?? 45; ty = term.y ?? 27; }
+      } else if (comp.type === 'float_switch') {
+        if (termId === 'COM' || termId === '1') { tx = 53; ty = 50; }
+        else if (termId === 'NA' || termId === '2') { tx = 53; ty = 78; }
+        else if (termId === 'NF' || termId === '3') { tx = 53; ty = 106; }
+        else { tx = term ? term.x : 53; ty = term ? term.y : 50; }
       } else if (comp.type === 'timer_relay') {
         const config = TIMER_RELAY_TERMINALS[termId];
         if (config) {
@@ -1218,13 +1225,15 @@ export default function Canvas({
             // Check if a normal component (not the DIN rail itself) was moved onto or away from a rail
             const curComp = componentsRef.current.find((c) => c.id === movedCompId);
             if (curComp && curComp.type !== 'din_rail') {
-              const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'timer_relay', 'terminal_block']);
+              const mountableTypes = new Set(['circuit_breaker', 'fuse_holder', 'contactor', 'aux_contactor', 'timer_relay', 'terminal_block']);
               if (mountableTypes.has(curComp.type)) {
                 const compH =
                   curComp.type === 'terminal_block'
                     ? 146
                     : curComp.type === 'circuit_breaker' || curComp.type === 'fuse_holder'
                     ? 218
+                    : curComp.type === 'aux_contactor'
+                    ? 270
                     : 350;
                 const compW =
                   curComp.type === 'circuit_breaker'
@@ -1235,6 +1244,8 @@ export default function Canvas({
                     ? (curComp.state?.poles || 4) * 34
                     : curComp.type === 'timer_relay'
                     ? 120
+                    : curComp.type === 'aux_contactor'
+                    ? 200
                     : 210;
 
                 const dinRails = componentsRef.current.filter((c) => c.type === 'din_rail');
@@ -2059,8 +2070,7 @@ export default function Canvas({
               try {
                 sounds.playButtonClick();
               } catch {}
-              const center = viewportCenterRef.current || { x: 400, y: 200 };
-              onAddComponent?.('text_note', Math.round(center.x - 70), Math.round(center.y - 30));
+              onAddComponent?.('text_note');
             }}
             title="Adicionar Caixa de Texto / Etiqueta"
             aria-label="Adicionar Texto"
@@ -2130,6 +2140,16 @@ export default function Canvas({
               className={`component-card-wrapper ${isDragging ? 'dragging' : ''} ${isCompSelected ? 'selected' : ''}`}
               style={style}
               onPointerDown={(e) => handleCompPointerDown(e, comp.id)}
+              onDoubleClick={(e) => {
+                if (isSimulationMode) return;
+                if (comp.type === 'circuit_breaker') {
+                  e.stopPropagation();
+                  onOpenBreakerSettings?.(comp);
+                } else if (comp.type === 'contactor') {
+                  e.stopPropagation();
+                  onOpenContactorSettings?.(comp);
+                }
+              }}
             >
               {/* Lateral Action Buttons (Toggle Real/Schematic, Settings, Delete) - ONLY VISIBLE WHEN INDIVIDUALLY SELECTED */}
               {showLateralButtons && (
@@ -2156,7 +2176,7 @@ export default function Canvas({
                     </button>
                   )}
 
-                  {/* 2. Configuration Button (Icon only, for power_source or circuit_breaker) */}
+                  {/* 2. Configuration Button (Icon only, for power_source, circuit_breaker or contactor) */}
                   {comp.type === 'power_source' && (
                     <button
                       type="button"
@@ -2180,6 +2200,20 @@ export default function Canvas({
                         onOpenBreakerSettings?.(comp);
                       }}
                       title="Ajustes do Disjuntor (Polos, Corrente, Curva)"
+                    >
+                      <Settings size={14} />
+                    </button>
+                  )}
+
+                  {comp.type === 'contactor' && (
+                    <button
+                      type="button"
+                      className="btn-action-lateral btn-lateral-settings"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenContactorSettings?.(comp);
+                      }}
+                      title="Configurações do Contator (Contatos Auxiliares, Polos, Bobina)"
                     >
                       <Settings size={14} />
                     </button>
@@ -2386,6 +2420,17 @@ export default function Canvas({
 
                   {comp.type === 'contactor' && (
                     <ContactorElement
+                      component={comp}
+                      terminalVoltages={terminalVoltages}
+                      activeTerminal={connectingTerminal}
+                      onTerminalClick={handleTerminalClick}
+                      onUpdateComponentState={onUpdateComponentState}
+                      isSimulationMode={isSimulationMode}
+                    />
+                  )}
+
+                  {comp.type === 'aux_contactor' && (
+                    <AuxContactorElement
                       component={comp}
                       terminalVoltages={terminalVoltages}
                       activeTerminal={connectingTerminal}

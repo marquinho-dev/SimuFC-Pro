@@ -112,6 +112,11 @@ export default function Header({
           tag: 'K1',
         },
         {
+          type: 'aux_contactor',
+          name: 'Contator Auxiliar',
+          tag: 'KA1',
+        },
+        {
           type: 'button_start',
           name: 'Botoeira Liga (NA)',
           tag: 'S1',

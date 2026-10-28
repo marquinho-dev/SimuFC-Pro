@@ -2430,6 +2430,559 @@
 }
 
 /* ==========================================================
+   CONTACTOR FRONTAL AUXILIARY BLOCK (1 NA + 1 NC ADITIVO)
+   ========================================================== */
+.contactor-front-aux-zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.contactor-aux-block-box {
+  background: #cbd5e1;
+  border: 2px solid #1e293b;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.35);
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.contactor-aux-block-box.box-dual {
+  width: 86px;
+  height: 106px;
+}
+
+.contactor-aux-block-box.box-quad {
+  width: 140px;
+  height: 106px;
+}
+
+.contactor-aux-dashed-line {
+  position: absolute;
+  top: 53px;
+  left: 2px;
+  right: 2px;
+  border-top: 1.5px dashed #475569;
+  z-index: 2;
+}
+
+.contactor-aux-half {
+  height: 53px;
+  display: flex;
+  position: relative;
+  z-index: 3;
+}
+
+.contactor-aux-half.top-half .contactor-aux-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 2px;
+}
+
+.contactor-aux-half.bottom-half .contactor-aux-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 3px;
+}
+
+.aux-indicator-text {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.3px;
+}
+
+.aux-indicator-text.text-no {
+  color: #16a34a;
+}
+
+.aux-indicator-text.text-nc {
+  color: #dc2626;
+}
+
+.aux-num-text {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.contactor-aux-screws-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* ==========================================================
+   IDENTIFICAÇÃO DA TENSÃO DA BOBINA (EX: 220V~) NA LATERAL ESQUERDA
+   ========================================================== */
+.contactor-coil-left-spec {
+  position: absolute;
+  left: 4px;
+  top: 170px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.contactor-coil-left-spec .coil-voltage-text {
+  font-family: var(--font-sans);
+  font-size: 0.60rem;
+  font-weight: 900;
+  color: #dc2626;
+  line-height: 1;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+/* Quando sem bloco auxiliar montado, tem mais espaço e fica mais espaçado */
+.contactor-realistic-plate.no-aux-block .contactor-coil-left-spec {
+  left: 12px;
+}
+
+.contactor-realistic-plate.no-aux-block .contactor-coil-left-spec .coil-voltage-text {
+  font-size: 0.70rem;
+  letter-spacing: 0.2px;
+}
+
+/* ==========================================================
+   SEM CONTATO AUXILIAR: REPRODUÇÃO DA FOTO 1 (MECANISMO MECÂNICO)
+   ========================================================== */
+.contactor-no-aux-center-zone {
+  position: absolute;
+  top: 130px;
+  left: 0;
+  right: 0;
+  height: 110px;
+  pointer-events: none;
+}
+
+.contactor-armature-mechanism-photo1 {
+  position: absolute;
+  left: 72px;
+  top: 18px;
+  width: 122px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.armature-bracket-frame {
+  position: absolute;
+  width: 90px;
+  height: 60px;
+  pointer-events: none;
+}
+
+.armature-post {
+  position: absolute;
+  top: 0;
+  width: 13px;
+  height: 48px;
+  background: #94a3b8;
+  border: 1.5px solid #475569;
+  border-radius: 2px 2px 0 0;
+}
+
+.armature-post.left-post {
+  left: 6px;
+}
+
+.armature-post.right-post {
+  right: 6px;
+}
+
+.armature-bottom-rail {
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  right: 6px;
+  height: 14px;
+  background: #94a3b8;
+  border: 1.5px solid #475569;
+  border-radius: 0 0 2px 2px;
+}
+
+.armature-window-plate {
+  position: relative;
+  z-index: 5;
+  width: 120px;
+  height: 28px;
+  background: #ffffff;
+  border: 1.5px solid #1e293b;
+  border-radius: 2px;
+  display: flex;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+.plate-segment {
+  flex: 1;
+  border-right: 1.5px solid #94a3b8;
+}
+
+.plate-segment.right-segment {
+  border-right: none;
+}
+
+.plate-segment.center-segment {
+  flex: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+
+.armature-slug {
+  width: 26px;
+  height: 16px;
+  background: #738496;
+  border: 1px solid #334155;
+  border-radius: 2px;
+  transition: all 0.12s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.armature-slug.slug-pulled {
+  background: #0284c7;
+  box-shadow: 0 0 8px #38bdf8;
+  transform: scale(0.92);
+}
+
+.contactor-realistic-plate.poles-4 .contactor-top-notches .notch,
+.contactor-realistic-plate.poles-4 .contactor-bottom-notches .notch {
+  width: 24px;
+}
+
+/* ==========================================================
+   CONTATOR AUXILIAR INDIVIDUAL (CJX2-K22 / 2NA + 2NF)
+   ========================================================== */
+.aux-contactor-realistic-plate {
+  position: relative;
+  width: 200px;
+  height: 270px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  border-radius: 6px;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  border: 4px solid #1e242b;
+  box-sizing: border-box;
+  user-select: none;
+  overflow: visible;
+}
+
+.aux-contactor-realistic-plate.energized {
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.5),
+    0 0 12px 2px rgba(56, 189, 248, 0.35);
+}
+
+/* Top barrier fins protruding beyond plate */
+.aux-contactor-top-fins {
+  position: absolute;
+  top: -9px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.aux-contactor-top-fins .fin,
+.aux-contactor-bottom-fins .fin {
+  position: absolute;
+  width: 5px;
+  background: linear-gradient(180deg, #0f141a, #232a33);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.aux-contactor-top-fins .fin {
+  top: 0;
+  height: 12px;
+}
+
+.aux-contactor-top-fins .fin:nth-child(1) { left: 41px; }
+.aux-contactor-top-fins .fin:nth-child(2) { left: 79px; }
+.aux-contactor-top-fins .fin:nth-child(3) { left: 117px; }
+.aux-contactor-top-fins .fin:nth-child(4) { left: 155px; }
+
+/* Bottom barrier fins protruding beyond plate */
+.aux-contactor-bottom-fins {
+  position: absolute;
+  bottom: -9px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.aux-contactor-bottom-fins .fin {
+  bottom: 0;
+  height: 12px;
+}
+
+.aux-contactor-bottom-fins .fin:nth-child(1) { left: 41px; }
+.aux-contactor-bottom-fins .fin:nth-child(2) { left: 79px; }
+.aux-contactor-bottom-fins .fin:nth-child(3) { left: 117px; }
+.aux-contactor-bottom-fins .fin:nth-child(4) { left: 155px; }
+
+/* Screws layer */
+.aux-contactor-screws-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Labels rows (Top and Bottom) */
+.aux-contactor-labels-row {
+  position: absolute;
+  left: 0;
+  width: 200px;
+  height: 18px;
+  display: grid;
+  grid-template-columns: repeat(5, 38px);
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.aux-contactor-labels-row.top-labels {
+  top: 12px;
+}
+
+.aux-contactor-labels-row.bottom-labels {
+  bottom: 8px;
+}
+
+.aux-contactor-labels-row .label-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+.aux-contactor-labels-row .terminal-code {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+/* Center Body */
+.aux-contactor-center-body {
+  position: absolute;
+  top: 64px;
+  bottom: 64px;
+  left: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  background: rgba(255, 255, 255, 0.4);
+  box-sizing: border-box;
+}
+
+/* Left Column */
+.aux-contactor-left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 100%;
+  width: 76px;
+}
+
+.aux-contactor-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.aux-contactor-brand-mark .gear-icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.aux-contactor-brand-mark .brand-text {
+  font-size: 0.42rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.aux-contactor-tag-card {
+  width: 72px;
+  height: 26px;
+  background: #fef08a;
+  border: 1px solid #ca8a04;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.aux-contactor-tag-card .tag-card-text {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #713f12;
+  letter-spacing: 0.5px;
+}
+
+.aux-contactor-model-stamp {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.95;
+}
+
+.aux-contactor-model-stamp .model-prefix {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #334155;
+  letter-spacing: -0.3px;
+}
+
+.aux-contactor-model-stamp .model-suffix {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #1e293b;
+  letter-spacing: 0.2px;
+}
+
+/* Center Plunger Mechanism */
+.aux-contactor-plunger-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 44px;
+}
+
+.plunger-label-top,
+.plunger-label-bottom {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #334155;
+  line-height: 1;
+}
+
+.aux-contactor-plunger-window {
+  width: 32px;
+  height: 48px;
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.aux-plunger-slug {
+  width: 14px;
+  height: 28px;
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  border: 1px solid #94a3b8;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease;
+}
+
+.aux-plunger-slug.slug-released {
+  transform: translateY(6px);
+}
+
+.aux-plunger-slug.slug-pulled {
+  transform: translateY(-6px);
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  border-color: #0369a1;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+
+/* Right Column: Accessory mounting slots & Coil Voltage Badge */
+.aux-contactor-right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 100%;
+  width: 48px;
+}
+
+.aux-slot {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.aux-slot.slot-top {
+  width: 10px;
+  height: 10px;
+}
+
+.aux-slot.slot-mid {
+  width: 18px;
+  height: 7px;
+}
+
+.aux-slot.slot-bot {
+  width: 10px;
+  height: 10px;
+}
+
+.aux-coil-rating-badge {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.aux-coil-rating-badge .rating-text {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #dc2626;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+/* ==========================================================
    CONTACTOR SCREW COMPONENT
    ========================================================== */
 .contactor-screw-container {
@@ -2443,6 +2996,7 @@
   cursor: pointer;
   z-index: 30;
   transition: transform 0.12s ease;
+  pointer-events: auto;
 }
 
 .contactor-screw-container:hover {
@@ -4815,6 +5369,441 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+/* ==========================================================
+   CONTACTOR SPLIT MODAL (LAYOUT DIVIDIDO MODELO MAIN.DC.HTML)
+   ========================================================== */
+.contactor-split-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 22, 0.78);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 16px;
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.contactor-split-modal-dialog {
+  width: 920px;
+  max-width: 95vw;
+  height: 560px;
+  max-height: 90vh;
+  display: flex;
+  background: #121b27;
+  border: 1px solid #2a3a4f;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #e6edf5;
+  user-select: none;
+  animation: scaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Painel Lateral Esquerdo (Aside) */
+.contactor-split-aside {
+  width: 300px;
+  flex: none;
+  background: #0d1520;
+  border-right: 1px solid #243246;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+
+.contactor-aside-badge {
+  font-size: 12px;
+  color: #8fa3b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.contactor-aside-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: #5cc8ff;
+  margin-top: 4px;
+  line-height: 1.1;
+}
+
+.contactor-aside-subtitle {
+  font-size: 13px;
+  color: #a9bbcf;
+  margin-top: 3px;
+}
+
+.contactor-aside-svg-wrapper {
+  width: 252px;
+  max-width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.contactor-aside-summary-box {
+  background: #121b27;
+  border: 1px solid #243246;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.contactor-aside-summary-box .summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.contactor-aside-summary-box .summary-label {
+  color: #8fa3b8;
+  font-weight: 500;
+}
+
+.contactor-aside-summary-box .summary-val {
+  color: #e6edf5;
+  font-weight: 600;
+}
+
+.contactor-aside-summary-box .highlight-gold {
+  color: #f5b942;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+.contactor-aside-summary-box .highlight-blue {
+  color: #5cc8ff;
+  font-weight: 700;
+}
+
+/* Painel Principal Direito */
+.contactor-split-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #121b27;
+}
+
+.contactor-split-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #243246;
+}
+
+.contactor-split-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #f2f6fb;
+  margin: 0;
+}
+
+.contactor-split-close-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: #9fb0c3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.contactor-split-close-btn:hover {
+  background: #1e2a3a;
+  color: #f8fafc;
+}
+
+.contactor-split-body {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  overflow-y: auto;
+}
+
+.contactor-split-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.split-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c9d6e4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.split-section-label .label-mono-tag {
+  color: #8fa3b8;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.split-section-label .label-sub {
+  color: #8fa3b8;
+  font-weight: 500;
+}
+
+/* Segmented Control - Polos de Potência */
+.split-segmented-control-poles {
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+  background: #0d1520;
+  border: 1px solid #243246;
+  border-radius: 12px;
+}
+
+.split-segment-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: #a9bbcf;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.split-segment-btn .segment-sub-text {
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 1px;
+  color: #8fa3b8;
+}
+
+.split-segment-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+}
+
+.split-segment-btn.active {
+  background: #1d4f75;
+  color: #ffffff;
+}
+
+.split-segment-btn.active .segment-sub-text {
+  color: #bfe3fa;
+}
+
+/* Chips - Tensão da Bobina */
+.split-coil-chips-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.split-coil-chip {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1.5px solid #2a3a4f;
+  background: #172230;
+  color: #c9d6e4;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.split-coil-chip:hover {
+  border-color: #64748b;
+  background: #1e2c3e;
+}
+
+.split-coil-chip.active {
+  border-color: #f5b942;
+  background: #33280f;
+  color: #f5b942;
+  box-shadow: 0 0 12px rgba(245, 185, 66, 0.25);
+}
+
+/* Segmented Control - Bloco de Contatos Auxiliares */
+.split-segmented-control-aux {
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+  background: #0d1520;
+  border: 1px solid #243246;
+  border-radius: 12px;
+}
+
+.split-aux-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: #a9bbcf;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.split-aux-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+}
+
+.split-aux-btn.active {
+  background: #1d4f75;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.split-aux-description-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #a9bbcf;
+  margin-top: 2px;
+}
+
+.split-term-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.split-term-chip.chip-no {
+  color: #5fe39a;
+  background: #0f2e22;
+  border: 1px solid #1f6b48;
+}
+
+.split-term-chip.chip-nc {
+  color: #ff8a8a;
+  background: #34171a;
+  border: 1px solid #7a2f35;
+}
+
+/* Footer do Modal */
+.contactor-split-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #243246;
+  background: #121b27;
+}
+
+.split-btn-cancel {
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 10px;
+  border: 1px solid #2a3a4f;
+  background: transparent;
+  color: #c9d6e4;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.split-btn-cancel:hover {
+  background: #1a2636;
+  border-color: #3b4d66;
+  color: #f8fafc;
+}
+
+.split-btn-save {
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 10px;
+  border: 0;
+  background: #2f9be0;
+  color: #04121f;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.split-btn-save:hover {
+  background: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+
+@media (max-width: 768px) {
+  .contactor-split-modal-dialog {
+    flex-direction: column;
+    height: auto;
+    max-height: 94vh;
+  }
+  .contactor-split-aside {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #243246;
+    padding: 16px;
+  }
+}
+
+.aux-terminals-preview-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.term-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.term-badge.term-no {
+  background: rgba(22, 163, 74, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+}
+
+.term-badge.term-nc {
+  background: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.4);
 }
 
 .current-chip:hover {

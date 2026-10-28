@@ -283,6 +283,108 @@ export function ContactorThumbnail() {
 }
 
 /* ==========================================================
+   3B. AUXILIARY CONTACTOR THUMBNAIL (CONTATOR AUXILIAR CJX2-K22)
+   Matching AuxContactorElement: 5 columns (13NO, 21NC, 31NC, 43NO, A1/A2),
+   white front faceplate, dark chassis with barrier ribs,
+   tag placard, plunger mechanism with I / O indicators.
+   ========================================================== */
+export function AuxContactorThumbnail() {
+  return (
+    <svg viewBox="0 0 84 96" className="comp-thumb-svg" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="auxPlateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="10%" stopColor="#f8fafc" />
+          <stop offset="90%" stopColor="#f1f5f9" />
+          <stop offset="100%" stopColor="#e2e8f0" />
+        </linearGradient>
+        <radialGradient id="auxScrewMetal" cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="40%" stopColor="#cbd5e1" />
+          <stop offset="80%" stopColor="#94a3b8" />
+          <stop offset="100%" stopColor="#64748b" />
+        </radialGradient>
+      </defs>
+
+      {/* Dark Outer Chassis Frame & Mount Ears */}
+      <rect x="5" y="2" width="74" height="92" rx="4" fill="#1e2329" stroke="#0f172a" strokeWidth="1" />
+      
+      {/* Top Protruding Barrier Fins */}
+      <rect x="20" y="0" width="3" height="6" rx="1" fill="#111827" />
+      <rect x="34" y="0" width="3" height="6" rx="1" fill="#111827" />
+      <rect x="48" y="0" width="3" height="6" rx="1" fill="#111827" />
+      <rect x="62" y="0" width="3" height="6" rx="1" fill="#111827" />
+
+      {/* Bottom Protruding Barrier Fins */}
+      <rect x="20" y="90" width="3" height="6" rx="1" fill="#111827" />
+      <rect x="34" y="90" width="3" height="6" rx="1" fill="#111827" />
+      <rect x="48" y="90" width="3" height="6" rx="1" fill="#111827" />
+      <rect x="62" y="90" width="3" height="6" rx="1" fill="#111827" />
+
+      {/* Main White Faceplate */}
+      <rect x="8" y="5" width="68" height="86" rx="2" fill="url(#auxPlateGrad)" stroke="#cbd5e1" strokeWidth="0.8" />
+
+      {/* 5 Top Terminal Recesses & Screws */}
+      {[
+        { cx: 14.5, text: '13NO' },
+        { cx: 27.5, text: '21NC' },
+        { cx: 41.0, text: '31NC' },
+        { cx: 54.5, text: '43NO' },
+        { cx: 68.0, text: 'A1' },
+      ].map((t) => (
+        <g key={`aux-top-${t.cx}`}>
+          <text x={t.cx} y="11" fill="#475569" fontSize="2.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+            {t.text}
+          </text>
+          <circle cx={t.cx} cy="18" r="4.2" fill="#0f172a" />
+          <circle cx={t.cx} cy="18" r="3.2" fill="url(#auxScrewMetal)" stroke="#334155" strokeWidth="0.5" />
+          <line x1={t.cx - 1.6} y1="18" x2={t.cx + 1.6} y2="18" stroke="#1e293b" strokeWidth="0.7" />
+        </g>
+      ))}
+
+      {/* Center Zone */}
+      {/* Brand & Placard */}
+      <rect x="11" y="27" width="22" height="13" rx="1.5" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.6" />
+      <text x="22" y="35" fill="#854d0e" fontSize="3.5" fontWeight="900" textAnchor="middle" fontFamily="sans-serif">KA1</text>
+      
+      {/* Model Stamp */}
+      <text x="11" y="47" fill="#334155" fontSize="3" fontWeight="900" fontFamily="sans-serif">CJX2-</text>
+      <text x="11" y="52" fill="#334155" fontSize="3.5" fontWeight="900" fontFamily="sans-serif">K22</text>
+
+      {/* Central Plunger Indicator Window */}
+      <text x="39" y="30" fill="#475569" fontSize="3" fontWeight="bold">I</text>
+      <rect x="37" y="33" width="13" height="16" rx="1" fill="#0f172a" stroke="#334155" strokeWidth="0.6" />
+      <rect x="44" y="35" width="4" height="12" rx="0.8" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.5" />
+      <text x="52" y="30" fill="#475569" fontSize="3" fontWeight="bold">O</text>
+
+      {/* Right Side Slots */}
+      <rect x="63" y="28" width="4" height="4" fill="#0f172a" rx="0.5" />
+      <rect x="61" y="37" width="8" height="3" fill="#0f172a" rx="0.5" />
+      <rect x="63" y="46" width="4" height="4" fill="#0f172a" rx="0.5" />
+      <rect x="60" y="54" width="6" height="8" fill="#0f172a" rx="0.5" />
+
+      {/* 5 Bottom Terminal Recesses & Screws */}
+      {[
+        { cx: 14.5, text: '14NO' },
+        { cx: 27.5, text: '22NC' },
+        { cx: 41.0, text: '32NC' },
+        { cx: 54.5, text: '44NO' },
+        { cx: 68.0, text: 'A2' },
+      ].map((t) => (
+        <g key={`aux-bot-${t.cx}`}>
+          <circle cx={t.cx} cy="72" r="4.2" fill="#0f172a" />
+          <circle cx={t.cx} cy="72" r="3.2" fill="url(#auxScrewMetal)" stroke="#334155" strokeWidth="0.5" />
+          <line x1={t.cx - 1.6} y1="72" x2={t.cx + 1.6} y2="72" stroke="#1e293b" strokeWidth="0.7" />
+          <text x={t.cx} y="82" fill="#475569" fontSize="2.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+            {t.text}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* ==========================================================
    4. THERMAL RELAY THUMBNAIL (RELÉ TÉRMICO DE SOBRECARGA)
    Matching ThermalRelayElement: 3 upper copper prongs (1, 3, 5),
    industrial dark chassis, current dial, red STOP and blue RESET
@@ -1318,6 +1420,7 @@ export const COMPONENT_THUMBNAILS = {
   circuit_breaker: BreakerThumbnail,
   fuse_holder: FuseHolderThumbnail,
   contactor: ContactorThumbnail,
+  aux_contactor: AuxContactorThumbnail,
   thermal_relay: ThermalRelayThumbnail,
   timer_relay: TimerRelayThumbnail,
   button_start: ButtonStartThumbnail,
